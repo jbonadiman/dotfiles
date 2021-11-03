@@ -1,8 +1,7 @@
 sudo apt-get update && sudo apt-get upgrade
 
-echo "---------------------------------"
-echo "|      Docker installation      |"
-echo "---------------------------------"
+printf "┌-------------------------------┐\n|      Docker installation      |\n└-------------------------------┘\n"
+
 ### uncomment to remove residue from other installations:
 # sudo apt remove docker docker-engine docker.io containerd runc
 echo "installing pre-requisites..."
@@ -37,7 +36,7 @@ sudo mkdir -p /etc/docker
 sudo printf "{\n\t\"hosts\": [\"unix:///mnt/wsl/shared-docker/docker.sock\"]\n}\n" > /etc/docker/daemon.json 
 
 echo "adding auto-init to .bashrc..."
-# TODO: find a way so this can be a variable
+# TODO: find a way so the distro can be a variable
 printf "DOCKER_DISTRO=\"Ubuntu-20.04\"\n" >> "~/.bashrc"
 printf "DOCKER_DIR=/mnt/wsl/shared-docker\n" >> "~/.bashrc"
 printf "DOCKER_SOCK=\"$DOCKER_DIR/docker.sock\"\n" >> "~/.bashrc"
