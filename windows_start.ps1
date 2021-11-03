@@ -1,6 +1,9 @@
 echo "installing 'scoop'..."
 iwr -useb get.scoop.sh | iex
 
+echo "installing base packages..."
+scoop install 7zip git innounp dark wixtoolset
+
 echo "installing 'aria2'..."
 scoop install aria2
 
