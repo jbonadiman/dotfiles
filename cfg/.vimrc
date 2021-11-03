@@ -10,6 +10,7 @@ Plugin 'VundleVim/Vundle.vim'
 Plugin 'raimondi/delimitmate'
 Plugin 'cespare/vim-toml'
 Plugin 'ervandew/supertab'
+Plugin 'PProvost/vim-ps1'
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
