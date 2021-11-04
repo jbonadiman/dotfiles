@@ -1,23 +1,23 @@
 $step_name="Shovel Installation"
 
+$addedBuckets=@{
+    extra=$false;
+    java=$false;
+    'nerd-fonts'=$false;
+}
 
+function Add-Bucket ($bucketName) {
+    if (-NOT $addedBuckets[$bucketName]) {
+        Write-Host "adding '$bucketName' bucket to shovel..."
+        shovel bucket add $bucketName
+        $addedBuckets[$bucketName] = $true
+    }
+}
 
-$step_name="Packages Installation"
-
-Write-Host "installing 'aria2'..."
-shovel install aria2
-
-Write-Host "adding 'java' bucket to shovel..."
-shovel bucket add java
-
-Write-Host "installing 'openjdk'..."
-shovel install openjdk
-
-Write-Host "adding 'jetbrains' bucket to shovel..."
-shovel bucket add jetbrains
-
-Write-Host "adding 'nerd-fonts' bucket to shovel..."
-shovel bucket add nerd-fonts
+function Install-ShovelPkg ($package) {
+    Write-Host "installing '$package'..."
+    shovel install $package
+}
 
 function Install-Browser {
     Invoke-WebRequest -OutFile "FirefoxInstaller.exe" -Uri https://download.mozilla.org/?product=firefox-stub
@@ -29,20 +29,13 @@ function Install-PersonalPackages {
 }
 
 function Install-DevPackages {
-    Write-Host "[$step_name] installing 'gitkraken'..."
-    shovel install gitkraken
+    Install-ShovelPkg "gitkraken"
+    
+    Add-Bucket "extra"
+    Install-ShovelPkg "jetbrains-toolbox"
 
-    Write-Host "adding 'extras' bucket to shovel..."
-    shovel bucket add extras
-
-    Write-Host "installing 'jetbrains-toolbox'..."
-    shovel install jetbrains-toolbox
-
-    Write-Host "adding 'java' bucket to shovel..."
-    shovel bucket add java
-
-    Write-Host "installing 'openjdk'..."
-    shovel install openjdk
+    Add-Bucket "java"
+    Install-ShovelPkg "openjdk"
 }
 
 function Install-Shovel {
@@ -67,4 +60,8 @@ function Install-Shovel {
 
     Write-Host "[$step_name] configuring shovel command..."
     Get-ChildItem -Path (Join-Path -Path $scoop_path -ChildPath 'shims') -Filter 'scoop.*' | Copy-Item -Destination { Join-Path $_.Directory.FullName (($_.BaseName -replace 'scoop', 'shovel') + $_.Extension) }
+}
+
+function Install-BasePackages {
+    Install-ShovelPkg "aria2"
 }
