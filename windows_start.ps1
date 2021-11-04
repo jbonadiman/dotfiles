@@ -25,7 +25,37 @@ function Install-Browser {
 }
 
 function Install-PersonalPackages {
-    winget install netflix --accept-package-agreements
+    Add-Bucket "extra"
+    
+    Install-ShovelPkg "ccleaner"
+    Install-ShovelPkg "discord"
+    Install-ShovelPkg "gimp"
+    Install-ShovelPkg "inkscape"
+    Install-ShovelPkg "qbittorrent"
+
+    Write-Host "installing 'Netflix'..."
+    winget install --id '9WZDNCRFJ3TJ' --accept-package-agreements
+    
+    Write-Host "installing 'Amazon Games'..."
+    winget install --id 'Amazon.Games' --accept-package-agreements
+    
+    Write-Host "installing 'Amazon Kindle'..."
+    winget install --id 'Amazon.Kindle' --accept-package-agreements
+    
+    Write-Host "installing 'Epic Games'..."
+    winget install --id 'EpicGames.EpicGamesLauncher' --accept-package-agreements
+    
+    Write-Host "installing 'GOG Galaxy'..."
+    winget install --id 'GOG.Galaxy' --accept-package-agreements
+    
+    Write-Host "installing 'Valve.Steam'..."
+    winget install --id 'Valve.Steam' --accept-package-agreements
+    
+    Write-Host "installing 'Telegram.TelegramDesktop'..."
+    winget install --id 'Telegram.TelegramDesktop' --accept-package-agreements
+    
+    Write-Host "installing 'Ubisoft.Connect'..."
+    winget install --id 'Ubisoft.Connect' --accept-package-agreements
 }
 
 function Install-DevPackages {
@@ -62,6 +92,12 @@ function Install-Shovel {
     Get-ChildItem -Path (Join-Path -Path $scoop_path -ChildPath 'shims') -Filter 'scoop.*' | Copy-Item -Destination { Join-Path $_.Directory.FullName (($_.BaseName -replace 'scoop', 'shovel') + $_.Extension) }
 }
 
-function Install-BasePackages {
+function Install-EssentialPackages {
+    Add-Bucket "extra"
+    
     Install-ShovelPkg "aria2"
+    Install-ShovelPkg "advancedrenamer"
+    Install-ShovelPkg "authy"
+    Install-ShovelPkg "treesize-free"
+    Install-ShovelPkg "vlc"
 }
