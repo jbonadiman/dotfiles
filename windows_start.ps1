@@ -19,8 +19,30 @@ shovel bucket add jetbrains
 Write-Host "adding 'nerd-fonts' bucket to shovel..."
 shovel bucket add nerd-fonts
 
+function Install-Browser {
+    Invoke-WebRequest -OutFile "FirefoxInstaller.exe" -Uri https://download.mozilla.org/?product=firefox-stub
+    ./FirefoxInstaller.exe
+}
+
 function Install-PersonalPackages {
     winget install netflix --accept-package-agreements
+}
+
+function Install-DevPackages {
+    Write-Host "[$step_name] installing 'gitkraken'..."
+    shovel install gitkraken
+
+    Write-Host "adding 'extras' bucket to shovel..."
+    shovel bucket add extras
+
+    Write-Host "installing 'jetbrains-toolbox'..."
+    shovel install jetbrains-toolbox
+
+    Write-Host "adding 'java' bucket to shovel..."
+    shovel bucket add java
+
+    Write-Host "installing 'openjdk'..."
+    shovel install openjdk
 }
 
 function Install-Shovel {
