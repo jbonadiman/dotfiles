@@ -5,6 +5,9 @@ if [ ! -a ~/.inputrc ]; then echo '$include /etc/inputrc' > ~/.inputrc; fi
 printf "activating case insensitive tab-completion for the current user..."
 echo 'set completion-ignore-case On' >> ~/.inputrc
 
+printf "Dev Packages"
+sudo apt-get install clang
+
 printf "┌-------------------------------┐\n|      Docker installation      |\n└-------------------------------┘\n"
 
 ### uncomment to remove residue from other installations:
