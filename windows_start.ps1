@@ -101,4 +101,5 @@ function Install-EssentialPackages {
     Install-ShovelPkg "authy"
     Install-ShovelPkg "treesize-free"
     Install-ShovelPkg "vlc"
+    Install-ShovelPkg "bitwarden"
 }
