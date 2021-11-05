@@ -48,14 +48,17 @@ function Install-PersonalPackages {
     Write-Host "installing 'GOG Galaxy'..."
     winget install --id 'GOG.Galaxy' --accept-package-agreements
     
-    Write-Host "installing 'Valve.Steam'..."
+    Write-Host "installing 'Steam'..."
     winget install --id 'Valve.Steam' --accept-package-agreements
     
-    Write-Host "installing 'Telegram.TelegramDesktop'..."
+    Write-Host "installing 'Telegram Desktop'..."
     winget install --id 'Telegram.TelegramDesktop' --accept-package-agreements
     
-    Write-Host "installing 'Ubisoft.Connect'..."
+    Write-Host "installing 'Ubisoft Connect'..."
     winget install --id 'Ubisoft.Connect' --accept-package-agreements
+
+    Write-Host "installing 'WhatsApp'..."
+    winget install --id 'WhatsApp.WhatsApp' --accept-package-agreements
 }
 
 function Install-DevPackages {
