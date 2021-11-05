@@ -5,6 +5,10 @@ if [ ! -a ~/.inputrc ]; then echo '$include /etc/inputrc' > ~/.inputrc; fi
 printf "setting up Vim"
 git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 
+printf "adding brazilian locale..."
+sudo locale-gen pt_BR pt_BR.UTF-8
+sudo update-locale
+
 printf "activating case insensitive tab-completion for the current user..."
 echo 'set completion-ignore-case On' >> ~/.inputrc
 
