@@ -2,6 +2,9 @@ sudo apt-get update && sudo apt-get upgrade
 
 if [ ! -a ~/.inputrc ]; then echo '$include /etc/inputrc' > ~/.inputrc; fi
 
+printf "setting up Vim"
+git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+
 printf "activating case insensitive tab-completion for the current user..."
 echo 'set completion-ignore-case On' >> ~/.inputrc
 
