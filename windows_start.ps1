@@ -1,4 +1,4 @@
-$step_name="Shovel Installation"
+$step_name=''
 
 $addedBuckets=@{
     extra=$false;
@@ -25,13 +25,13 @@ function Install-Browser {
 }
 
 function Install-PersonalPackages {
-    Add-Bucket "extras"
+    Add-Bucket 'extras'
     
-    Install-ShovelPkg "ccleaner"
-    Install-ShovelPkg "discord"
-    Install-ShovelPkg "gimp"
-    Install-ShovelPkg "inkscape"
-    Install-ShovelPkg "qbittorrent"
+    Install-ShovelPkg 'ccleaner'
+    Install-ShovelPkg 'discord'
+    Install-ShovelPkg 'gimp'
+    Install-ShovelPkg 'inkscape'
+    Install-ShovelPkg 'qbittorrent'
 
     Write-Host "installing 'Netflix'..."
     winget install --id '9WZDNCRFJ3TJ' --accept-package-agreements
@@ -62,16 +62,25 @@ function Install-PersonalPackages {
 }
 
 function Install-DevPackages {
-    Install-ShovelPkg "gitkraken"
+    Install-ShovelPkg 'gitkraken' 
     
-    Add-Bucket "extras"
-    Install-ShovelPkg "jetbrains-toolbox"
+    Add-Bucket 'extras'
+    Install-ShovelPkg 'jetbrains-toolbox'
 
-    Add-Bucket "java"
-    Install-ShovelPkg "openjdk"
+    Add-Bucket 'java' 
+    Install-ShovelPkg 'openjdk'
+    Install-ShovelPkg 'go'
+    Install-ShovelPkg 'dotnet-sdk'
+
+    Write-Host "installing 'WSL'..."
+    wsl --install
+
+    Write-Host "installing 'Ubuntu 20.04 distro'..."
+    winget install --id 'Canonical.Ubuntu.2004' --accept-package-agreements
 }
 
 function Install-Shovel {
+    $step_name='Installing Shovel'
     Write-Host "[$step_name] installing 'scoop'..."
     iwr -useb get.scoop.sh | iex
 
@@ -97,12 +106,12 @@ function Install-Shovel {
 }
 
 function Install-EssentialPackages {
-    Add-Bucket "extras"
+    Add-Bucket 'extras'
     
-    Install-ShovelPkg "aria2"
-    Install-ShovelPkg "advancedrenamer"
-    Install-ShovelPkg "authy"
-    Install-ShovelPkg "treesize-free"
-    Install-ShovelPkg "vlc"
-    Install-ShovelPkg "bitwarden"
+    Install-ShovelPkg 'aria2'
+    Install-ShovelPkg 'advancedrenamer'
+    Install-ShovelPkg 'authy'
+    Install-ShovelPkg 'treesize-free'
+    Install-ShovelPkg 'vlc'
+    Install-ShovelPkg 'bitwarden'
 }
