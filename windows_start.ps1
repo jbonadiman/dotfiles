@@ -25,7 +25,7 @@ function Install-Browser {
 }
 
 function Install-PersonalPackages {
-    Add-Bucket "extra"
+    Add-Bucket "extras"
     
     Install-ShovelPkg "ccleaner"
     Install-ShovelPkg "discord"
@@ -61,7 +61,7 @@ function Install-PersonalPackages {
 function Install-DevPackages {
     Install-ShovelPkg "gitkraken"
     
-    Add-Bucket "extra"
+    Add-Bucket "extras"
     Install-ShovelPkg "jetbrains-toolbox"
 
     Add-Bucket "java"
@@ -88,12 +88,13 @@ function Install-Shovel {
     Add-Content $PROFILE "Import-Module '$(Join-Path -Path $scoop_path -ChildPath 'apps\scoop\current\supporting\completion\Scoop-Completion.psd1')' -ErrorAction SilentlyContinue"
     Import-Module $(Join-Path -Path $scoop_path -ChildPath 'apps\scoop\current\supporting\completion\Scoop-Completion.psd1') -ErrorAction SilentlyContinue
 
+    # O que fazer quando diretório não existe?
     Write-Host "[$step_name] configuring shovel command..."
     Get-ChildItem -Path (Join-Path -Path $scoop_path -ChildPath 'shims') -Filter 'scoop.*' | Copy-Item -Destination { Join-Path $_.Directory.FullName (($_.BaseName -replace 'scoop', 'shovel') + $_.Extension) }
 }
 
 function Install-EssentialPackages {
-    Add-Bucket "extra"
+    Add-Bucket "extras"
     
     Install-ShovelPkg "aria2"
     Install-ShovelPkg "advancedrenamer"
