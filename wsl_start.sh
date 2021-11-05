@@ -2,25 +2,25 @@ sudo apt-get update && sudo apt-get upgrade
 
 if [ ! -a ~/.inputrc ]; then echo '$include /etc/inputrc' > ~/.inputrc; fi
 
-printf "setting up Vim"
-git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+printf "setting up Vim\n"
+if [ ! -d ~/.vim/bundle/Vundle.vim ]; then git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim;fi
 
-printf "adding brazilian locale..."
+printf "adding brazilian locale...\n"
 sudo locale-gen pt_BR pt_BR.UTF-8
 sudo update-locale
 
-printf "activating case insensitive tab-completion for the current user..."
+printf "activating case insensitive tab-completion for the current user...\n"
 echo 'set completion-ignore-case On' >> ~/.inputrc
 
-printf "Dev Packages"
-sudo apt-get install clang
+printf "Dev Packages\n"
+sudo apt-get install clang -y
 
 printf "┌-------------------------------┐\n|      Docker installation      |\n└-------------------------------┘\n"
 
 ### uncomment to remove residue from other installations:
 # sudo apt remove docker docker-engine docker.io containerd runc
 echo "installing pre-requisites..."
-sudo apt-get install --no-install-recommends apt-transport-https ca-certificates curl gnupg2
+sudo apt-get install --no-install-recommends apt-transport-https ca-certificates curl gnupg2 -y
 
 echo "setting some specific OS variables..."
 source /etc/os-release
@@ -35,7 +35,7 @@ sudo apt-get update
 echo "installing Docker Engine and client tools..."
 sudo apt-get install docker-ce docker-ce-cli containerd.io -y
 
-echo "adding $USER to docker group..."
+echo "adding '$USER' to docker group..."
 sudo usermod -aG docker $USER
 
 echo "hopefully, signing-in the new group..."
@@ -48,6 +48,7 @@ chgrp docker "$DOCKER_DIR"
 
 echo "creating docker configuration file..."
 sudo mkdir -p /etc/docker
+# Permission denied \/
 sudo printf "{\n\t\"hosts\": [\"unix:///mnt/wsl/shared-docker/docker.sock\"]\n}\n" > /etc/docker/daemon.json 
 
 echo "adding auto-init to .bashrc..."

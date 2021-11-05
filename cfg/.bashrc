@@ -123,9 +123,9 @@ DOCKER_DIR=/mnt/wsl/shared-docker
 DOCKER_SOCK="$DOCKER_DIR/docker.sock"
 export DOCKER_HOST="unix://$DOCKER_SOCK"
 if [ ! -S "$DOCKER_SOCK" ]; then
-	    mkdir -pm o=,ug=rwx "$DOCKER_DIR"
-	        chgrp docker "$DOCKER_DIR"
-		    /mnt/c/Windows/System32/wsl.exe -d $DOCKER_DISTRO sh -c "nohup sudo -b dockerd < /dev/null > $DOCKER_DIR/dockerd.log 2>&1"
+  mkdir -pm o=,ug=rwx "$DOCKER_DIR"
+  chgrp docker "$DOCKER_DIR"
+  /mnt/c/Windows/System32/wsl.exe -d $DOCKER_DISTRO sh -c "nohup sudo -b dockerd < /dev/null > $DOCKER_DIR/dockerd.log 2>&1"
 fi
 
 export PATH="$HOME/bin:$PATH"
@@ -140,8 +140,6 @@ echo 'set completion-ignore-case On' >> ~/.inputrc
 
 ~/bin/greetings João
 curl -s http://yerkee.com/api/fortune/wisdom | python3 -c "import sys, json; print(json.load(sys.stdin)['fortune'])"
-
-cp ~/.vimrc /mnt/c/Users/joao.bonadiman
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
