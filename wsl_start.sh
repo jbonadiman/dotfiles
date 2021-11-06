@@ -15,6 +15,7 @@ echo 'set completion-ignore-case On' >> ~/.inputrc
 printf "Dev Packages\n"
 sudo apt-get install clang -y
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+rustup component add rustfmt
 
 printf "┌-------------------------------┐\n|      Docker installation      |\n└-------------------------------┘\n"
 
