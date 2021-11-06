@@ -7,13 +7,42 @@ call vundle#begin()
 
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
-Plugin 'raimondi/delimitmate'
-Plugin 'cespare/vim-toml'
+Plugin 'edersonferreira/dalton-vim'
 Plugin 'ervandew/supertab'
-Plugin 'PProvost/vim-ps1'
+Plugin 'sheerun/vim-polyglot'
+Plugin 'preservim/nerdtree'
+Plugin 'vim-airline/vim-airline'
+Plugin 'dense-analysis/ale'
+Plugin 'gko/vim-coloresque'
+Plugin 'ryanoasis/vim-devicons'
+Plugin 'tiagofumo/vim-nerdtree-syntax-highlight'
+Plugin 'thaerkh/vim-indentguides'
+Plugin 'cohama/lexima.vim'
 
-" All of your Plugins must be added before the following line
 call vundle#end()            " required
+
+" Remaps
+nnoremap <C-n> :NERDTreeToggle<CR>
+nnoremap <F1> :bprevious<CR>
+nnoremap <F2> :bnext<CR>
+" Fim Remaps
+
+" Configurações do lexima.vim
+let g:indentguides_spacechar = '▏'
+let g:indentguides_tabchar = '▏'
+" Fim das configurações do lexima.vim'
+
+" Configurações do Vim IndentGuides
+let g:indentguides_spacechar = '▏'
+let g:indentguides_tabchar = '▏'
+" Fim das configurações do Vim IndentGuides
+
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#show_buffers = 1
+let g:airline#extensions#tabline#switch_buffers_and_tabs = 1
+let g:airline#extensions#tabline#tab_nr_type = 1
+let g:airline_theme='dalton'
+
 filetype plugin indent on    " required
 " To ignore plugin indent changes, instead use:
 "filetype plugin on
@@ -26,6 +55,8 @@ filetype plugin indent on    " required
 "
 " see :h vundle for more details or wiki for FAQ
 " Put your non-Plugin stuff after this line
+syntax enable
+let g:rustfmt_autosave = 1
 
 set number
 set tabstop=2 shiftwidth=2 expandtab
