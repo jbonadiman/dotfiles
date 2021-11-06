@@ -128,6 +128,7 @@ if [ ! -S "$DOCKER_SOCK" ]; then
   /mnt/c/Windows/System32/wsl.exe -d $DOCKER_DISTRO sh -c "nohup sudo -b dockerd < /dev/null > $DOCKER_DIR/dockerd.log 2>&1"
 fi
 
+mkdir -p $HOME/bin
 export PATH="$HOME/bin:$PATH"
 export PATH=$PATH:"$HOME/.local/bin/"
 
@@ -146,3 +147,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 LS_COLORS=$LS_COLORS:'ow=0;35:' ; export LS_COLORS
+
+# Creates a symbolic link to clip.exe, so it can be easier to pass
+# text to Windows clipboard
+if [ ! -e $HOME/bin/clip ]; then ln -s /mnt/c/Windows/System32/clip.exe $HOME/bin/clip; fi
