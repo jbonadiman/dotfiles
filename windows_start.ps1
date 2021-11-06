@@ -67,10 +67,8 @@ function Install-DevPackages {
     Add-Bucket 'extras'
     Install-ShovelPkg 'jetbrains-toolbox'
 
-    Add-Bucket 'java' 
-    Install-ShovelPkg 'openjdk'
-    Install-ShovelPkg 'go'
-    Install-ShovelPkg 'dotnet-sdk'
+    Write-Host "installing 'DBeaver'..."
+    winget install --id 'dbeaver.dbeaver'
 
     Write-Host "installing 'WSL'..."
     wsl --install
