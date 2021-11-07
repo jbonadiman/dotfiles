@@ -153,3 +153,4 @@ LS_COLORS=$LS_COLORS:'ow=0;35:' ; export LS_COLORS
 if [ ! -e $HOME/bin/clip ]; then ln -s /mnt/c/Windows/System32/clip.exe $HOME/bin/clip; fi
 
 if [ ! -e /etc/wsl.conf ]; then echo $'Error: Windows paths are defined in bash\'s \'$PATH\'\nRun "echo $\'[interop]\\nenabled=false # default is true\\nappendWindowsPath=false # default is true\' | sudo tee /etc/wsl.conf" to fix this.' >&2; fi
+. "$HOME/.cargo/env"
