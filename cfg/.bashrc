@@ -89,8 +89,9 @@ fi
 
 # some more ls aliases
 alias ll='ls -alF'
-alias la='ls -A'
+alias la='tree -La 1'
 alias l='ls -CF'
+alias ls='tree -L 1'
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
