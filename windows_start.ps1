@@ -62,6 +62,14 @@ function Install-PersonalPackages {
 }
 
 function Install-DevPackages {
+    $SOURCES_DIR=Join-Path -Path $env:USERPROFILE -ChildPath 'sources'
+
+    If (!(test-path $SOURCES_DIR))
+    {
+      Write-Host "creating source code directory..."
+      New-Item -ItemType Directory -Force -Path $SOURCES_DIR
+    }
+
     Install-ShovelPkg 'gitkraken' 
     
     Add-Bucket 'extras'
