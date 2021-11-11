@@ -83,6 +83,8 @@ function Install-DevPackages {
 
     Write-Host "installing 'Ubuntu 20.04 distro'..."
     winget install --id 'Canonical.Ubuntu.2004' --accept-package-agreements
+
+    Copy-Item -Path "./cfg/terminal.settings.json" -Destination [IO.Path]::Combine($env:LOCALAPPDATA, "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json")
 }
 
 function Install-Shovel {
