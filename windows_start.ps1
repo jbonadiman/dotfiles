@@ -111,7 +111,19 @@ function Install-Shovel {
     Get-ChildItem -Path (Join-Path -Path $scoop_path -ChildPath 'shims') -Filter 'scoop.*' | Copy-Item -Destination { Join-Path $_.Directory.FullName (($_.BaseName -replace 'scoop', 'shovel') + $_.Extension) }
 }
 
+function Install-Fonts {
+  $fontsTempDir=[IO.Path]::Combine($env:TEMP, "fonts")
+  $fonts=(New-Object -ComObject Shell.Application).Namespace(0x14)
+
+  # Caskaydia Code NerdFont
+  Invoke-WebRequest "https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/CascadiaCode/Regular/complete/Caskaydia%20Cove%20Regular%20Nerd%20Font%20Complete%20Windows%20Compatible.otf" -OutFile ([IO.Path]::Combine($fontsTempDir, "Caskaydia_NerdFont.otf"))
+
+  Get-ChildItem -Path ([IO.Path]::Combine($fontsTempDir, "*")) -Include "*.ttf", "*.otf" | %{ $fonts.CopyHere($_.fullname) }
+}
+
 function Install-EssentialPackages {
+    Install-Fonts
+
     Add-Bucket 'extras'
     
     Install-ShovelPkg 'aria2'
