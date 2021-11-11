@@ -1,16 +1,11 @@
 sudo apt-get update && sudo apt-get upgrade
 
-if [ ! -a ~/.inputrc ]; then echo '$include /etc/inputrc' > ~/.inputrc; fi
-
 printf "setting up Vim\n"
 if [ ! -d ~/.vim/bundle/Vundle.vim ]; then git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim;fi
 
 printf "adding brazilian locale...\n"
 sudo locale-gen pt_BR pt_BR.UTF-8
 sudo update-locale
-
-printf "activating case insensitive tab-completion for the current user...\n"
-echo 'set completion-ignore-case On' >> ~/.inputrc
 
 printf "Dev Packages\n"
 sudo apt-get install clang -y
@@ -65,7 +60,8 @@ printf "    chgrp docker \"$DOCKER_DIR\"\n" >> "~/.bashrc"
 printf "    /mnt/c/Windows/System32/wsl.exe -d $DOCKER_DISTRO sh -c \"nohup sudo -b dockerd < /dev/null > $DOCKER_DIR/dockerd.log 2>&1\"\n" >> "~/.bashrc"
 printf "fi\n" >> "~/.bashrc"
 
-
+echo "makes docker start without password prompt"
+echo '%docker ALL=(ALL) NOPASSWD: /usr/bin/dockerd' | sudo EDITOR='tee -a' visudo
 
 sudo apt-get install npm;
 sudo npm install --global yarn;

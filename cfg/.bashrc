@@ -118,7 +118,6 @@ if ! shopt -oq posix; then
 fi
 
 # Docker configs
-KUBE_DEV=/mnt/c/Users/joao.bonadiman/.kube/kube-dev.config
 DOCKER_DISTRO="Ubuntu-20.04"
 DOCKER_DIR=/mnt/wsl/shared-docker
 DOCKER_SOCK="$DOCKER_DIR/docker.sock"
