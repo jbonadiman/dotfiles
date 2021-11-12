@@ -3,8 +3,8 @@ export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 
 # change zsh options
 # create aliases
-alias ls='exa -laFh --git'
-alias exa='exa -laFh --git'
+alias ls='exa -laFh --git --icons'
+alias exa='exa -laFh --git --icons'
 
 # customize prompt
 PROMPT='
