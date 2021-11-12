@@ -15,4 +15,7 @@
     ~/.local/bin/bat: /usr/bin/batcat
 
 - shell:
-#   - [git submodule update --init --recursive, Installing submodules]
+  -
+    command : ./essential_packages.sh
+    stdout: true
+    stderr: true
