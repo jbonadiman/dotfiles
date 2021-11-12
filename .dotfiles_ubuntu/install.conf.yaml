@@ -4,13 +4,15 @@
 
 - clean: ['~']
 
-- link:
-    ~/.vim: vim
-    ~/.vimrc: vimrc
-    ~/.zshrc: zshrc
-
 - create:
   - ~/sources
+  - ~/.local/bin
 
-# - shell:
+- link:
+    ~/.vim:
+    ~/.vimrc:
+    ~/.zshrc:
+    ~/.local/bin/bat: /usr/bin/batcat
+
+- shell:
 #   - [git submodule update --init --recursive, Installing submodules]

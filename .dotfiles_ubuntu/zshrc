@@ -1,4 +1,6 @@
 # set variables
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+
 # change zsh options
 # create aliases
 alias ls='ls -lAFh'
