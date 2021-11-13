@@ -5,9 +5,6 @@ export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 
 # create aliases
 
-# TODO: exa is really slow using -l right now, so
-# I'm using -1, which is good enough. It was
-# included as milestone for version 0.11.0
 alias ls='exa -1aFh --git --icons'
 alias exa='exa -1aFh --git --icons'
 
