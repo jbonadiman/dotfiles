@@ -8,3 +8,4 @@ TODO:
 - [] Set the shell **only if another shell is setted up.
 - [] Install rust only if it isn't installed.
 - [] Set locale only if not previously set.
+- [] Install bat-extras manually. I also need to install shfmt so that bat-extras can be minified.

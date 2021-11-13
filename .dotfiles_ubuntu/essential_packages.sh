@@ -11,6 +11,8 @@ chsh -s /bin/zsh
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
+# https://github.com/eth-p/bat-extras
+
 echo "Setting locale..."
 sudo locale-gen pt_BR pt_BR.UTF-8
 sudo update-locale
