@@ -2,9 +2,14 @@
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 
 # change zsh options
+
 # create aliases
-alias ls='exa -laFh --git --icons'
-alias exa='exa -laFh --git --icons'
+
+# TODO: exa is really slow using -l right now, so
+# I'm using -1, which is good enough. It was
+# included as milestone for version 0.11.0
+alias ls='exa -1aFh --git --icons'
+alias exa='exa -1aFh --git --icons'
 
 # customize prompt
 PROMPT='
@@ -13,6 +18,7 @@ PROMPT='
 RPROMPT='%*'
 
 # add locations to $PATH
+export PATH=$PATH:$HOME/.local/bin
 
 # functions
 function mkcd() {
