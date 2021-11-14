@@ -3,9 +3,14 @@
 echo "Installing essential packages and settings..."
 mkdir -p ~/tmp
 
-echo "Adding exa APT repository..."
-sudo add-apt-repository ppa:spvkgn/exa -y
-sudo apt-get update
+exa_ppa=spvkgn/exa
+if ! grep -q "^deb .*$exa_ppa" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
+  echo "Adding exa PPA repository..."
+  sudo add-apt-repository ppa:spvkgn/exa -y
+  sudo apt-get update
+else
+  echo "exa PPA repository already added, skipping..."
+fi
 
 if ! command -v bat &> /dev/null; then
   echo "Installing bat..."

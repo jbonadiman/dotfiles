@@ -9,4 +9,3 @@ TODO:
 - Install bat-extras manually. I also need to install shfmt so that bat-extras can be minified.
 - Fix somehow the vim message after e ++ff=unix.
 - chsh inside script is generating auth error.
-- check for exa ppa repo, before adding it.
