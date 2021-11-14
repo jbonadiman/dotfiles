@@ -7,4 +7,3 @@ TODO:
 - Install required fonts.
 - Set locale only if not previously set.
 - Install shfmt so that bat-extras can be minified.
-- Fix somehow the vim message after e ++ff=unix.

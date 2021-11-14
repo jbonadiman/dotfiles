@@ -62,5 +62,5 @@ set number
 set tabstop=2 shiftwidth=2 expandtab
 hi MatchParen ctermbg=200 ctermfg=255
 
-" See carriage returns, to remove them, use: %s/Ctrl V + M/
-e ++ff=unix
+" See carriage returns, to remove them, use: %s/Ctrl + VM/
+" e ++ff=unix
