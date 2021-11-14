@@ -6,6 +6,5 @@ TODO:
 - Fix exes execution through WSL, so I can setup the winget to install MS Store Apps.
 - Install required fonts.
 - Set locale only if not previously set.
-- Install bat-extras manually. I also need to install shfmt so that bat-extras can be minified.
+- Install shfmt so that bat-extras can be minified.
 - Fix somehow the vim message after e ++ff=unix.
-- chsh inside script is generating auth error.

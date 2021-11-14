@@ -23,7 +23,7 @@ fi
 echo "Installing APT packages..."
 xargs -a Essentials.pckg sudo apt install -y
 
-chsh -s /bin/zsh
+sudo chsh -s $(which zsh) $(whoami)
 
 if ! command -v rustup &> /dev/null; then
   echo "Installing Rust..."
