@@ -8,3 +8,4 @@ TODO:
 - Set locale only if not previously set.
 - Install shfmt so that bat-extras can be minified.
 - Configure Windows soft links with: mklink <LINK> <TARGET>
+- Configure wsltty and its settings (which is in %APPDATA%\wsltty\config)
