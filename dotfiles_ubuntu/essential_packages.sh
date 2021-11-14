@@ -5,9 +5,10 @@ echo "Installing essential packages and settings..."
 sudo add-apt-repository ppa:spvkgn/exa -y
 sudo apt-get update
 
+if ! command -v $1 &> /dev/null; then
 wget -O ~/tmp/bat_0.18.3_amd64.deb https://github.com/sharkdp/bat/releases/download/v0.18.3/bat_0.18.3_amd64.deb
 sudo dpkg -i ~/tmp/bat_0.18.3_amd64.deb
-
+fi
 xargs -a Essentials.pckg sudo apt-get install -y
 
 chsh -s /bin/zsh
