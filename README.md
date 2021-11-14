@@ -8,3 +8,6 @@ TODO:
 - Set locale only if not previously set.
 - Install bat-extras manually. I also need to install shfmt so that bat-extras can be minified.
 - Fix somehow the vim message after e ++ff=unix.
+- chsh inside script is generating auth error.
+- else in installations check with proper message.
+- check for exa ppa repo, before adding it.

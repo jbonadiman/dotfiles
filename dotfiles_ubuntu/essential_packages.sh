@@ -14,7 +14,7 @@ if ! command -v bat &> /dev/null; then
 fi
 
 echo "Installing APT packages..."
-xargs -a Essentials.pckg sudo apt-get install -y
+xargs -a Essentials.pckg sudo apt install -y
 
 chsh -s /bin/zsh
 
@@ -38,4 +38,4 @@ if [ ! -d ~/.vim/bundle/Vundle.vim ]; then
   git clone "https://github.com/VundleVim/Vundle.vim.git" ~/.vim/bundle/Vundle.vim
 fi
 
-rm -rf ~/tmp
+sudo rm -rf ~/tmp
