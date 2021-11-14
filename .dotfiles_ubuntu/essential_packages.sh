@@ -5,6 +5,9 @@ echo "Installing essential packages and settings..."
 sudo add-apt-repository ppa:spvkgn/exa -y
 sudo apt-get update
 
+wget -O ~/tmp/bat_0.18.3_amd64.deb https://github.com/sharkdp/bat/releases/download/v0.18.3/bat_0.18.3_amd64.deb
+sudo dpkg -i ~/tmp/bat_0.18.3_amd64.deb
+
 xargs -a Essentials.pckg sudo apt-get install -y
 
 chsh -s /bin/zsh
@@ -22,3 +25,4 @@ if [ ! -d ~/.vim/bundle/Vundle.vim ]; then
   git clone "https://github.com/VundleVim/Vundle.vim.git" ~/.vim/bundle/Vundle.vim
 fi
 
+rm -rf ~/tmp

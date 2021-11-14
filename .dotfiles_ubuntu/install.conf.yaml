@@ -13,6 +13,9 @@
     ~/.vimrc:
     ~/.zshrc:
     ~/.local/bin/bat: /usr/bin/batcat
+    ~/.config/bat
+      create: true
+      path: config/bat
 
 - shell:
   -
