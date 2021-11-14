@@ -7,3 +7,4 @@ TODO:
 - Install required fonts.
 - Set locale only if not previously set.
 - Install shfmt so that bat-extras can be minified.
+- Configure Windows soft links with: mklink <LINK> <TARGET>
