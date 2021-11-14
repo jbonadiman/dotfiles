@@ -1,6 +1,6 @@
-Dotfiles
+# Dotfiles
 
-TODO:
+## TODO:
 
 - exa is really slow right now with the -l option. I'm using -1 option for now, but I should change it back in exa version 0.11.0 (this improvement is marked for that version miletone).
 - Fix exes execution through WSL, so I can setup the winget to install MS Store Apps.
