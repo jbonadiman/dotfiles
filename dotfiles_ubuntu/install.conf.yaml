@@ -5,8 +5,8 @@
 - clean: ['~']
 
 - create:
-  - ~/sources
-  - ~/.local/bin
+    - ~/sources
+    - ~/.local/bin
 
 - link:
     ~/.vimrc:
@@ -17,7 +17,11 @@
       path: config/bat
 
 - shell:
-  -
-    command : ./essential_packages.sh
-    stdout: true
-    stderr: true
+    -
+      command: ./setup_zsh.zsh
+      stdout: true
+      stderr: true
+    -
+      command: ./essential_packages.zsh
+      stdout: true
+      stderr: true

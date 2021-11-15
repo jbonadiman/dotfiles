@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-echo "Installing essential packages and settings..."
+echo "Installing essential packages..."
 mkdir -p ~/tmp
 
 if grep -q "^deb .*spvkgn/exa" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
@@ -24,19 +24,6 @@ fi
 echo "Installing APT packages..."
 echo "Enter superuser (sudo) password to install required apt packages"
 xargs -a Essentials.pckg sudo apt install -y
-
-if [ "$SHELL" = '/usr/bin/zsh' ]; then
-  echo '$SHELL is already zsh, skipping...'
-else
-  sudo chsh -s $(which zsh)
-fi
-
-if readlink -f /usr/bin/sh | grep -q zsh; then
-  echo '/usr/bin/sh already linked to /usr/bin/zsh'
-else
-  echo "Enter superuser (sudo) password to symlink sh to zsh"
-  sudo ln -sfv /usr/bin/zsh /usr/bin/sh
-fi
 
 if exists rustup; then
   echo "Rust already installed, skipping..."
