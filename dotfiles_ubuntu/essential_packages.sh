@@ -21,8 +21,8 @@ else
   sudo dpkg -i ~/tmp/bat_0.18.3_amd64.deb
 fi
 
-echo "Enter superuser (sudo) password to install required apt packages"
 echo "Installing APT packages..."
+echo "Enter superuser (sudo) password to install required apt packages"
 xargs -a Essentials.pckg sudo apt install -y
 
 if [ "$SHELL" = '/usr/bin/zsh' ]; then
@@ -31,11 +31,11 @@ else
   sudo chsh -s $(which zsh)
 fi
 
-if sh --version | grep -q zsh; then
-  echo '/private/var/select/sh already linked to /bin/zsh'
+if readlink -f /usr/bin/sh | grep -q zsh; then
+  echo '/usr/bin/sh already linked to /usr/bin/zsh'
 else
   echo "Enter superuser (sudo) password to symlink sh to zsh"
-  sudo ln -sfv /bin/zsh /private/var/select/sh
+  sudo ln -sfv /usr/bin/zsh /usr/bin/sh
 fi
 
 if exists rustup; then
