@@ -9,7 +9,6 @@
   - ~/.local/bin
 
 - link:
-    ~/.vim:
     ~/.vimrc:
     ~/.zshrc:
     ~/.config/bat:
