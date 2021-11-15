@@ -9,3 +9,4 @@
 - Install shfmt so that bat-extras can be minified.
 - Configure Windows soft links with: mklink \<LINK\> \<TARGET\>
 - Configure wsltty and its settings (which is in %APPDATA%\wsltty\config)
+- Find a way to use the trash in the WSL, so I don't use rm directly
