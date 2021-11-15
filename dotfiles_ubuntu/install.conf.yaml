@@ -9,9 +9,9 @@
   - ~/.local/bin
 
 - link:
-    ~/.vim:
     ~/.vimrc:
     ~/.zshrc:
+    ~/.zshenv:
     ~/.config/bat:
       create: true
       path: config/bat
