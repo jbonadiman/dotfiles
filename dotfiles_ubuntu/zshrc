@@ -12,7 +12,7 @@ alias trail='<<<${(F)path}'
 
 # customize prompt
 PROMPT='
-%n@%m %1~ %L %# '
+%1~ %L %# '
 
 RPROMPT='%*'
 
