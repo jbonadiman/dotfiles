@@ -41,6 +41,13 @@ else
   sudo ~/tmp/bat-extras/build.sh --install
 fi
 
+if exists n; then
+  echo "n already installed, skipping..."
+else
+  echo "Installing n..."
+  curl -L "https://git.io/n-install" | bash -s -- -y
+fi
+
 echo "Setting up locale..."
 sudo locale-gen pt_BR pt_BR.UTF-8
 sudo update-locale
