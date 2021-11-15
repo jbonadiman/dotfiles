@@ -9,6 +9,7 @@ alias ls='exa -1aFh --git --icons'
 alias exa='exa -1aFh --git --icons'
 alias man='batman'
 alias trail='<<<${(F)path}'
+alias cat='bat'
 
 # customize prompt
 PROMPT='
