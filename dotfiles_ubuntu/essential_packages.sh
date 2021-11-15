@@ -7,7 +7,7 @@ if grep -q "^deb .*spvkgn/exa" /etc/apt/sources.list /etc/apt/sources.list.d/*; 
   echo "exa PPA repository already added, skipping..."
 else
   echo "Adding exa PPA repository..."
-  echo "Enter your password to add the exa PPA repository to apt"
+  echo "Enter superuser (sudo) password to add the exa PPA repository to apt"
   sudo add-apt-repository ppa:spvkgn/exa -y
   apt-get update
 fi
@@ -17,11 +17,11 @@ if exists bat; then
 else
   echo "Installing bat..."
   wget -O ~/tmp/bat_0.18.3_amd64.deb https://github.com/sharkdp/bat/releases/download/v0.18.3/bat_0.18.3_amd64.deb
-  echo "Enter your password to install bat (v0.18.3)"
+  echo "Enter superuser (sudo) password to install bat (v0.18.3)"
   sudo dpkg -i ~/tmp/bat_0.18.3_amd64.deb
 fi
 
-echo "Enter your password to install required apt packages"
+echo "Enter superuser (sudo) password to install required apt packages"
 echo "Installing APT packages..."
 xargs -a Essentials.pckg sudo apt install -y
 
@@ -29,6 +29,13 @@ if [ "$SHELL" = '/usr/bin/zsh' ]; then
   echo '$SHELL is already zsh, skipping...'
 else
   sudo chsh -s $(which zsh)
+fi
+
+if sh --version | grep -q zsh; then
+  echo '/private/var/select/sh already linked to /bin/zsh'
+else
+  echo "Enter superuser (sudo) password to symlink sh to zsh"
+  sudo ln -sfv /bin/zsh /private/var/select/sh
 fi
 
 if exists rustup; then
@@ -43,7 +50,7 @@ if exists batman; then
 else
   echo "Installing bat extra modules..."
   git clone "https://github.com/eth-p/bat-extras" ~/tmp/bat-extras
-  echo "Enter your password to install bat extra modules"
+  echo "Enter superuser (sudo) password to install bat extra modules"
   sudo ~/tmp/bat-extras/build.sh --install
 fi
 
@@ -58,5 +65,5 @@ else
   echo "Vundle already installed, skipping..."
 fi
 
-echo "Enter your password to delete the tmp folder created in this script"
+echo "Enter superuser (sudo) password to delete the tmp folder created in this script"
 sudo rm -rf ~/tmp
