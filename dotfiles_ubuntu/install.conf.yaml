@@ -25,3 +25,7 @@
       command: ./essential_packages.zsh
       stdout: true
       stderr: true
+    -
+      command: ./setup_node.zsh
+      stdout: true
+      stderr: true
