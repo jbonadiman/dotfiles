@@ -11,6 +11,7 @@
 - link:
     ~/.vimrc:
     ~/.zshrc:
+    ~/.zshenv:
     ~/.config/bat:
       create: true
       path: config/bat
