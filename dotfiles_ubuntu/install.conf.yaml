@@ -9,6 +9,7 @@
     - ~/.local/bin
 
 - link:
+    ~/bin/clip: /mnt/c/Windows/System32/clip.exe
     ~/.vimrc:
     ~/.zshrc:
     ~/.zshenv:
@@ -27,5 +28,9 @@
       stderr: true
     -
       command: ./setup_node.zsh
+      stdout: true
+      stderr: true
+    -
+      command: ./setup_wsl.zsh
       stdout: true
       stderr: true
