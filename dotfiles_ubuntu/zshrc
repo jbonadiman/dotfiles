@@ -17,7 +17,13 @@ PROMPT='
 RPROMPT='%*'
 
 # add locations to $PATH
-export PATH=$PATH:$HOME/.local/bin
+# removes duplicates in the path variable
+typeset -U path
+
+path=(
+  $path
+  "$HOME/.local/bin"
+)
 
 # functions
 function mkcd() {
