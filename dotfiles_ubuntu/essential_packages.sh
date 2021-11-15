@@ -1,43 +1,50 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 echo "Installing essential packages and settings..."
 mkdir -p ~/tmp
 
-exa_ppa=spvkgn/exa
-if ! grep -q "^deb .*$exa_ppa" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
-  echo "Adding exa PPA repository..."
-  sudo add-apt-repository ppa:spvkgn/exa -y
-  sudo apt-get update
-else
+if grep -q "^deb .*spvkgn/exa" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
   echo "exa PPA repository already added, skipping..."
+else
+  echo "Adding exa PPA repository..."
+  echo "Enter your password to add the exa PPA repository to apt"
+  sudo add-apt-repository ppa:spvkgn/exa -y
+  apt-get update
 fi
 
-if ! command -v bat &> /dev/null; then
+if exists bat; then
+  echo "bat already installed, skipping..."
+else
   echo "Installing bat..."
   wget -O ~/tmp/bat_0.18.3_amd64.deb https://github.com/sharkdp/bat/releases/download/v0.18.3/bat_0.18.3_amd64.deb
+  echo "Enter your password to install bat (v0.18.3)"
   sudo dpkg -i ~/tmp/bat_0.18.3_amd64.deb
-else
-  echo "bat already installed, skipping..."
 fi
 
+echo "Enter your password to install required apt packages"
 echo "Installing APT packages..."
 xargs -a Essentials.pckg sudo apt install -y
 
-sudo chsh -s $(which zsh) $(whoami)
-
-if ! command -v rustup &> /dev/null; then
-  echo "Installing Rust..."
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+if [ "$SHELL" = '/usr/bin/zsh' ]; then
+  echo '$SHELL is already zsh, skipping...'
 else
-  echo "Rust already installed, skipping..."
+  sudo chsh -s $(which zsh)
 fi
 
-if ! command -v batman &> /dev/null; then
+if exists rustup; then
+  echo "Rust already installed, skipping..."
+else
+  echo "Installing Rust..."
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+fi
+
+if exists batman; then
+  echo "bat extra modules already installed, skipping..."
+else
   echo "Installing bat extra modules..."
   git clone "https://github.com/eth-p/bat-extras" ~/tmp/bat-extras
+  echo "Enter your password to install bat extra modules"
   sudo ~/tmp/bat-extras/build.sh --install
-else
-  echo "bat extra modules already installed, skipping..."
 fi
 
 echo "Setting up locale..."
@@ -51,4 +58,5 @@ else
   echo "Vundle already installed, skipping..."
 fi
 
+echo "Enter your password to delete the tmp folder created in this script"
 sudo rm -rf ~/tmp
