@@ -1,6 +1,3 @@
-[submodule "dotfiles_ubuntu/dotbot"]
-	path = dotfiles_ubuntu/dotbot
-	url = https://github.com/anishathalye/dotbot
 [submodule "dotfiles_wsl/dotbot"]
 	path = dotfiles_wsl/dotbot
 	url = https://github.com/anishathalye/dotbot
