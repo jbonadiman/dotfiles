@@ -1,0 +1,36 @@
+- defaults:
+    link:
+      relink: true
+
+- clean: ['~']
+
+- create:
+    - ~/sources
+    - ~/.local/bin
+
+- link:
+    ~/.local/bin/clip: /mnt/c/Windows/System32/clip.exe
+    ~/.vimrc:
+    ~/.zshrc:
+    ~/.zshenv:
+    ~/.config/bat:
+      create: true
+      path: config/bat
+
+- shell:
+    -
+      command: ./setup_zsh.zsh
+      stdout: true
+      stderr: true
+    -
+      command: ./essential_packages.zsh
+      stdout: true
+      stderr: true
+    -
+      command: ./setup_node.zsh
+      stdout: true
+      stderr: true
+    -
+      command: ./setup_wsl.zsh
+      stdout: true
+      stderr: true
