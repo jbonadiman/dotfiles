@@ -8,4 +8,5 @@
 - [WSL] Install shfmt so that bat-extras can be minified
 - [Windows] Configure symlinks using dotbot
 - [Windows] Configure Windows Terminal
+- [WSL] Add symlink of docker_service.zsh to home
 - [WSL] Find a way to use the trash, so I don't use rm directly
