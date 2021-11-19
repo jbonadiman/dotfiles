@@ -83,8 +83,14 @@ class Ubuntu(SystemSpecific):
         return platform.system().lower() == 'linux' and \
             'microsoft' in platform.release().lower()
 
-    def execute_sh(path: str, *args: str) -> None:
+    def __execute_terminal(terminal: str, path: str, *args: str) -> None:
         sb.run(f'sh {path} {' '.join(args)}', shell=True, stdout=sb.PIPE)
+
+    def execute_sh(path: str, *args: str) -> None:
+        Ubuntu.__execute_terminal('sh', path, *args)
+
+    def execute_bash(path: str, *args: str) -> None:
+        Ubuntu.__execute_terminal('bash', path, *args)
 
     def _can_execute(self) -> bool:
         return Ubuntu.can_execute()
