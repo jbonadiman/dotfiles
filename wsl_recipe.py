@@ -2,15 +2,16 @@ from dotfile import Apt
 from dotfile import \
     abs_path, \
     create_folder, \
-    make_link
+    make_link, \
+    exists
 import tempfile
 import shutil
 
-tempdir = tempfile.mkdtemp(prefix='wsl_recipe')
+# tempdir = tempfile.mkdtemp(prefix='wsl_recipe')
 
 try:
-    apt = Apt()
-    
-
+    if exists('qualquer coisa'):
+        print("Opa")
 finally:
-    shutil.rmtree(tempdir)
+    pass
+    # shutil.rmtree(tempdir)

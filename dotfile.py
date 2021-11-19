@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 import platform
-from subprocess import STDOUT, check_call
+import subprocess as sb
 import os
 import ctypes
 
@@ -13,10 +13,16 @@ def abs_path(path: str) -> str:
         )
     )
 
-def exists(command: str) -> bool:    
-    check_call(['sudo', 'apt-get', 'update'])
-
-    pass
+def exists(arg: str) -> bool:
+    if Wsl.can_execute():
+        result = sb.run(f'$(command -v {arg} > /dev/null 2>&1) && echo 1 || echo 0', shell=True, stdout=sb.PIPE)
+        return bool(int(result.stdout))
+    elif Windows.can_execute():
+        result = sb.run(f'where {arg}', shell=True, stdout=sb.PIPE)
+        print(result.stdout)
+        print(result.stderr)
+        return False
+    raise NotImplementedError
 
 def create_folder(self, path: str) -> None:
     as_absolute = abs_path(path)
@@ -59,6 +65,21 @@ class SystemSpecific(ABC):
     def _can_execute(self) -> bool:
         pass
 
+class Wsl(SystemSpecific):
+    def can_execute() -> bool:
+        return platform.system().lower() == 'linux' and \
+            'microsoft' in platform.release().lower()
+
+    def _can_execute(self) -> bool:
+        return Wsl.can_execute()
+
+class Windows(SystemSpecific):
+    def can_execute() -> bool:
+        return platform.system().lower() == 'windows'
+
+    def _can_execute(self) -> bool:
+        return Windows.can_execute()
+
 class PackageManager(ABC):
     @abstractmethod
     def upgrade(self) -> None:
@@ -76,16 +97,7 @@ class PackageManager(ABC):
     def update(self) -> None:
         pass
 
-class WslPackageManager(SystemSpecific, PackageManager, ABC):
-    def _can_execute(self) -> bool:
-        return platform.system().lower() == 'linux' and \
-            'microsoft' in platform.release().lower()
-
-class WindowsPackageManager(SystemSpecific, PackageManager, ABC):
-    def _can_execute(self) -> bool:
-        return platform.system().lower() == 'windows'
-
-class Scoop(WindowsPackageManager):
+class Scoop(Windows, PackageManager):
     def upgrade(self) -> None:
         pass
 
@@ -98,15 +110,15 @@ class Scoop(WindowsPackageManager):
     def upgrade(self) -> None:
         pass
 
-class Apt(WslPackageManager):
+class Apt(Wsl, PackageManager):
     def upgrade(self) -> None:
-        check_call(['sudo', 'apt-get', 'upgrade', '-y'])
+        sb.check_call(['sudo', 'apt-get', 'upgrade', '-y'])
 
     def install(self, package_name: str) -> None:
-        check_call(['sudo', 'apt-get', 'install', '-y', package_name])
+        sb.check_call(['sudo', 'apt-get', 'install', '-y', package_name])
 
     def remove(self, package_name: str) -> None:
-        check_call(['sudo', 'apt-get', 'remove', '-y', package_name])
+        sb.check_call(['sudo', 'apt-get', 'remove', '-y', package_name])
 
     def update(self) -> None:
-        check_call(['sudo', 'apt-get', 'update'])
+        sb.check_call(['sudo', 'apt-get', 'update'])
