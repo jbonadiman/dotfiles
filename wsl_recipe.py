@@ -6,7 +6,8 @@ from dotfile import \
     create_folder, \
     make_link, \
     exists, \
-    download_installer
+    download_installer, \
+    git_clone
 
 import tempfile
 import shutil
@@ -60,14 +61,20 @@ try:
     if exists('batman'):
         print('bat extra modules already installed, skipping...')
     else:
-        # TODO: Install bat-extras cloning
-        raise NotImplementedError
+        print('Install bat extra modules...')
+        bat_extras_dir = os.path.join(tmpdir, 'bat-extras')
+        git_clone('https://github.com/eth-p/bat-extras', bat_extras_dir)
+        print('Installing...')
+        Ubuntu.execute_sh(os.path.join(bat_extras_dir, 'build.sh'), '--install')
 
     if exists('n'):
         print('n already installed, skipping...')
     else:
-        # TODO: Install n through script
-        raise NotImplementedError
+        print('Installing n...')
+        n_installer = os.path.join(tmpdir, 'n_install')
+        download_installer(r'https://git.io/n-install', n_installer) 
+        print('Installing...')
+        Ubuntu.execute_bash(n_installer, '-y')
 
     # TODO: Setup locale
 
