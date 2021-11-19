@@ -1,46 +1,10 @@
 #!/usr/bin/env python3
 
+from abc import ABC, abstractmethod
+import platform
+from subprocess import STDOUT, check_call
 import os
-import os.path
-
-class ansi_colors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
-
-folders = (
-    '~/sources',
-    '~/.local/bin'
-)
-
-links = {
-    "~/.zshrc": "./wsl/zshrc",
-    "~/.zshenv": "./wsl/zshenv",
-    "~/.vimrc": "./wsl/vimrc",
-    "~/.docker_service.zsh": "./wsl/docker_service.zsh",
-}
-
-scripts = (
-    ''
-)
-
-def warn(message: str, is_result: bool=False) -> None:
-    formatted_msg = f'{ansi_colors.WARNING}{message}{ansi_colors.ENDC}'
-    print(f'{ansi_colors.UNDERLINE}{formatted_msg}' if is_result else formatted_msg)
-
-def info(message: str, is_result: bool=False) -> None:
-    formatted_msg = f'{ansi_colors.OKCYAN}{message}{ansi_colors.ENDC}'
-    print(f'{ansi_colors.UNDERLINE}{formatted_msg}' if is_result else formatted_msg)
-
-def error(message: str) -> None:
-    print(f'{ansi_colors.BOLD}{ansi_colors.FAIL}An error occurred:\n{message}{ansi_colors.ENDC}')
+import ctypes
 
 def abs_path(path: str) -> str:
     return os.path.abspath(
@@ -49,69 +13,134 @@ def abs_path(path: str) -> str:
         )
     )
 
-def create_folders() -> None:
-    all_successful = True
-    try:
-        for folder_path in folders:
-            as_absolute = abs_path(folder_path)
-            if os.path.exists(as_absolute):
-                info(f"'{folder_path}' folder already exists. Skipping...")
-                all_successful = False
-                continue
+class SystemSpecific(ABC):
+    def __init__(self):
+        if not self._can_execute():
+            raise RuntimeError("This script can't be run in the current platform!")
 
-            info(f"Creating folder '{folder_path}'...")
-            os.makedirs(as_absolute, exist_ok=True)
-    except Exception as e:
-        all_successful = False
-        error(str(e))
-    finally:
-        if all_successful:
-            info("All folders created successfully", is_result=True)
-        else:
-            warn("Not all folders could be created", is_result=True)
+    @abstractmethod
+    def _can_execute(self) -> bool:
+        pass
 
-def create_links() -> None:
-    all_successful = True
-    try:
-        for dst, src in links.items():
-            abs_dst = abs_path(dst)
-            abs_src = abs_path(src)
+class Recipe(ABC):
+    @abstractmethod
+    def run(self):
+        pass
 
-            if not os.path.exists(abs_src):
-                info(f"Origin '{src}' does not exist. Skipping...")
-                all_successful = False
-                continue
+    def create_folder(self, path: str) -> None:
+        as_absolute = abs_path(path)
+        if os.path.exists(as_absolute):
+            print(f"'{path}' folder already exists. Skipping...")
+            return
 
-            if os.path.exists(abs_dst):
-                if os.path.islink(abs_dst):
-                    if os.readlink(abs_dst) == abs_src:
-                        info(f"Link '{dst}' -> '{src}' already exists. Skipping...")
-                        all_successful = False
-                        continue
-                    else:
-                        info(f"Link exists, but it is outdated. Updating to '{dst}' -> '{abs_src}'...")
-                        os.remove(abs_dst)
-                        os.symlink(abs_src, abs_dst)
-                        continue
-                info(f"Destination '{dst}' already exists. Skipping...")
-                all_successful = False
-                continue
+        print(f"Creating folder '{path}'...")
+        os.makedirs(as_absolute, exist_ok=True)
 
-            info(f"Creating link '{dst}' -> '{abs_src}'...")
-            os.symlink(abs_src, abs_dst)
+    def make_link(self, source: str, destination: str) -> None:
+        abs_dst = abs_path(destination)
+        abs_src = abs_path(source)
 
-    except Exception as e:
-        error(str(e))
-    finally:
-        if all_successful:
-            info('All links created or updated successfully', is_result=True)
-        else:
-            warn('Not all links could be created or updated', is_result=True)
+        if not os.path.exists(abs_src):
+            print(f"Origin '{source}' does not exist. Skipping...")
+            return
+
+        if os.path.exists(abs_dst):
+            if os.path.islink(abs_dst):
+                if os.readlink(abs_dst) == abs_src:
+                    print(f"Link '{destination}' -> '{source}' already exists. Skipping...")
+                    return
+                print(f"Link exists, but it is outdated. Updating to '{destination}' -> '{abs_src}'...")
+                os.remove(abs_dst)
+                os.symlink(abs_src, abs_dst)
+                return
+            print(f"Destination '{destination}' already exists. Skipping...")
+            return
+
+        print(f"Creating link '{destination}' -> '{abs_src}'...")
+        os.symlink(abs_src, abs_dst)
+
+class PackageManager(ABC):
+    @abstractmethod
+    def upgrade(self) -> None:
+        pass
+
+    @abstractmethod
+    def install(self, package_name: str) -> None:
+        pass
+
+    @abstractmethod
+    def remove(self, package_name: str) -> None:
+        pass
+
+    @abstractmethod
+    def update(self) -> None:
+        pass
+
+class WslPackageManager(SystemSpecific, PackageManager, ABC):
+    def _can_execute(self) -> bool:
+        return platform.system().lower() == 'linux' and \
+            'microsoft' in platform.release().lower()
+
+class WindowsPackageManager(SystemSpecific, PackageManager, ABC):
+    def _can_execute(self) -> bool:
+        return platform.system().lower() == 'windows'
+
+class Scoop(WindowsPackageManager):
+    def upgrade(self) -> None:
+        pass
+
+    def install(self, package_name: str) -> None:
+        pass
+
+    def remove(self, package_name: str) -> None:
+        pass
+
+    def upgrade(self) -> None:
+        pass
 
 
-def execute_scripts() -> None:
-    pass
+class Apt(WslPackageManager):
+    def upgrade(self) -> None:
+        check_call(['sudo', 'apt-get', 'upgrade', '-y'])
+
+    def install(self, package_name: str) -> None:
+        check_call(['sudo', 'apt-get', 'install', '-y', package_name])
+
+    def remove(self, package_name: str) -> None:
+        check_call(['sudo', 'apt-get', 'remove', '-y', package_name])
+
+    def update(self) -> None:
+        check_call(['sudo', 'apt-get', 'update'])
+
+class WslRecipe(Recipe):
+    apt = Apt()
+
+    folders = (
+        '~/sources',
+        '~/.local/bin'
+    )
+
+    links = {
+        "~/.zshrc": "./wsl/zshrc",
+        "~/.zshenv": "./wsl/zshenv",
+        "~/.vimrc": "./wsl/vimrc",
+        "~/.docker_service.zsh": "./wsl/docker_service.zsh",
+    }
+
+    def __init__(self):
+        pass
+
+    def run(self):
+        for folder_path in WslRecipe.folders:
+            self.create_folder(folder_path)
+
+        for dst, src in WslRecipe.links.items():
+            self.make_link(src, dst)
+
+        WslRecipe.apt.update()
+
+
 
 if __name__ == '__main__':
-    create_folders()
-    create_links()
+    recipe = WslRecipe()
+    recipe.run()
