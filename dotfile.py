@@ -68,7 +68,7 @@ def make_link(self, source: str, destination: str) -> None:
     os.symlink(abs_src, abs_dst)
 
 
-class SystemSpecific(ABC):
+class System(ABC):
     def __init__(self):
         if not self._can_execute():
             raise RuntimeError("This script can't be run in the current platform!")
@@ -78,7 +78,7 @@ class SystemSpecific(ABC):
         pass
 
 
-class Ubuntu(SystemSpecific):
+class Ubuntu(System):
     def can_execute() -> bool:
         return platform.system().lower() == 'linux' and \
             'microsoft' in platform.release().lower()
@@ -96,12 +96,17 @@ class Ubuntu(SystemSpecific):
         return Ubuntu.can_execute()
 
 
-class Windows(SystemSpecific):
+class Windows(System):
     def can_execute() -> bool:
         return platform.system().lower() == 'windows'
 
     def _can_execute(self) -> bool:
         return Windows.can_execute()
+
+
+class Android(System):
+    def can_execute() -> bool:
+        return 'ANDROID_DATA' in os.environ
 
 
 class PackageManager(ABC):
