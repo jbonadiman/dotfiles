@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
+from typing import List, Callable
 from abc import ABC, abstractmethod
 import platform
 import subprocess as sb
 import os
 import ctypes
+import requests
 
 def git_clone(url: str, path: str = None) -> None:
     alt_path = path or ''
@@ -35,7 +37,7 @@ def exists(arg: str) -> bool:
         return cmd_as_bool(f'WHERE /Q {arg}')
     raise NotImplementedError
 
-def create_folder(self, path: str) -> None:
+def create_folder(path: str) -> None:
     as_absolute = abs_path(path)
     if os.path.exists(as_absolute):
         print(f"'{path}' folder already exists. Skipping...")
@@ -44,28 +46,38 @@ def create_folder(self, path: str) -> None:
     print(f"Creating folder '{path}'...")
     os.makedirs(as_absolute, exist_ok=True)
 
-def make_link(self, source: str, destination: str) -> None:
-    abs_dst = abs_path(destination)
-    abs_src = abs_path(source)
+def make_link(original: str, symlink: str) -> None:
+    abs_symlink = abs_path(symlink)
+    abs_original = abs_path(original)
 
-    if not os.path.exists(abs_src):
-        print(f"Origin '{source}' does not exist. Skipping...")
+    if not os.path.exists(abs_original):
+        print(f"Origin '{original}' does not exist. Skipping...")
         return
 
-    if os.path.exists(abs_dst):
-        if os.path.islink(abs_dst):
-            if os.readlink(abs_dst) == abs_src:
-                print(f"Link '{destination}' -> '{source}' already exists. Skipping...")
+    if os.path.lexists(abs_symlink):
+        if os.path.islink(abs_symlink):
+            if os.readlink(abs_symlink) == abs_original:
+                print(f"Link '{symlink}' -> '{abs_original}' already exists and is updated. Skipping...")
                 return
-            print(f"Link exists, but it is outdated. Updating to '{destination}' -> '{abs_src}'...")
-            os.remove(abs_dst)
-            os.symlink(abs_src, abs_dst)
+            print(f"Link exists, but it is outdated. Updating to '{symlink}' -> '{abs_original}'...")
+            os.remove(abs_symlink)
+            os.symlink(abs_original, abs_symlink)
             return
-        print(f"Destination '{destination}' already exists. Skipping...")
+        print(f"Path '{symlink}' already exists and is not a link (is it correct?). Skipping...")
         return
 
-    print(f"Creating link '{destination}' -> '{abs_src}'...")
-    os.symlink(abs_src, abs_dst)
+    print(f"Creating link '{symlink}' -> '{abs_original}'...")
+    os.symlink(abs_original, abs_symlink)
+
+def install(cmd_name: str, install_fn: Callable, check_exists=True, alias=None):
+    display_name = alias or cmd_name
+
+    if check_exists and exists(cmd_name):
+        print(f'{display_name} already installed, skipping...')
+    else:
+        print(f'Installing {display_name}...')
+        install_fn()
+        print('Done!')
 
 
 class System(ABC):
@@ -83,14 +95,16 @@ class Ubuntu(System):
         return platform.system().lower() == 'linux' and \
             'microsoft' in platform.release().lower()
 
-    def __execute_terminal(terminal: str, path: str, *args: str) -> None:
-        sb.run(f'sh {path} {' '.join(args)}', shell=True, stdout=sb.PIPE)
+    def __execute_terminal(terminal: str, path: str, args: List[str], sudo: bool = True) -> None:
+        sudo_token = 'sudo' if sudo else ''
+        args_token = ' '.join(args) if len(args) > 1 else args[0]
+        sb.run(f'{sudo_token} {terminal} {path} {args_token}', shell=True, stdout=sb.PIPE)
 
-    def execute_sh(path: str, *args: str) -> None:
-        Ubuntu.__execute_terminal('sh', path, *args)
+    def execute_sh(path: str, args: List[str], sudo = False) -> None:
+        Ubuntu.__execute_terminal('sh', path, args, sudo)
 
-    def execute_bash(path: str, *args: str) -> None:
-        Ubuntu.__execute_terminal('bash', path, *args)
+    def execute_bash(path: str, args: List[str], sudo = False) -> None:
+        Ubuntu.__execute_terminal('bash', path, args, sudo)
 
     def _can_execute(self) -> bool:
         return Ubuntu.can_execute()
@@ -115,11 +129,11 @@ class PackageManager(ABC):
         pass
 
     @abstractmethod
-    def install(self, package_name: str) -> None:
+    def install_packages(self, *args: str) -> None:
         pass
 
     @abstractmethod
-    def remove(self, package_name: str) -> None:
+    def remove_packages(self, *args: str) -> None:
         pass
 
     @abstractmethod
@@ -131,10 +145,10 @@ class Scoop(Windows, PackageManager):
     def upgrade(self) -> None:
         pass
 
-    def install(self, package_name: str) -> None:
+    def install_packages(self, *args: str) -> None:
         pass
 
-    def remove(self, package_name: str) -> None:
+    def remove_packages(self, *args: str) -> None:
         pass
 
     def upgrade(self) -> None:
@@ -143,21 +157,21 @@ class Scoop(Windows, PackageManager):
 
 class Apt(Ubuntu, PackageManager):
     def upgrade(self) -> None:
-        sb.check_call(('sudo', 'apt-get', 'upgrade', '-y'))
+        sb.check_call(('sudo', 'apt-get', 'upgrade', '-y'), shell=True)
 
-    def install(self, package_name: str) -> None:
-        sb.check_call(('sudo', 'apt-get', 'install', '-y', package_name))
+    def install_packages(self, *args: str) -> None:
+        sb.check_call(('sudo', 'apt-get', 'install', '-y') + args)
 
-    def remove(self, package_name: str) -> None:
-        sb.check_call(('sudo', 'apt-get', 'remove', '-y', package_name))
+    def remove_packages(self, *args: str) -> None:
+        sb.check_call(('sudo', 'apt-get', 'remove', '-y') + args, shell=True)
 
     def update(self) -> None:
-        sb.check_call(('sudo', 'apt-get', 'update'))
+        sb.check_call(('sudo', 'apt-get', 'update'), shell=True)
 
     def add_repository(self, repo_name: str) -> None:
-        sb.check_call(('sudo', 'add-apt-repository', f'ppa:{repo_name}', '-y'))
+        sb.check_call(('sudo', 'add-apt-repository', f'ppa:{repo_name}', '-y'), shell=True)
 
-    def is_repository_added(repo_name: str) -> bool:
+    def is_repository_added(self, repo_name: str) -> bool:
         return cmd_as_bool(f'grep -q "^deb .*{repo_name}" /etc/apt/sources.list /etc/apt/sources.list.d/*')
 
 
@@ -165,11 +179,11 @@ class Dpkg(Ubuntu, PackageManager):
     def upgrade(self) -> None:
         raise NotImplementedError
 
-    def install(self, package_name: str) -> None:
-        sb.check_call(('sudo', 'dpkg', '-i', package_name))
+    def install_packages(self, *args: str) -> None:
+        sb.check_call(('sudo', 'dpkg', '-i') + args, shell=True)
 
-    def remove(self, package_name: str) -> None:
-        sb.check_call(('sudo', 'dpkg', '-r', package_name))
+    def remove_packages(self, *args: str) -> None:
+        sb.check_call(('sudo', 'dpkg', '-r') + args, shell=True)
 
     def update(self) -> None:
         raise NotImplementedError

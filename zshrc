@@ -23,6 +23,7 @@ alias exa='exa -1aFh --git --icons'
 alias man='batman'
 alias trail='<<<${(F)path}'
 alias cat='bat'
+alias python='python3'
 
 # customize prompt
 PROMPT='
