@@ -1,6 +1,3 @@
-# init procedures
-~/.docker_service.zsh
-
 # keybinds
 
 # set variables
@@ -55,3 +52,6 @@ function mkcd() {
 }
 
 # zsh plugins
+
+# init procedures
+~/.docker_service.zsh
