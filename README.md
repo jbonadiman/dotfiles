@@ -2,7 +2,6 @@
 
 ### TODO:
 
-- [WSL] Install/check Vundle
 - [Windows] Configure Windows Terminal
 - [Windows] Configure symlinks
 - [Windows] Install required fonts

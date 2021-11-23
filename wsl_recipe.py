@@ -13,7 +13,8 @@ from dotfile import \
     git_clone, \
     install, \
     cmd_as_bool, \
-    execute_cmd
+    execute_cmd, \
+    abs_path
 
 apt = Apt()
 dpkg = Dpkg()
@@ -104,10 +105,17 @@ def setup_locales():
     locale.setlocale(locale.LC_ALL, '')
 
 
-if __name__ == '__main__':
-    setup_locales()
-    exit()
+def setup_vundle():
+    vundle_path = abs_path('~/.vim/bundle/Vundle.vim')
+    if os.path.isdir(vundle_path):
+        print('Vundle already installed, skipping...')
+    else:
+        print('Installing Vundle...')
+        git_clone('https://github.com/VundleVim/Vundle.vim.git', vundle_path)
+        print('Done!')
 
+
+if __name__ == '__main__':
     try:
         list(map(create_folder, folders))
 
@@ -133,8 +141,6 @@ if __name__ == '__main__':
         install('n', install_n_fn)
 
         setup_locales()
-
-        # TODO: Check if Vundle is installed
-
+        setup_vundle()
     finally:
         shutil.rmtree(tmpdir)
