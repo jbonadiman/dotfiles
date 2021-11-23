@@ -96,6 +96,16 @@ class System:
         if not self._can_execute():
             raise RuntimeError("This script can't be run in the current platform!")
 
+    @staticmethod
+    def __execute_terminal(terminal: str, path: str, args: List[str], sudo: bool = False) -> None:
+        sudo_token = 'sudo' if sudo else ''
+
+        args_token = ''
+        if args and len(args):
+            args_token = ' '.join(args) if len(args) > 1 else args[0]
+
+        sb.run(f'{sudo_token} {terminal} {path} {args_token}', shell=True, stdout=sb.PIPE)
+
     def _can_execute(self) -> bool:
         pass
 
@@ -106,22 +116,16 @@ class Ubuntu(System):
         return platform.system().lower() == 'linux' and \
                'microsoft' in platform.release().lower()
 
-    @staticmethod
-    def __execute_terminal(terminal: str, path: str, args: List[str], sudo: bool = True) -> None:
-        sudo_token = 'sudo' if sudo else ''
-        args_token = ' '.join(args) if len(args) > 1 else args[0]
-        sb.run(f'{sudo_token} {terminal} {path} {args_token}', shell=True, stdout=sb.PIPE)
+    @classmethod
+    def execute_sh(cls, path: str, args: List[str] = None, sudo=False) -> None:
+        cls.__execute_terminal('sh', path, args, sudo)
 
-    @staticmethod
-    def execute_sh(path: str, args: List[str], sudo=False) -> None:
-        Ubuntu.__execute_terminal('sh', path, args, sudo)
-
-    @staticmethod
-    def execute_bash(path: str, args: List[str], sudo=False) -> None:
-        Ubuntu.__execute_terminal('bash', path, args, sudo)
+    @classmethod
+    def execute_bash(cls, path: str, args: List[str] = None, sudo=False) -> None:
+        cls.__execute_terminal('bash', path, args, sudo)
 
     def _can_execute(self) -> bool:
-        return Ubuntu.can_execute()
+        return self.can_execute()
 
 
 class Windows(System):
@@ -130,7 +134,11 @@ class Windows(System):
         return platform.system().lower() == 'windows'
 
     def _can_execute(self) -> bool:
-        return Windows.can_execute()
+        return self.can_execute()
+
+    @classmethod
+    def execute_ps1(cls, path: str, args: List[str] = None):
+        cls.__execute_terminal('powershell.exe', path, args, sudo=False)
 
 
 class Android(System):
@@ -139,21 +147,30 @@ class Android(System):
         return 'ANDROID_DATA' in os.environ
 
     def _can_execute(self) -> bool:
-        return Android.can_execute()
+        return self.can_execute()
 
 
 class Scoop(Windows):
+    SCOOP_VARNAME = 'SCOOP'
+    SHOVEL_VARNAME = 'SHOVEL'
+
     def upgrade(self) -> None:
-        pass
+        sb.check_call(('scoop', 'update'), shell=True)
 
     def install_packages(self, *args: str) -> None:
-        pass
+        sb.check_call(('scoop', 'update'), shell=True)
 
     def remove_packages(self, *args: str) -> None:
-        pass
+        sb.check_call(('scoop', 'update'), shell=True)
 
     def update(self) -> None:
-        pass
+        sb.check_call(('scoop', 'update'), shell=True)
+
+    def add_bucket(self, bucket_name: str) -> None:
+        sb.check_call(('scoop', 'bucket', 'add', bucket_name), shell=True)
+
+    def change_repo(self, repo: str) -> None:
+        sb.check_call(('scoop', 'config', 'SCOOP_REPO', repo), shell=True)
 
 
 class Apt(Ubuntu):
