@@ -2,8 +2,6 @@
 
 ### TODO:
 
-- [Windows] Configure Windows Terminal
-- [Windows] Configure symlinks
 - [Windows] Install required fonts
 - [Windows] Install script
 - [Windows] Fix CRLF in vim/editors
@@ -16,6 +14,7 @@
 - [WSL] Autocomplete in commands
 - [Windows] Install EdgeDeflector, Battle.net, Origin
 - [All] Add separation installations tags (personal, essential, dev...)
+- [All] Add command line options that defines what tags should be installed and if upgrades must be run
 
 ### Annotations
 

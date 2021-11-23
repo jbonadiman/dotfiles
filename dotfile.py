@@ -146,15 +146,15 @@ class Scoop(WindowsDependent):
 
     @staticmethod
     def upgrade() -> None:
-        sb.check_call(('scoop', 'update', '*'))
+        sb.check_call(['scoop', 'update', '*'], shell=True)
 
     @staticmethod
     def install(packages: List[str]) -> None:
-        sb.check_call(['scoop', 'install'] + packages)
+        sb.check_call(['scoop', 'install'] + packages, shell=True)
 
     @staticmethod
     def update() -> None:
-        sb.check_call(('scoop', 'update'))
+        sb.check_call(['scoop', 'update'], shell=True)
 
     @staticmethod
     def add_bucket(bucket_name: str) -> None:
@@ -163,11 +163,11 @@ class Scoop(WindowsDependent):
             return
 
         print(f"Adding bucket '{bucket_name}'...")
-        sb.check_call(('scoop', 'bucket', 'add', bucket_name))
+        sb.check_call(['scoop', 'bucket', 'add', bucket_name], shell=True)
 
     @staticmethod
     def change_repo(repo: str) -> None:
-        sb.check_call(('scoop', 'config', 'SCOOP_REPO', repo))
+        sb.check_call(['scoop', 'config', 'SCOOP_REPO', repo], shell=True)
 
 
 class Msix(WindowsDependent):
