@@ -91,13 +91,4 @@ function Install-Fonts {
 
 function Install-EssentialPackages {
     Install-Fonts
-
-    Add-Bucket 'extras'
-    
-    Install-ShovelPkg 'aria2'
-    Install-ShovelPkg 'advancedrenamer'
-    Install-ShovelPkg 'authy'
-    Install-ShovelPkg 'treesize-free'
-    Install-ShovelPkg 'vlc'
-    Install-ShovelPkg 'bitwarden'
 }

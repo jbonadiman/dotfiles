@@ -32,10 +32,12 @@ TERMINAL_PATH = abs_path(
 
 # TODO: read from file
 scoop_pcks = (
-    'httpie',
-    'clang',
-    'exa',
-    'make'
+    'aria2',
+    'advancedrenamer',
+    'authy',
+    'treesize-free',
+    'vlc',
+    'bitwarden'
 )
 
 folders = (
@@ -92,6 +94,8 @@ if __name__ == '__main__':
         install('scoop', install_scoop_fn)
         install('shovel', install_shovel_fn)
 
+        scoop.add_bucket('extras')
+        scoop.install_packages(*scoop_pcks)
 
 
         sync_firefox_cookies()

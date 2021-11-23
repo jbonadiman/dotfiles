@@ -155,39 +155,50 @@ class Scoop(Windows):
     SHOVEL_VARNAME = 'SHOVEL'
 
     def upgrade(self) -> None:
-        sb.check_call(('scoop', 'update'), shell=True)
+        sb.check_call(('scoop', 'update', '*'))
 
     def install_packages(self, *args: str) -> None:
-        sb.check_call(('scoop', 'update'), shell=True)
+        sb.check_call(('scoop', 'install') + args)
 
     def remove_packages(self, *args: str) -> None:
-        sb.check_call(('scoop', 'update'), shell=True)
+        sb.check_call(('scoop', 'uninstall') + args)
 
     def update(self) -> None:
-        sb.check_call(('scoop', 'update'), shell=True)
+        sb.check_call(('scoop', 'update'))
 
     def add_bucket(self, bucket_name: str) -> None:
+        if cmd_as_bool('scoop bucket list | findstr java > NUL'):
+            print(f"Bucket '{bucket_name}' already added, skipping...")
+            return
+
+        print(f"Adding bucket '{bucket_name}'...")
         sb.check_call(('scoop', 'bucket', 'add', bucket_name), shell=True)
 
     def change_repo(self, repo: str) -> None:
         sb.check_call(('scoop', 'config', 'SCOOP_REPO', repo), shell=True)
 
 
+class Msix(Windows):
+    def install_packages(self, *args: str) -> None:
+        # Add-AppPackage -path “C:\Caphyon\MyBundle.msixbundle”
+        pass
+
+
 class Apt(Ubuntu):
     def upgrade(self) -> None:
-        sb.check_call(('sudo', 'apt-get', 'upgrade', '-y'), shell=True)
+        sb.check_call(('sudo', 'apt-get', 'upgrade', '-y'))
 
     def install_packages(self, *args: str) -> None:
         sb.check_call(('sudo', 'apt-get', 'install', '-y') + args)
 
     def remove_packages(self, *args: str) -> None:
-        sb.check_call(('sudo', 'apt-get', 'remove', '-y') + args, shell=True)
+        sb.check_call(('sudo', 'apt-get', 'remove', '-y') + args)
 
     def update(self) -> None:
         sb.check_call(('sudo', 'apt-get', 'update'), shell=True)
 
     def add_repository(self, repo_name: str) -> None:
-        sb.check_call(('sudo', 'add-apt-repository', f'ppa:{repo_name}', '-y'), shell=True)
+        sb.check_call(('sudo', 'add-apt-repository', f'ppa:{repo_name}', '-y'))
 
     def is_repository_added(self, repo_name: str) -> bool:
         return cmd_as_bool(f'grep -q "^deb .*{repo_name}" /etc/apt/sources.list /etc/apt/sources.list.d/*')
