@@ -57,18 +57,16 @@ def make_link(original: str, symlink: str) -> None:
         return
 
     if os.path.lexists(abs_symlink):
-        if os.path.islink(abs_symlink):
-            if os.readlink(abs_symlink) == abs_original:
-                print(f"Link '{symlink}' -> '{abs_original}' already exists and is updated. Skipping...")
-                return
-            print(f"Link exists, but it is outdated. Updating to '{symlink}' -> '{abs_original}'...")
-            os.remove(abs_symlink)
-            os.symlink(abs_original, abs_symlink)
+        if os.path.islink(abs_symlink) and os.path.realpath(abs_symlink) == abs_original:
+            print(f"Link '{symlink}' -> '{abs_original}' already exists and is updated. Skipping...")
             return
-        print(f"Path '{symlink}' already exists and is not a link (is it correct?). Skipping...")
-        return
+        else:
+            print(f"File already exists, removing and creating link to '{symlink}' -> '{abs_original}'...")
+            os.remove(abs_symlink)
+    else:
+        print(f"Creating link '{symlink}' -> '{abs_original}'...")
+        os.makedirs(os.path.dirname(abs_symlink), exist_ok=True)
 
-    print(f"Creating link '{symlink}' -> '{abs_original}'...")
     os.symlink(abs_original, abs_symlink)
 
 

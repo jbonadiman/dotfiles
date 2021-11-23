@@ -94,7 +94,7 @@ if __name__ == '__main__':
         windows.install('shovel', install_shovel_fn)
 
         scoop.add_bucket('extras')
-        scoop.install(*scoop_pcks)
+        scoop.install(scoop_pcks)
 
         sync_firefox_cookies()
     finally:
