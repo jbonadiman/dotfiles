@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 
-from typing import List, Callable
-from abc import ABC, abstractmethod
+import os
 import platform
 import subprocess as sb
-import os
-import ctypes
+from typing import List, Callable
+
 import requests
+
 
 def git_clone(url: str, path: str = None) -> None:
     alt_path = path or ''
     sb.run(f'git clone "{url}" {alt_path}'.strip(), shell=True, stdout=sb.PIPE)
+
 
 def download_installer(url: str, path: str) -> None:
     print('Downloading...')
@@ -19,6 +20,7 @@ def download_installer(url: str, path: str) -> None:
         f.write(resp.content)
     print('Done!')
 
+
 def abs_path(path: str) -> str:
     return os.path.abspath(
         os.path.expandvars(
@@ -26,9 +28,15 @@ def abs_path(path: str) -> str:
         )
     )
 
+
+def execute_cmd(command: str) -> None:
+    sb.check_call(command, shell=True)
+
+
 def cmd_as_bool(command: str) -> bool:
     result = sb.run(f'{command} && echo 1 || echo 0', shell=True, stdout=sb.PIPE)
     return bool(int(result.stdout))
+
 
 def exists(arg: str) -> bool:
     if Ubuntu.can_execute():
@@ -36,6 +44,7 @@ def exists(arg: str) -> bool:
     elif Windows.can_execute():
         return cmd_as_bool(f'WHERE /Q {arg}')
     raise NotImplementedError
+
 
 def create_folder(path: str) -> None:
     as_absolute = abs_path(path)
@@ -45,6 +54,7 @@ def create_folder(path: str) -> None:
 
     print(f"Creating folder '{path}'...")
     os.makedirs(as_absolute, exist_ok=True)
+
 
 def make_link(original: str, symlink: str) -> None:
     abs_symlink = abs_path(symlink)
@@ -69,6 +79,7 @@ def make_link(original: str, symlink: str) -> None:
     print(f"Creating link '{symlink}' -> '{abs_original}'...")
     os.symlink(abs_original, abs_symlink)
 
+
 def install(cmd_name: str, install_fn: Callable, check_exists=True, alias=None):
     display_name = alias or cmd_name
 
@@ -80,30 +91,33 @@ def install(cmd_name: str, install_fn: Callable, check_exists=True, alias=None):
         print('Done!')
 
 
-class System(ABC):
+class System:
     def __init__(self):
         if not self._can_execute():
             raise RuntimeError("This script can't be run in the current platform!")
 
-    @abstractmethod
     def _can_execute(self) -> bool:
         pass
 
 
 class Ubuntu(System):
+    @staticmethod
     def can_execute() -> bool:
         return platform.system().lower() == 'linux' and \
-            'microsoft' in platform.release().lower()
+               'microsoft' in platform.release().lower()
 
+    @staticmethod
     def __execute_terminal(terminal: str, path: str, args: List[str], sudo: bool = True) -> None:
         sudo_token = 'sudo' if sudo else ''
         args_token = ' '.join(args) if len(args) > 1 else args[0]
         sb.run(f'{sudo_token} {terminal} {path} {args_token}', shell=True, stdout=sb.PIPE)
 
-    def execute_sh(path: str, args: List[str], sudo = False) -> None:
+    @staticmethod
+    def execute_sh(path: str, args: List[str], sudo=False) -> None:
         Ubuntu.__execute_terminal('sh', path, args, sudo)
 
-    def execute_bash(path: str, args: List[str], sudo = False) -> None:
+    @staticmethod
+    def execute_bash(path: str, args: List[str], sudo=False) -> None:
         Ubuntu.__execute_terminal('bash', path, args, sudo)
 
     def _can_execute(self) -> bool:
@@ -111,6 +125,7 @@ class Ubuntu(System):
 
 
 class Windows(System):
+    @staticmethod
     def can_execute() -> bool:
         return platform.system().lower() == 'windows'
 
@@ -119,43 +134,29 @@ class Windows(System):
 
 
 class Android(System):
+    @staticmethod
     def can_execute() -> bool:
         return 'ANDROID_DATA' in os.environ
 
+    def _can_execute(self) -> bool:
+        return Android.can_execute()
 
-class PackageManager(ABC):
-    @abstractmethod
+
+class Scoop(Windows):
     def upgrade(self) -> None:
         pass
 
-    @abstractmethod
     def install_packages(self, *args: str) -> None:
         pass
 
-    @abstractmethod
     def remove_packages(self, *args: str) -> None:
         pass
 
-    @abstractmethod
     def update(self) -> None:
         pass
 
 
-class Scoop(Windows, PackageManager):
-    def upgrade(self) -> None:
-        pass
-
-    def install_packages(self, *args: str) -> None:
-        pass
-
-    def remove_packages(self, *args: str) -> None:
-        pass
-
-    def upgrade(self) -> None:
-        pass
-
-
-class Apt(Ubuntu, PackageManager):
+class Apt(Ubuntu):
     def upgrade(self) -> None:
         sb.check_call(('sudo', 'apt-get', 'upgrade', '-y'), shell=True)
 
@@ -175,17 +176,9 @@ class Apt(Ubuntu, PackageManager):
         return cmd_as_bool(f'grep -q "^deb .*{repo_name}" /etc/apt/sources.list /etc/apt/sources.list.d/*')
 
 
-class Dpkg(Ubuntu, PackageManager):
-    def upgrade(self) -> None:
-        raise NotImplementedError
-
+class Dpkg(Ubuntu):
     def install_packages(self, *args: str) -> None:
         sb.check_call(('sudo', 'dpkg', '-i') + args, shell=True)
 
     def remove_packages(self, *args: str) -> None:
         sb.check_call(('sudo', 'dpkg', '-r') + args, shell=True)
-
-    def update(self) -> None:
-        raise NotImplementedError
-
-

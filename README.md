@@ -4,9 +4,7 @@
 
 - [WSL] exa is really slow right now with the -l option. I'm using -1 option for now, but I should change it back in exa version 0.11.0 (this improvement is marked for that version miletone)
 - [Windows] Install required fonts
-- [WSL] Set locale only if not previously set
 - [WSL] Install shfmt so that bat-extras can be minified
-- [Windows] Configure symlinks using dotbot
+- [Windows] Configure symlinks
 - [Windows] Configure Windows Terminal
-- [WSL] Add symlink of docker_service.zsh to home
 - [WSL] Find a way to use the trash, so I don't use rm directly
