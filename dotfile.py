@@ -38,14 +38,6 @@ def cmd_as_bool(command: str) -> bool:
     return bool(int(result.stdout))
 
 
-def exists(arg: str) -> bool:
-    if Ubuntu.can_execute():
-        return cmd_as_bool(f'command -v {arg} > /dev/null 2>&1')
-    elif Windows.can_execute():
-        return cmd_as_bool(f'WHERE /Q {arg}')
-    raise NotImplementedError
-
-
 def create_folder(path: str) -> None:
     as_absolute = abs_path(path)
     if os.path.exists(as_absolute):
@@ -80,133 +72,136 @@ def make_link(original: str, symlink: str) -> None:
     os.symlink(abs_original, abs_symlink)
 
 
-def install(cmd_name: str, install_fn: Callable, check_exists=True, alias=None):
-    display_name = alias or cmd_name
-
-    if check_exists and exists(cmd_name):
-        print(f'{display_name} already installed, skipping...')
-    else:
-        print(f'Installing {display_name}...')
-        install_fn()
-        print('Done!')
-
-
-class System:
+class SystemDependent:
     def __init__(self):
         if not self._can_execute():
             raise RuntimeError("This script can't be run in the current platform!")
 
     @staticmethod
-    def __execute_terminal(terminal: str, path: str, args: List[str], sudo: bool = False) -> None:
+    def __run_script(terminal: str, script_path: str, args: List[str], sudo: bool = False) -> None:
         sudo_token = 'sudo' if sudo else ''
 
         args_token = ''
         if args and len(args):
-            args_token = ' '.join(args) if len(args) > 1 else args[0]
+            args_token = ' ' + ' '.join(args) if len(args) > 1 else args[0]
 
-        sb.run(f'{sudo_token} {terminal} {path} {args_token}', shell=True, stdout=sb.PIPE)
+        sb.run(f'{sudo_token} {terminal} {script_path}{args_token}', shell=True, stdout=sb.PIPE)
 
-    def _can_execute(self) -> bool:
-        pass
+    @classmethod
+    def install(cls, cmd_name: str, install_fn: Callable, check_exists=True, alias=None):
+        display_name = alias or cmd_name
+
+        if check_exists and cls.exists(cmd_name):
+            print(f'{display_name} already installed, skipping...')
+        else:
+            print(f'Installing {display_name}...')
+            install_fn()
+            print('Done!')
 
 
-class Ubuntu(System):
+class WslDependent(SystemDependent):
     @staticmethod
-    def can_execute() -> bool:
+    def _can_execute() -> bool:
         return platform.system().lower() == 'linux' and \
                'microsoft' in platform.release().lower()
 
-    @classmethod
-    def execute_sh(cls, path: str, args: List[str] = None, sudo=False) -> None:
-        cls.__execute_terminal('sh', path, args, sudo)
 
-    @classmethod
-    def execute_bash(cls, path: str, args: List[str] = None, sudo=False) -> None:
-        cls.__execute_terminal('bash', path, args, sudo)
-
-    def _can_execute(self) -> bool:
-        return self.can_execute()
-
-
-class Windows(System):
+class WindowsDependent(SystemDependent):
     @staticmethod
-    def can_execute() -> bool:
+    def _can_execute() -> bool:
         return platform.system().lower() == 'windows'
 
-    def _can_execute(self) -> bool:
-        return self.can_execute()
 
-    @classmethod
-    def execute_ps1(cls, path: str, args: List[str] = None):
-        cls.__execute_terminal('powershell.exe', path, args, sudo=False)
-
-
-class Android(System):
+class AndroidDependent(SystemDependent):
     @staticmethod
-    def can_execute() -> bool:
+    def _can_execute() -> bool:
         return 'ANDROID_DATA' in os.environ
 
-    def _can_execute(self) -> bool:
-        return self.can_execute()
+
+class Wsl(WslDependent):
+    @classmethod
+    def exists(cls, arg: str) -> bool:
+        return cmd_as_bool(f'command -v {arg} > /dev/null 2>&1')
+
+    @classmethod
+    def execute_sh(cls, script_path: str, args: List[str] = None, sudo=False) -> None:
+        cls.__run_script('sh', script_path, args, sudo)
+
+    @classmethod
+    def execute_bash(cls, script_path: str, args: List[str] = None, sudo=False) -> None:
+        cls.__run_script('bash', script_path, args, sudo)
 
 
-class Scoop(Windows):
-    SCOOP_VARNAME = 'SCOOP'
-    SHOVEL_VARNAME = 'SHOVEL'
+class Windows(WindowsDependent):
+    @classmethod
+    def exists(cls, arg: str) -> bool:
+        return cmd_as_bool(f'WHERE /Q {arg}')
 
-    def upgrade(self) -> None:
+    @classmethod
+    def execute_ps1(cls, script_path: str, args: List[str] = None) -> None:
+        cls.__run_script('powershell.exe', script_path, args, sudo=False)
+
+
+class Scoop(WindowsDependent):
+    SCOOP_VAR = 'SCOOP'
+    SHOVEL_VAR = 'SHOVEL'
+
+    @staticmethod
+    def upgrade() -> None:
         sb.check_call(('scoop', 'update', '*'))
 
-    def install_packages(self, *args: str) -> None:
-        sb.check_call(('scoop', 'install') + args)
+    @staticmethod
+    def install(packages: List[str]) -> None:
+        sb.check_call(['scoop', 'install'] + packages)
 
-    def remove_packages(self, *args: str) -> None:
-        sb.check_call(('scoop', 'uninstall') + args)
-
-    def update(self) -> None:
+    @staticmethod
+    def update() -> None:
         sb.check_call(('scoop', 'update'))
 
-    def add_bucket(self, bucket_name: str) -> None:
-        if cmd_as_bool('scoop bucket list | findstr java > NUL'):
+    @staticmethod
+    def add_bucket(bucket_name: str) -> None:
+        if cmd_as_bool(f'scoop bucket list | findstr {bucket_name} > NUL'):
             print(f"Bucket '{bucket_name}' already added, skipping...")
             return
 
         print(f"Adding bucket '{bucket_name}'...")
-        sb.check_call(('scoop', 'bucket', 'add', bucket_name), shell=True)
+        sb.check_call(('scoop', 'bucket', 'add', bucket_name))
 
-    def change_repo(self, repo: str) -> None:
-        sb.check_call(('scoop', 'config', 'SCOOP_REPO', repo), shell=True)
+    @staticmethod
+    def change_repo(repo: str) -> None:
+        sb.check_call(('scoop', 'config', 'SCOOP_REPO', repo))
 
 
-class Msix(Windows):
-    def install_packages(self, *args: str) -> None:
+class Msix(WindowsDependent):
+    @staticmethod
+    def install(packages_paths: List[str]) -> None:
         # Add-AppPackage -path “C:\Caphyon\MyBundle.msixbundle”
         pass
 
 
-class Apt(Ubuntu):
-    def upgrade(self) -> None:
+class Apt(WslDependent):
+    @staticmethod
+    def upgrade() -> None:
         sb.check_call(('sudo', 'apt-get', 'upgrade', '-y'))
 
-    def install_packages(self, *args: str) -> None:
-        sb.check_call(('sudo', 'apt-get', 'install', '-y') + args)
+    @staticmethod
+    def install(packages: List[str]) -> None:
+        sb.check_call(['sudo', 'apt-get', 'install', '-y'] + packages)
 
-    def remove_packages(self, *args: str) -> None:
-        sb.check_call(('sudo', 'apt-get', 'remove', '-y') + args)
+    @staticmethod
+    def update() -> None:
+        sb.check_call(('sudo', 'apt-get', 'update'))
 
-    def update(self) -> None:
-        sb.check_call(('sudo', 'apt-get', 'update'), shell=True)
-
-    def add_repository(self, repo_name: str) -> None:
+    @staticmethod
+    def add_repository(repo_name: str) -> None:
         sb.check_call(('sudo', 'add-apt-repository', f'ppa:{repo_name}', '-y'))
 
-    def is_repository_added(self, repo_name: str) -> bool:
+    @staticmethod
+    def is_repository_added(repo_name: str) -> bool:
         return cmd_as_bool(f'grep -q "^deb .*{repo_name}" /etc/apt/sources.list /etc/apt/sources.list.d/*')
 
 
-class Dpkg(Ubuntu):
-    def install_packages(self, *args: str) -> None:
-        sb.check_call(('sudo', 'dpkg', '-i') + args, shell=True)
-
-    def remove_packages(self, *args: str) -> None:
-        sb.check_call(('sudo', 'dpkg', '-r') + args, shell=True)
+class Dpkg(WslDependent):
+    @staticmethod
+    def install(deb_paths: List[str]) -> None:
+        sb.check_call(['sudo', 'dpkg', '-i'] + deb_paths)

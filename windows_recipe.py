@@ -13,10 +13,9 @@ from dotfile import Windows
 from dotfile import abs_path, \
     create_folder, \
     make_link, \
-    download_installer, \
-    install, \
-    execute_cmd
+    download_installer
 
+windows = Windows()
 scoop = Scoop()
 print('Installing Windows packages...')
 tmpdir = tempfile.mkdtemp(prefix='windows_recipe')
@@ -31,18 +30,18 @@ TERMINAL_PATH = abs_path(
 )
 
 # TODO: read from file
-scoop_pcks = (
+scoop_pcks = [
     'aria2',
     'advancedrenamer',
     'authy',
     'treesize-free',
     'vlc',
     'bitwarden'
-)
+]
 
-folders = (
+folders = [
     '~/sources'
-)
+]
 
 links = {
     TERMINAL_PATH: 'terminal.settings.json',
@@ -66,11 +65,11 @@ def install_scoop_fn() -> None:
     scoop_installer = os.path.join(tmpdir, 'install.ps1')
     download_installer(r'get.scoop.sh', scoop_installer)
     Windows.execute_ps1(scoop_installer)
-    if Scoop.SCOOP_VARNAME not in os.environ:
-        print(f"Adding '{Scoop.SCOOP_VARNAME}' to environment variables...")
-        os.environ[Scoop.SCOOP_VARNAME] = abs_path('~/scoop')
+    if Scoop.SCOOP_VAR not in os.environ:
+        print(f"Adding '{Scoop.SCOOP_VAR}' to environment variables...")
+        os.environ[Scoop.SCOOP_VAR] = abs_path('~/scoop')
     print('Installing scoop essential packages...')
-    scoop.install_packages('7zip', 'git', 'innounp', 'dark', 'wixtoolset', 'lessmsi')
+    scoop.install('7zip', 'git', 'innounp', 'dark', 'wixtoolset', 'lessmsi')
 
 
 def install_shovel_fn() -> None:
@@ -91,12 +90,11 @@ if __name__ == '__main__':
         for symlink, original in links.items():
             make_link(original, symlink)
 
-        install('scoop', install_scoop_fn)
-        install('shovel', install_shovel_fn)
+        windows.install('scoop', install_scoop_fn)
+        windows.install('shovel', install_shovel_fn)
 
         scoop.add_bucket('extras')
-        scoop.install_packages(*scoop_pcks)
-
+        scoop.install(*scoop_pcks)
 
         sync_firefox_cookies()
     finally:
