@@ -22,11 +22,6 @@ dpkg = Dpkg()
 print('Installing essential packages...')
 tmpdir = tempfile.mkdtemp(prefix='wsl_recipe')
 
-folders = (
-    '~/sources',
-    '~/.local/bin'
-)
-
 # TODO: read from file
 apt_pcks = (
     'httpie',
@@ -35,11 +30,15 @@ apt_pcks = (
     'make'
 )
 
+folders = (
+    '~/.local/bin'
+)
+
 links = {
     '~/.vimrc': 'vimrc',
     '~/.zshrc': 'zshrc',
     '~/.zshenv': 'zshenv',
-    '~/.docker_service.zsh': 'docker_service.zsh',
+    '~/.docker_service.zsh': 'docker_service.zsh'
 }
 
 

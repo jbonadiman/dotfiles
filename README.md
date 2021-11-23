@@ -15,6 +15,7 @@
 - [WSL] Syntax highlighting in commands
 - [WSL] Autocomplete in commands
 - [Windows] Install EdgeDeflector, Battle.net, Origin
+- [All] Add separation installations tags (personal, essential, dev...)
 
 ### Annotations
 
