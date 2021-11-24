@@ -55,7 +55,7 @@
                 "backgroundImageOpacity": 1.0,
                 "backgroundImageStretchMode": "none",
                 "colorScheme": "Aurelia",
-                "commandline": "wsl.exe -d Ubuntu-20.04",
+                "commandline": "wsl.exe -d Ubuntu-20.04 --cd ~",
                 "cursorShape": "vintage",
                 "font": 
                 {
@@ -65,12 +65,11 @@
                 "guid": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
                 "hidden": false,
                 "intenseTextStyle": "bright",
-                "name": "bash",
+                "name": "zsh",
                 "padding": "10",
                 "scrollbarState": "visible",
                 "source": "Windows.Terminal.Wsl",
-                "startingDirectory": "//wsl$/Ubuntu-20.04/home/joao/",
-                "tabTitle": "bash",
+                "tabTitle": "zsh",
                 "useAcrylic": true
             }
         ]
