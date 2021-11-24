@@ -4,73 +4,48 @@
     "defaultProfile": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
     "initialCols": 140,
     "initialRows": 40,
-    "launchMode": "maximizedFocus",
-    "profiles": 
+    "launchMode": "maximized",
+    "useAcrylicInTabRow": true,
+    "tabWidthMode": "compact",
+    "disabledProfileSources": [
+        "Windows.Terminal.Wsl",
+        "Windows.Terminal.Azure",
+        "Windows.Terminal.PowershellCore"
+    ],
+    "theme": "dark",
+    "profiles":
     {
-        "defaults": {},
+        "defaults": {
+            "icon": "🗣",
+            "colorScheme": "Aurelia",
+            "font":
+                {
+                    "face": "CaskaydiaCove NF",
+                    "size": 13
+                },
+            "opacity": 50,
+            "useAcrylic": true,
+            "antialiasingMode": "cleartype",
+            "hidden": false,
+            "cursorShape": "vintage",
+            "startingDirectory": "%USERPROFILE%"
+        },
         "list": 
         [
             {
-                "acrylicOpacity": 0.85,
-                "backgroundImage": null,
-                "backgroundImageAlignment": "bottomRight",
-                "backgroundImageStretchMode": "none",
-                "colorScheme": "Aurelia",
                 "commandline": "cmd.exe",
-                "font": 
-                {
-                    "face": "CaskaydiaCove NF",
-                    "size": 13
-                },
                 "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
-                "hidden": false,
-                "name": "cmd",
-                "startingDirectory": "%USERPROFILE%",
-                "useAcrylic": true
+                "name": "cmd"
             },
             {
-                "acrylicOpacity": 0.85,
-                "backgroundImage": null,
-                "backgroundImageAlignment": "bottomRight",
-                "backgroundImageStretchMode": "none",
-                "colorScheme": "Aurelia",
                 "commandline": "powershell.exe",
-                "cursorShape": "vintage",
-                "font": 
-                {
-                    "face": "CaskaydiaCove NF",
-                    "size": 13
-                },
                 "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
-                "hidden": false,
-                "name": "PowerShell",
-                "startingDirectory": "%USERPROFILE%",
-                "useAcrylic": true
+                "name": "PowerShell"
             },
             {
-                "acrylicOpacity": 0.85,
-                "antialiasingMode": "cleartype",
-                "backgroundImage": null,
-                "backgroundImageAlignment": "bottomRight",
-                "backgroundImageOpacity": 1.0,
-                "backgroundImageStretchMode": "none",
-                "colorScheme": "Aurelia",
                 "commandline": "wsl.exe -d Ubuntu-20.04 --cd ~",
-                "cursorShape": "vintage",
-                "font": 
-                {
-                    "face": "CaskaydiaCove NF",
-                    "size": 13
-                },
                 "guid": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
-                "hidden": false,
-                "intenseTextStyle": "bright",
-                "name": "zsh",
-                "padding": "10",
-                "scrollbarState": "visible",
-                "source": "Windows.Terminal.Wsl",
-                "tabTitle": "zsh",
-                "useAcrylic": true
+                "name": "zsh"
             }
         ]
     },
@@ -329,7 +304,5 @@
             "white": "#C0C0C0",
             "yellow": "#808000"
         }
-    ],
-    "tabWidthMode": "titleLength",
-    "theme": "dark"
+    ]
 }
