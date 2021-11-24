@@ -7,7 +7,7 @@
 - [Windows] Fix CRLF in vim/editors
 - [Windows] Set variable with Windows username in WSL
 - [Windows] Make sure US-International is the only keyboard
-- [Windows] Install StartAllBack
+- [Windows] Install StartAllBack (winget install --id "StartIsBack.StartAllBack")
 - [Windows] Install PowerToys
 - [WSL] Fix bug and guarantee that Windows exe will be executed successfully
 - [WSL] exa is really slow right now with the -l option. I'm using -1 option for now, but I should change it back in exa version 0.11.0 (this improvement is marked for that version miletone)
