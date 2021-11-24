@@ -13,7 +13,9 @@ from dotfile import Windows
 from dotfile import abs_path, \
     create_folder, \
     make_link, \
-    download_installer
+    download_file
+
+from windows_font_installer import install_font
 
 windows = Windows()
 scoop = Scoop()
@@ -63,13 +65,30 @@ def sync_firefox_cookies() -> None:
 
 def install_scoop_fn() -> None:
     scoop_installer = os.path.join(tmpdir, 'install.ps1')
-    download_installer(r'get.scoop.sh', scoop_installer)
+    download_file(r'get.scoop.sh', scoop_installer)
     Windows.execute_ps1(scoop_installer)
     if Scoop.SCOOP_VAR not in os.environ:
         print(f"Adding '{Scoop.SCOOP_VAR}' to environment variables...")
         os.environ[Scoop.SCOOP_VAR] = abs_path('~/scoop')
     print('Installing scoop essential packages...')
     scoop.install('7zip', 'git', 'innounp', 'dark', 'wixtoolset', 'lessmsi')
+
+
+def download_and_install_font(url: str) -> None:
+    from urllib.parse import unquote
+
+    font_name = unquote(os.path.basename(url))
+
+    if os.path.exists(os.path.join(Windows.FONTS_FOLDER, font_name)):
+        print(f"Font '{font_name}' already installed, skipping...")
+        return
+
+    print(f"Downloading and installing font '{font_name}'...")
+    font_path = os.path.join(tmpdir, font_name)
+    download_file(url, font_path)
+
+    print('Installing...')
+    install_font(font_path)
 
 
 def install_shovel_fn() -> None:
@@ -95,6 +114,10 @@ if __name__ == '__main__':
 
         scoop.add_bucket('extras')
         scoop.install(scoop_pcks)
+
+        download_and_install_font(
+            'https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/CascadiaCode/Regular/complete/Caskaydia%20Cove%20Regular%20Nerd%20Font%20Complete%20Windows%20Compatible.otf'
+        )
 
         sync_firefox_cookies()
     finally:

@@ -9,7 +9,7 @@ from dotfile import Wsl
 from dotfile import \
     create_folder, \
     make_link, \
-    download_installer, \
+    download_file, \
     git_clone, \
     cmd_as_bool, \
     execute_cmd, \
@@ -45,13 +45,13 @@ links = {
 def install_bat_fn() -> None:
     bat_url = r'https://github.com/sharkdp/bat/releases/download/v0.18.3/bat_0.18.3_amd64.deb'
     bat_deb_path = os.path.join(tmpdir, 'bat_0.18.3_amd64.deb')
-    download_installer(bat_url, bat_deb_path)
+    download_file(bat_url, bat_deb_path)
     dpkg.install(bat_deb_path)
 
 
 def install_rust_fn() -> None:
     rust_installer = os.path.join(tmpdir, 'rust_installer.sh')
-    download_installer(r'https://sh.rustup.rs', rust_installer)
+    download_file(r'https://sh.rustup.rs', rust_installer)
     Wsl.execute_sh(rust_installer, ['--', '-y'])
 
 
@@ -63,7 +63,7 @@ def install_bat_extras_fn() -> None:
 
 def install_n_fn() -> None:
     n_installer = os.path.join(tmpdir, 'n_install')
-    download_installer(r'https://git.io/n-install', n_installer)
+    download_file(r'https://git.io/n-install', n_installer)
     os.chmod(n_installer, 0o755)
     Wsl.execute_bash(n_installer, ['-y'])
 

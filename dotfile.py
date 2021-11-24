@@ -13,7 +13,7 @@ def git_clone(url: str, path: str = None) -> None:
     sb.run(f'git clone "{url}" {alt_path}'.strip(), shell=True, stdout=sb.PIPE)
 
 
-def download_installer(url: str, path: str) -> None:
+def download_file(url: str, path: str) -> None:
     print('Downloading...')
     resp = requests.get(url, allow_redirects=True)
     with open(path, 'wb') as f:
@@ -131,6 +131,18 @@ class Wsl(WslDependent):
 
 
 class Windows(WindowsDependent):
+    FONTS_NAMESPACE = 0x14
+    FONTS_FOLDER = ''
+
+    def __init__(self):
+        super().__init__()
+
+        import ctypes.wintypes
+
+        buffer = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+        ctypes.windll.shell32.SHGetFolderPathW(0, Windows.FONTS_NAMESPACE, 0, 0, buffer)
+        Windows.FONTS_FOLDER = buffer.value
+
     @classmethod
     def exists(cls, arg: str) -> bool:
         return cmd_as_bool(f'WHERE /Q {arg}')

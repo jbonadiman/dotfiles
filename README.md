@@ -2,7 +2,6 @@
 
 ### TODO:
 
-- [Windows] Install required fonts
 - [Windows] Install script
 - [Windows] Fix CRLF in vim/editors
 - [Windows] Set variable with Windows username in WSL
