@@ -256,7 +256,9 @@ class Winget(WindowsDependent):
                 continue
 
             print(f"Installing package with ID '{pck_id}'...")
-            sb.check_call(['winget', 'install', '--id', pck_id, '--accept-package-agreements'], shell=True)
+            sb.check_call(
+                ['winget', 'install', '-e', '--id', f'"{pck_id}"', '--accept-package-agreements', '--force'],
+                shell=True)
             print('Done!')
 
     @classmethod

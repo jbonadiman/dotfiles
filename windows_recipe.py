@@ -59,10 +59,11 @@ winget_ids = [
     # essential
     'Mozilla.Firefox',
     'Microsoft.PowerToys',
+    'da2x.EdgeDeflector',
 
     # personal
-    '9WZDNCRFJ3TJ',  # Netflix
-    # 'Amazon.Games',
+    # '9WZDNCRFJ3TJ',  # Netflix
+    'Amazon.Games',
     'Amazon.Kindle',
     'EpicGames.EpicGamesLauncher',
     'GOG.Galaxy',
