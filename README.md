@@ -2,7 +2,6 @@
 
 ### TODO:
 
-- [Windows] Backup rainmeter settings/files
 - [Windows] Install EdgeDeflector, Battle.net, Origin
 - [Windows] Amazon Games hash is failing on winget
 - [Windows] Capture lack of admin rights exception and print appropriate message
