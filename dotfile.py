@@ -131,6 +131,10 @@ class Wsl(WslDependent):
 
 
 class Windows(WindowsDependent):
+    PRELOAD_REGKEY = 'Preload'
+    SUBSTITUTES_REGKEY = 'Substitutes'
+    KEYBOARD_REGKEY = 'Keyboard Layout'
+
     FONTS_NAMESPACE = 0x14
     FONTS_FOLDER = ''
     PACKAGES_FOLDER = abs_path(
@@ -156,6 +160,53 @@ class Windows(WindowsDependent):
     @classmethod
     def execute_ps1(cls, script_path: str, args: List[str] = None) -> None:
         cls.__run_script('powershell.exe', script_path, args, sudo=False)
+
+    @classmethod
+    def set_keyboard_layouts(cls, layouts: List[str]) -> None:
+        from winreg import \
+            OpenKey, \
+            EnumValue, \
+            QueryInfoKey, \
+            DeleteKey, \
+            CreateKey, \
+            SetValueEx, \
+            HKEY_CURRENT_USER, REG_SZ
+
+        with OpenKey(HKEY_CURRENT_USER, cls.KEYBOARD_REGKEY) as keyboard_layout:
+            updated = True
+
+            with OpenKey(keyboard_layout, cls.SUBSTITUTES_REGKEY) as substitutes:
+                substitutes_values_count = QueryInfoKey(substitutes)
+
+            with OpenKey(keyboard_layout, cls.PRELOAD_REGKEY) as preload:
+                preload_values_count = QueryInfoKey(preload)
+
+                # Values in key and list differ in size or there is substitutions information
+                if preload_values_count[1] != len(layouts) or substitutes_values_count[1] > 0:
+                    updated = False
+                else:
+                    for i in range(len(layouts)):
+                        value = EnumValue(preload, i)
+
+                        # Key value differ in type or not in list
+                        if value[2] != REG_SZ or value[1] not in layouts:
+                            updated = False
+                            break
+
+            if updated:
+                print('Keyboard layout is updated, skipping...')
+                return
+
+            print('Updating keyboard layout settings...')
+            DeleteKey(keyboard_layout, cls.SUBSTITUTES_REGKEY)
+            CreateKey(keyboard_layout, cls.SUBSTITUTES_REGKEY).Close()
+
+            DeleteKey(keyboard_layout, cls.PRELOAD_REGKEY)
+            with CreateKey(keyboard_layout, cls.PRELOAD_REGKEY) as preload:
+                for name, value in enumerate(layouts, start=1):
+                    SetValueEx(preload, str(name), 0, REG_SZ, value)
+
+            print('Done!')
 
 
 class Scoop(WindowsDependent):
@@ -199,16 +250,14 @@ class Msix(WindowsDependent):
 class Winget(WindowsDependent):
     @staticmethod
     def install(packages_id: List[str]) -> None:
-        for id in packages_id:
-            if Winget.exists(id):
-                print(f"Package with ID '{id}' is already installed, skipping...")
+        for pck_id in packages_id:
+            if Winget.exists(pck_id):
+                print(f"Package with ID '{pck_id}' is already installed, skipping...")
                 continue
 
-            print(f"Installing package with ID '{id}'...")
-            sb.check_call(['winget', 'install', '--id', id, '--accept-package-agreements'], shell=True)
+            print(f"Installing package with ID '{pck_id}'...")
+            sb.check_call(['winget', 'install', '--id', pck_id, '--accept-package-agreements'], shell=True)
             print('Done!')
-
-
 
     @classmethod
     def exists(cls, package_id: str) -> bool:

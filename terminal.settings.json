@@ -16,13 +16,13 @@
     "profiles":
     {
         "defaults": {
-            "colorScheme": "Aurelia",
+            "colorScheme": "One Half Dark",
             "font":
                 {
                     "face": "CaskaydiaCove NF",
                     "size": 13
                 },
-            "opacity": 50,
+            "opacity": 90,
             "useAcrylic": true,
             "antialiasingMode": "cleartype",
             "hidden": false,

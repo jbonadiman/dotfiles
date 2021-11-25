@@ -12,6 +12,18 @@ command = (
 )
 
 
+# def sync_firefox_cookies() -> None:
+#     print('Syncing Firefox cookies exceptions...')
+#
+#     print('Loading hosts...')
+#     resp = requests.get('https://pastebin.com/raw/FjKvjMzz')
+#     hosts = resp.text.split()
+#
+#     print('Syncing...')
+#     firefox.sync_cookies(*hosts)
+#     print('Done!')
+
+
 def sync_cookies(*args: str) -> None:
     conn = None
     try:

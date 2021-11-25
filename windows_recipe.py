@@ -12,6 +12,10 @@ scoop = Scoop()
 msix = Msix()
 winget = Winget()
 
+keyboard_layouts = [
+    '00020409'  # en-US International
+]
+
 TERMINAL_SETTINGS = abs_path(
     os.path.join(
         windows.PACKAGES_FOLDER,
@@ -82,18 +86,6 @@ links = {
     WINGET_SETTINGS: 'winget.settings.json',
     '~/Documents/PowerShell/Microsoft.PowerShell_profile.ps1': 'PowerShell_Profile.ps1'
 }
-
-
-# def sync_firefox_cookies() -> None:
-#     print('Syncing Firefox cookies exceptions...')
-#
-#     print('Loading hosts...')
-#     resp = requests.get('https://pastebin.com/raw/FjKvjMzz')
-#     hosts = resp.text.split()
-#
-#     print('Syncing...')
-#     firefox.sync_cookies(*hosts)
-#     print('Done!')
 
 
 def install_scoop_fn() -> None:
@@ -177,6 +169,8 @@ if __name__ == '__main__':
 
         for symlink, original in links.items():
             make_link(original, symlink)
+
+        windows.set_keyboard_layouts(keyboard_layouts)
 
         # TODO: how to check if wsl is installed?
         # windows.install('wsl', install_wsl_fn)
