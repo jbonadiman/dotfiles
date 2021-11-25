@@ -12,13 +12,22 @@ scoop = Scoop()
 msix = Msix()
 winget = Winget()
 
-TERMINAL_PATH = abs_path(
+TERMINAL_SETTINGS = abs_path(
     os.path.join(
-        '%LOCALAPPDATA%',
-        'Packages',
+        windows.PACKAGES_FOLDER,
         'Microsoft.WindowsTerminal_8wekyb3d8bbwe',
         'LocalState',
-        'settings.json')
+        'settings.json'
+    )
+)
+
+WINGET_SETTINGS = abs_path(
+    os.path.join(
+        windows.PACKAGES_FOLDER,
+        'Microsoft.DesktopAppInstaller_8wekyb3d8bbwe',
+        'LocalState',
+        'settings.json'
+    )
 )
 
 # TODO: read from file
@@ -47,7 +56,7 @@ winget_ids = [
 
     # personal
     '9WZDNCRFJ3TJ',  # Netflix
-    'Amazon.Games',
+    # 'Amazon.Games',
     'Amazon.Kindle',
     'EpicGames.EpicGamesLauncher',
     'GOG.Galaxy',
@@ -69,7 +78,8 @@ folders = [
 ]
 
 links = {
-    TERMINAL_PATH: 'terminal.settings.json',
+    TERMINAL_SETTINGS: 'terminal.settings.json',
+    WINGET_SETTINGS: 'winget.settings.json',
     '~/Documents/PowerShell/Microsoft.PowerShell_profile.ps1': 'PowerShell_Profile.ps1'
 }
 
@@ -170,6 +180,12 @@ if __name__ == '__main__':
 
         # TODO: how to check if wsl is installed?
         # windows.install('wsl', install_wsl_fn)
+
+        if 'WSLENV' not in os.environ or 'USERPROFILE' not in os.environ['WSLENV']:
+            print("Adding Windows profile in WSL environment variables")
+            os.environ['WSLENV'] = 'USERPROFILE/p'
+        else:
+            print("Windows profile already added to WSL environment variables")
 
         windows.install('scoop', install_scoop_fn)
         windows.install('shovel', install_shovel_fn)

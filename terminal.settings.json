@@ -16,7 +16,6 @@
     "profiles":
     {
         "defaults": {
-            "icon": "🗣",
             "colorScheme": "Aurelia",
             "font":
                 {

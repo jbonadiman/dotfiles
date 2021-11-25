@@ -133,6 +133,12 @@ class Wsl(WslDependent):
 class Windows(WindowsDependent):
     FONTS_NAMESPACE = 0x14
     FONTS_FOLDER = ''
+    PACKAGES_FOLDER = abs_path(
+        os.path.join(
+            '%LOCALAPPDATA%',
+            'Packages'
+        )
+    )
 
     def __init__(self):
         super().__init__()

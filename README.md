@@ -2,20 +2,19 @@
 
 ### TODO:
 
-- [Windows] Fix CRLF in vim/editors
-- [Windows] Set variable with Windows username in WSL
 - [Windows] Make sure US-International is the only keyboard
 - [Windows] Install StartAllBack (winget install --id "StartIsBack.StartAllBack")
 - [Windows] Install PowerToys (winget install --id "Microsoft.PowerToys")
 - [Windows] Install rainmeter (scoop install rainmeter)
 - [Windows] Backup rainmeter settings/files
+- [Windows] Install EdgeDeflector, Battle.net, Origin
+- [Windows] Amazon Games hash is failing on winget
 - [WSL] Fix bug and guarantee that Windows exe will be executed successfully
 - [WSL] exa is really slow right now with the -l option. I'm using -1 option for now, but I should change it back in exa version 0.11.0 (this improvement is marked for that version miletone)
 - [WSL] Install shfmt so that bat-extras can be minified
 - [WSL] Find a way to use the trash, so I don't use rm directly
 - [WSL] Syntax highlighting in commands
 - [WSL] Autocomplete in commands
-- [Windows] Install EdgeDeflector, Battle.net, Origin
 - [All] Add separation installations tags (personal, essential, dev...)
 - [All] Add command line options that defines what tags should be installed and if upgrades must be run
 
