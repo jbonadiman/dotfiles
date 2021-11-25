@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
 import os
+import log
 import platform
 import subprocess as sb
 from typing import List, Callable
 
 import requests
+
+logger = log.get_logger()
 
 
 def git_clone(url: str, path: str = None) -> None:
@@ -14,11 +17,11 @@ def git_clone(url: str, path: str = None) -> None:
 
 
 def download_file(url: str, path: str) -> None:
-    print('Downloading...')
+    logger.info('Downloading...')
     resp = requests.get(url, allow_redirects=True)
     with open(path, 'wb') as f:
         f.write(resp.content)
-    print('Done!')
+    logger.info('Done!')
 
 
 def abs_path(path: str) -> str:
@@ -41,10 +44,10 @@ def cmd_as_bool(command: str) -> bool:
 def create_folder(path: str) -> None:
     as_absolute = abs_path(path)
     if os.path.exists(as_absolute):
-        print(f"'{path}' folder already exists. Skipping...")
+        logger.info(f"'{path}' folder already exists. Skipping...")
         return
 
-    print(f"Creating folder '{path}'...")
+    logger.info(f"Creating folder '{path}'...")
     os.makedirs(as_absolute, exist_ok=True)
 
 
@@ -52,22 +55,30 @@ def make_link(original: str, symlink: str) -> None:
     abs_symlink = abs_path(symlink)
     abs_original = abs_path(original)
 
-    if not os.path.exists(abs_original):
-        print(f"Origin '{original}' does not exist. Skipping...")
-        return
-
-    if os.path.lexists(abs_symlink):
-        if os.path.islink(abs_symlink) and os.path.realpath(abs_symlink) == abs_original:
-            print(f"Link '{symlink}' -> '{abs_original}' already exists and is updated. Skipping...")
+    try:
+        if not os.path.exists(abs_original):
+            logger.info(f"Origin '{original}' does not exist. Skipping...")
             return
-        else:
-            print(f"File already exists, removing and creating link to '{symlink}' -> '{abs_original}'...")
-            os.remove(abs_symlink)
-    else:
-        print(f"Creating link '{symlink}' -> '{abs_original}'...")
-        os.makedirs(os.path.dirname(abs_symlink), exist_ok=True)
 
-    os.symlink(abs_original, abs_symlink)
+        if os.path.lexists(abs_symlink):
+            if os.path.islink(abs_symlink) and os.path.realpath(abs_symlink) == abs_original:
+                logger.info(f"Link '{symlink}' -> '{abs_original}' already exists and is updated. Skipping...")
+                return
+            else:
+                logger.info(f"File already exists, removing and creating link to '{symlink}' -> '{abs_original}'...")
+                os.remove(abs_symlink)
+        else:
+            logger.info(f"Creating link '{symlink}' -> '{abs_original}'...")
+            os.makedirs(os.path.dirname(abs_symlink), exist_ok=True)
+
+        os.symlink(abs_original, abs_symlink)
+
+    except OSError as err:
+        if err.winerror == 1314:
+            logger.error(f'This script needs administrative permissions to create a symlink in "{abs_symlink}"'
+                         f' pointing to "{abs_original}".\nGrant the permission and try again!')
+        else:
+            raise err
 
 
 class SystemDependent:
@@ -90,11 +101,11 @@ class SystemDependent:
         display_name = alias or cmd_name
 
         if check_exists and cls.exists(cmd_name):
-            print(f'{display_name} already installed, skipping...')
+            logger.info(f'{display_name} already installed, skipping...')
         else:
-            print(f'Installing {display_name}...')
+            logger.info(f'Installing {display_name}...')
             install_fn()
-            print('Done!')
+            logger.info('Done!')
 
 
 class WslDependent(SystemDependent):
@@ -194,10 +205,10 @@ class Windows(WindowsDependent):
                             break
 
             if updated:
-                print('Keyboard layout is updated, skipping...')
+                logger.info('Keyboard layout is updated, skipping...')
                 return
 
-            print('Updating keyboard layout settings...')
+            logger.info('Updating keyboard layout settings...')
             DeleteKey(keyboard_layout, cls.SUBSTITUTES_REGKEY)
             CreateKey(keyboard_layout, cls.SUBSTITUTES_REGKEY).Close()
 
@@ -206,7 +217,7 @@ class Windows(WindowsDependent):
                 for name, value in enumerate(layouts, start=1):
                     SetValueEx(preload, str(name), 0, REG_SZ, value)
 
-            print('Done!')
+            logger.info('Done!')
 
 
 class Scoop(WindowsDependent):
@@ -215,7 +226,7 @@ class Scoop(WindowsDependent):
 
     @staticmethod
     def upgrade() -> None:
-        sb.check_call(['scoop', 'update', '*'], shell=True)
+        sb.check_call(['scoop', 'update', '-q', '*'], shell=True)
 
     @staticmethod
     def install(packages: List[str]) -> None:
@@ -223,15 +234,15 @@ class Scoop(WindowsDependent):
 
     @staticmethod
     def update() -> None:
-        sb.check_call(['scoop', 'update'], shell=True)
+        sb.check_call(['scoop', 'update', '-q'], shell=True)
 
     @staticmethod
     def add_bucket(bucket_name: str) -> None:
         if cmd_as_bool(f'scoop bucket list | findstr {bucket_name} > NUL'):
-            print(f"Bucket '{bucket_name}' already added, skipping...")
+            logger.info(f"Bucket '{bucket_name}' already added, skipping...")
             return
 
-        print(f"Adding bucket '{bucket_name}'...")
+        logger.info(f"Adding bucket '{bucket_name}'...")
         sb.check_call(['scoop', 'bucket', 'add', bucket_name], shell=True)
 
     @staticmethod
@@ -243,7 +254,7 @@ class Msix(WindowsDependent):
     @staticmethod
     def install(packages_paths: List[str]) -> None:
         for path in packages_paths:
-            print(f"Installing {os.path.basename(path)}...")
+            logger.info(f"Installing {os.path.basename(path)}...")
             sb.check_call(['powershell.exe', '-c', 'Add-AppPackage', '-path', path], shell=True)
 
 
@@ -252,14 +263,14 @@ class Winget(WindowsDependent):
     def install(packages_id: List[str]) -> None:
         for pck_id in packages_id:
             if Winget.exists(pck_id):
-                print(f"Package with ID '{pck_id}' is already installed, skipping...")
+                logger.info(f"Package with ID '{pck_id}' is already installed, skipping...")
                 continue
 
-            print(f"Installing package with ID '{pck_id}'...")
+            logger.info(f"Installing package with ID '{pck_id}'...")
             sb.check_call(
                 ['winget', 'install', '-e', '--id', f'"{pck_id}"', '--accept-package-agreements', '--force'],
                 shell=True)
-            print('Done!')
+            logger.info('Done!')
 
     @classmethod
     def exists(cls, package_id: str) -> bool:
