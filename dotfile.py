@@ -185,8 +185,9 @@ class Scoop(WindowsDependent):
 class Msix(WindowsDependent):
     @staticmethod
     def install(packages_paths: List[str]) -> None:
-        # Add-AppPackage -path “C:\Caphyon\MyBundle.msixbundle”
-        pass
+        for path in packages_paths:
+            print(f"Installing {os.path.basename(path)}...")
+            sb.check_call(['powershell.exe', '-c', 'Add-AppPackage', '-path', path], shell=True)
 
 
 class Apt(WslDependent):

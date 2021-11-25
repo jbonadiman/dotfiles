@@ -1,23 +1,3 @@
-$step_name=''
-
-$addedBuckets=@{
-    extra=$false;
-    java=$false;
-    'nerd-fonts'=$false;
-}
-
-function Add-Bucket ($bucketName) {
-    if (-NOT $addedBuckets[$bucketName]) {
-        Write-Host "adding '$bucketName' bucket to shovel..."
-        shovel bucket add $bucketName
-        $addedBuckets[$bucketName] = $true
-    }
-}
-
-function Install-ShovelPkg ($package) {
-    Write-Host "installing '$package'..."
-    shovel install $package
-}
 
 function Install-Browser {
     Invoke-WebRequest -OutFile "FirefoxInstaller.exe" -Uri https://download.mozilla.org/?product=firefox-stub
@@ -25,14 +5,6 @@ function Install-Browser {
 }
 
 function Install-PersonalPackages {
-    Add-Bucket 'extras'
-    
-    Install-ShovelPkg 'ccleaner'
-    Install-ShovelPkg 'discord'
-    Install-ShovelPkg 'gimp'
-    Install-ShovelPkg 'inkscape'
-    Install-ShovelPkg 'qbittorrent'
-
     Write-Host "installing 'Netflix'..."
     winget install --id '9WZDNCRFJ3TJ' --accept-package-agreements
     

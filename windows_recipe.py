@@ -9,6 +9,7 @@ import glob
 
 import firefox
 from dotfile import Scoop
+from dotfile import Msix
 from dotfile import Windows
 from dotfile import abs_path, \
     create_folder, \
@@ -19,6 +20,8 @@ from windows_font_installer import install_font
 
 windows = Windows()
 scoop = Scoop()
+msix = Msix()
+
 print('Installing Windows packages...')
 tmpdir = tempfile.mkdtemp(prefix='windows_recipe')
 
@@ -61,16 +64,16 @@ links = {
 }
 
 
-def sync_firefox_cookies() -> None:
-    print('Syncing Firefox cookies exceptions...')
-
-    print('Loading hosts...')
-    resp = requests.get('https://pastebin.com/raw/FjKvjMzz')
-    hosts = resp.text.split()
-
-    print('Syncing...')
-    firefox.sync_cookies(*hosts)
-    print('Done!')
+# def sync_firefox_cookies() -> None:
+#     print('Syncing Firefox cookies exceptions...')
+#
+#     print('Loading hosts...')
+#     resp = requests.get('https://pastebin.com/raw/FjKvjMzz')
+#     hosts = resp.text.split()
+#
+#     print('Syncing...')
+#     firefox.sync_cookies(*hosts)
+#     print('Done!')
 
 
 def install_scoop_fn() -> None:
@@ -112,6 +115,15 @@ def install_shovel_fn() -> None:
         shutil.copy2(file_path, new_filename)
 
 
+def install_winget_fn() -> None:
+    download_url = 'https://github.com/microsoft/winget-cli/releases/download/v1.1.12653/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
+    winget_setup = os.path.join(tmpdir, os.path.basename(download_url))
+
+    download_file(download_url, winget_setup)
+
+    msix.install([winget_setup])
+
+
 if __name__ == '__main__':
     try:
         list(map(create_folder, folders))
@@ -125,10 +137,12 @@ if __name__ == '__main__':
         scoop.add_bucket('extras')
         scoop.install(scoop_pcks)
 
+        windows.install('winget', install_winget_fn)
+
         download_and_install_font(
             'https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/CascadiaCode/Regular/complete/Caskaydia%20Cove%20Regular%20Nerd%20Font%20Complete%20Windows%20Compatible.otf'
         )
 
-        sync_firefox_cookies()
+        # sync_firefox_cookies()
     finally:
         shutil.rmtree(tmpdir)
