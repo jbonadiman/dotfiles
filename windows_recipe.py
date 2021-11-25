@@ -51,12 +51,14 @@ scoop_apps = [
     'discord',
     'gimp',
     'inkscape',
-    'qbittorrent'
+    'qbittorrent',
+    'rainmeter'
 ]
 
 winget_ids = [
     # essential
     'Mozilla.Firefox',
+    'Microsoft.PowerToys',
 
     # personal
     '9WZDNCRFJ3TJ',  # Netflix
@@ -68,6 +70,7 @@ winget_ids = [
     'Telegram.TelegramDesktop',
     'Ubisoft.Connect',
     'WhatsApp.WhatsApp',
+    'StartIsBack.StartAllBack',
 
     # dev
     'dbeaver.dbeaver',

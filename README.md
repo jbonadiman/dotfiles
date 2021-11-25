@@ -2,9 +2,6 @@
 
 ### TODO:
 
-- [Windows] Install StartAllBack (winget install --id "StartIsBack.StartAllBack")
-- [Windows] Install PowerToys (winget install --id "Microsoft.PowerToys")
-- [Windows] Install rainmeter (scoop install rainmeter)
 - [Windows] Backup rainmeter settings/files
 - [Windows] Install EdgeDeflector, Battle.net, Origin
 - [Windows] Amazon Games hash is failing on winget
