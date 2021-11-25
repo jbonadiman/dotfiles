@@ -190,6 +190,25 @@ class Msix(WindowsDependent):
             sb.check_call(['powershell.exe', '-c', 'Add-AppPackage', '-path', path], shell=True)
 
 
+class Winget(WindowsDependent):
+    @staticmethod
+    def install(packages_id: List[str]) -> None:
+        for id in packages_id:
+            if Winget.exists(id):
+                print(f"Package with ID '{id}' is already installed, skipping...")
+                continue
+
+            print(f"Installing package with ID '{id}'...")
+            sb.check_call(['winget', 'install', '--id', id, '--accept-package-agreements'], shell=True)
+            print('Done!')
+
+
+
+    @classmethod
+    def exists(cls, package_id: str) -> bool:
+        return cmd_as_bool(f'winget list -e --id "{package_id}" > NUL')
+
+
 class Apt(WslDependent):
     @staticmethod
     def upgrade() -> None:

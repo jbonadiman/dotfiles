@@ -1,29 +1,16 @@
 #!/usr/bin/env python3
 
+import tempfile
 import os.path
 
-import requests
-import shutil
-import tempfile
-import glob
+from dotfile import abs_path
 
-import firefox
-from dotfile import Scoop
-from dotfile import Msix
-from dotfile import Windows
-from dotfile import abs_path, \
-    create_folder, \
-    make_link, \
-    download_file
-
-from windows_font_installer import install_font
+from dotfile import Msix, Scoop, Winget, Windows
 
 windows = Windows()
 scoop = Scoop()
 msix = Msix()
-
-print('Installing Windows packages...')
-tmpdir = tempfile.mkdtemp(prefix='windows_recipe')
+winget = Winget()
 
 TERMINAL_PATH = abs_path(
     os.path.join(
@@ -35,7 +22,7 @@ TERMINAL_PATH = abs_path(
 )
 
 # TODO: read from file
-scoop_pcks = [
+scoop_apps = [
     # essential
     'aria2',
     'advancedrenamer',
@@ -52,6 +39,29 @@ scoop_pcks = [
     'gimp',
     'inkscape',
     'qbittorrent'
+]
+
+winget_ids = [
+    # essential
+    'Mozilla.Firefox',
+
+    # personal
+    '9WZDNCRFJ3TJ',  # Netflix
+    'Amazon.Games',
+    'Amazon.Kindle',
+    'EpicGames.EpicGamesLauncher',
+    'GOG.Galaxy',
+    'Valve.Steam',
+    'Telegram.TelegramDesktop',
+    'Ubisoft.Connect',
+    'WhatsApp.WhatsApp',
+
+    # dev
+    'dbeaver.dbeaver',
+
+    # TODO: Should only be installed if WSL is present
+    # 'Canonical.Ubuntu.2004'
+
 ]
 
 folders = [
@@ -77,14 +87,18 @@ links = {
 
 
 def install_scoop_fn() -> None:
+    from dotfile import download_file
+    from dotfile import abs_path
+    from os import environ
+
     scoop_installer = os.path.join(tmpdir, 'install.ps1')
     download_file(r'get.scoop.sh', scoop_installer)
-    Windows.execute_ps1(scoop_installer)
-    if Scoop.SCOOP_VAR not in os.environ:
+    windows.execute_ps1(scoop_installer)
+    if Scoop.SCOOP_VAR not in environ:
         print(f"Adding '{Scoop.SCOOP_VAR}' to environment variables...")
-        os.environ[Scoop.SCOOP_VAR] = abs_path('~/scoop')
+        environ[Scoop.SCOOP_VAR] = abs_path('~/scoop')
     print('Installing scoop essential packages...')
-    scoop.install('7zip', 'git', 'innounp', 'dark', 'wixtoolset', 'lessmsi')
+    scoop.install(['7zip', 'git', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
 
 
 def download_and_install_font(url: str) -> None:
@@ -96,6 +110,9 @@ def download_and_install_font(url: str) -> None:
         print(f"Font '{font_name}' already installed, skipping...")
         return
 
+    from windows_font_installer import install_font
+    from dotfile import download_file
+
     print(f"Downloading and installing font '{font_name}'...")
     font_path = os.path.join(tmpdir, font_name)
     download_file(url, font_path)
@@ -105,17 +122,22 @@ def download_and_install_font(url: str) -> None:
 
 
 def install_shovel_fn() -> None:
+    from glob import glob
+    from shutil import copy2
+
     scoop.change_repo('https://github.com/Ash258/Scoop-Core')
     scoop.update()
     scoop.add_bucket('Base')
     p = os.path
     # copy everything that is /scoop.ext to the same folder as /shovel.ext
-    for file_path in glob.glob(p.join(os.environ['SCOOP'], 'shims', 'scoop.*')):
+    for file_path in glob(p.join(os.environ['SCOOP'], 'shims', 'scoop.*')):
         new_filename = p.join(p.dirname(file_path), f'shovel{p.splitext(file_path)[1]}')
-        shutil.copy2(file_path, new_filename)
+        copy2(file_path, new_filename)
 
 
 def install_winget_fn() -> None:
+    from dotfile import download_file
+
     download_url = 'https://github.com/microsoft/winget-cli/releases/download/v1.1.12653/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
     winget_setup = os.path.join(tmpdir, os.path.basename(download_url))
 
@@ -124,20 +146,40 @@ def install_winget_fn() -> None:
     msix.install([winget_setup])
 
 
+def install_wsl_fn() -> None:
+    from dotfile import execute_cmd
+
+    print('Installing WSL...')
+    execute_cmd('wsl --install')
+    print('Done!')
+
+
 if __name__ == '__main__':
+    from dotfile import create_folder
+    from dotfile import make_link
+    from shutil import rmtree
+
+    print('Installing Windows packages...')
+    tmpdir = tempfile.mkdtemp(prefix='windows_recipe')
+
     try:
         list(map(create_folder, folders))
 
         for symlink, original in links.items():
             make_link(original, symlink)
 
+        # TODO: how to check if wsl is installed?
+        # windows.install('wsl', install_wsl_fn)
+
         windows.install('scoop', install_scoop_fn)
         windows.install('shovel', install_shovel_fn)
 
         scoop.add_bucket('extras')
-        scoop.install(scoop_pcks)
+        scoop.install(scoop_apps)
 
         windows.install('winget', install_winget_fn)
+
+        winget.install(winget_ids)
 
         download_and_install_font(
             'https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/CascadiaCode/Regular/complete/Caskaydia%20Cove%20Regular%20Nerd%20Font%20Complete%20Windows%20Compatible.otf'
@@ -145,4 +187,4 @@ if __name__ == '__main__':
 
         # sync_firefox_cookies()
     finally:
-        shutil.rmtree(tmpdir)
+        rmtree(tmpdir)
