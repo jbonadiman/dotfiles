@@ -62,11 +62,6 @@ function Install-PersonalPackages {
 }
 
 function Install-DevPackages {
-    Install-ShovelPkg 'gitkraken' 
-    
-    Add-Bucket 'extras'
-    Install-ShovelPkg 'jetbrains-toolbox'
-
     Write-Host "installing 'DBeaver'..."
     winget install --id 'dbeaver.dbeaver'
 
@@ -77,18 +72,4 @@ function Install-DevPackages {
     winget install --id 'Canonical.Ubuntu.2004' --accept-package-agreements
 
     Copy-Item -Path "./cfg/terminal.settings.json" -Destination [IO.Path]::Combine($env:LOCALAPPDATA, "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json")
-}
-
-function Install-Fonts {
-  $fontsTempDir=[IO.Path]::Combine($env:TEMP, "fonts")
-  $fonts=(New-Object -ComObject Shell.Application).Namespace(0x14)
-
-  # Caskaydia Code NerdFont
-  Invoke-WebRequest "https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/CascadiaCode/Regular/complete/Caskaydia%20Cove%20Regular%20Nerd%20Font%20Complete%20Windows%20Compatible.otf" -OutFile ([IO.Path]::Combine($fontsTempDir, "Caskaydia_NerdFont.otf"))
-
-  Get-ChildItem -Path ([IO.Path]::Combine($fontsTempDir, "*")) -Include "*.ttf", "*.otf" | %{ $fonts.CopyHere($_.fullname) }
-}
-
-function Install-EssentialPackages {
-    Install-Fonts
 }

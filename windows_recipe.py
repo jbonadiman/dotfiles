@@ -33,12 +33,22 @@ TERMINAL_PATH = abs_path(
 
 # TODO: read from file
 scoop_pcks = [
+    # essential
     'aria2',
     'advancedrenamer',
     'authy',
     'treesize-free',
     'vlc',
-    'bitwarden'
+    'bitwarden',
+    # dev
+    'gitkraken',
+    'jetbrains-toolbox',
+    # personal
+    'ccleaner',
+    'discord',
+    'gimp',
+    'inkscape',
+    'qbittorrent'
 ]
 
 folders = [
