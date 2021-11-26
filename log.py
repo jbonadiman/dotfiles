@@ -18,8 +18,8 @@ class LogLevel(Enum):
 class Log:
 
     @staticmethod
-    def __info_stylized(message: str) -> str:
-        return f'{Fore.LIGHTWHITE_EX}{message}{Style.RESET_ALL}'
+    def __info_stylized(message: str, accented: bool) -> str:
+        return f'{Fore.LIGHTMAGENTA_EX if accented else Fore.LIGHTWHITE_EX}{message}{Style.RESET_ALL}'
 
     @staticmethod
     def __debug_stylized(message: str) -> str:
@@ -33,9 +33,9 @@ class Log:
         self.level: LogLevel = level
         init()
 
-    def info(self, message: str):
+    def info(self, message: str, accented: bool = False):
         if self.level >= LogLevel.INFO:
-            print(Log.__info_stylized(message))
+            print(Log.__info_stylized(message, accented))
 
     def debug(self, message: str):
         if self.level >= LogLevel.DEBUG:

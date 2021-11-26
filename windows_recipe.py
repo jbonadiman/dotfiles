@@ -2,11 +2,13 @@
 
 import tempfile
 import os.path
+import log
 
 from dotfile import abs_path
 
 from dotfile import Msix, Scoop, Winget, Windows
 
+logger = log.get_logger()
 windows = Windows()
 scoop = Scoop()
 msix = Msix()
@@ -102,9 +104,9 @@ def install_scoop_fn() -> None:
     download_file(r'get.scoop.sh', scoop_installer)
     windows.execute_ps1(scoop_installer)
     if Scoop.SCOOP_VAR not in environ:
-        print(f"Adding '{Scoop.SCOOP_VAR}' to environment variables...")
+        logger.info(f"Adding '{Scoop.SCOOP_VAR}' to environment variables...")
         environ[Scoop.SCOOP_VAR] = abs_path('~/scoop')
-    print('Installing scoop essential packages...')
+    logger.info('Installing scoop essential packages...')
     scoop.install(['7zip', 'git', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
 
 
@@ -114,17 +116,17 @@ def download_and_install_font(url: str) -> None:
     font_name = unquote(os.path.basename(url))
 
     if os.path.exists(os.path.join(Windows.FONTS_FOLDER, font_name)):
-        print(f"Font '{font_name}' already installed, skipping...")
+        logger.info(f"Font '{font_name}' already installed, skipping...")
         return
 
     from windows_font_installer import install_font
     from dotfile import download_file
 
-    print(f"Downloading and installing font '{font_name}'...")
+    logger.info(f"Downloading and installing font '{font_name}'...")
     font_path = os.path.join(tmpdir, font_name)
     download_file(url, font_path)
 
-    print('Installing...')
+    logger.info('Installing...')
     install_font(font_path)
 
 
@@ -156,9 +158,9 @@ def install_winget_fn() -> None:
 def install_wsl_fn() -> None:
     from dotfile import execute_cmd
 
-    print('Installing WSL...')
+    logger.info('Installing WSL...')
     execute_cmd('wsl --install')
-    print('Done!')
+    logger.info('Done!')
 
 
 if __name__ == '__main__':
@@ -171,9 +173,11 @@ if __name__ == '__main__':
 
     try:
         list(map(create_folder, folders))
+        logger.info('Finished creating folders!', True)
 
         for symlink, original in links.items():
             make_link(original, symlink)
+        logger.info('Finished creating symlinks!', True)
 
         windows.set_keyboard_layouts(keyboard_layouts)
 
@@ -181,10 +185,16 @@ if __name__ == '__main__':
         # windows.install('wsl', install_wsl_fn)
 
         if 'WSLENV' not in os.environ or 'USERPROFILE' not in os.environ['WSLENV']:
-            print("Adding Windows profile in WSL environment variables")
+            logger.info("Adding Windows profile in WSL environment variables")
             os.environ['WSLENV'] = 'USERPROFILE/p'
         else:
-            print("Windows profile already added to WSL environment variables")
+            logger.info("Windows profile already added to WSL environment variables")
+
+        download_and_install_font(
+            'https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/CascadiaCode/Regular/complete/Caskaydia%20Cove%20Regular%20Nerd%20Font%20Complete%20Windows%20Compatible.otf'
+        )
+
+        logger.info('Finished setups!', True)
 
         windows.install('scoop', install_scoop_fn)
         windows.install('shovel', install_shovel_fn)
@@ -195,11 +205,6 @@ if __name__ == '__main__':
         windows.install('winget', install_winget_fn)
 
         winget.install(winget_ids)
-
-        download_and_install_font(
-            'https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/CascadiaCode/Regular/complete/Caskaydia%20Cove%20Regular%20Nerd%20Font%20Complete%20Windows%20Compatible.otf'
-        )
-
-        # sync_firefox_cookies()
+        logger.info('Finished installing packages!', True)
     finally:
         rmtree(tmpdir)
