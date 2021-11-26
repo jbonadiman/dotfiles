@@ -116,7 +116,7 @@ def download_and_install_font(url: str) -> None:
     font_name = unquote(os.path.basename(url))
 
     if os.path.exists(os.path.join(Windows.FONTS_FOLDER, font_name)):
-        logger.info(f"Font '{font_name}' already installed, skipping...")
+        logger.warn(f"Font '{font_name}' already installed, skipping...")
         return
 
     from windows_font_installer import install_font
@@ -172,9 +172,11 @@ if __name__ == '__main__':
     tmpdir = tempfile.mkdtemp(prefix='windows_recipe')
 
     try:
+        logger.info('Creating folders...')
         list(map(create_folder, folders))
         logger.info('Finished creating folders!', True)
 
+        logger.info('Creating symlinks...')
         for symlink, original in links.items():
             make_link(original, symlink)
         logger.info('Finished creating symlinks!', True)
@@ -185,10 +187,10 @@ if __name__ == '__main__':
         # windows.install('wsl', install_wsl_fn)
 
         if 'WSLENV' not in os.environ or 'USERPROFILE' not in os.environ['WSLENV']:
-            logger.info("Adding Windows profile in WSL environment variables")
+            logger.info('Adding Windows profile in WSL environment variables')
             os.environ['WSLENV'] = 'USERPROFILE/p'
         else:
-            logger.info("Windows profile already added to WSL environment variables")
+            logger.warn('Windows profile already added to WSL environment variables, skipping...')
 
         download_and_install_font(
             'https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/CascadiaCode/Regular/complete/Caskaydia%20Cove%20Regular%20Nerd%20Font%20Complete%20Windows%20Compatible.otf'

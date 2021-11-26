@@ -5,15 +5,31 @@ import log
 import platform
 import subprocess as sb
 from typing import List, Callable
+from functools import wraps
 
 import requests
 
 logger = log.get_logger()
 
 
+def requires_admin(error_msg: str):
+    def wrap(fn: Callable):
+        @wraps(fn)
+        def wrapped_f(*args):
+            try:
+                return fn(*args)
+            except (OSError, PermissionError) as err:
+                if err.winerror == 1314 or err.errno == 13:
+                    logger.error(error_msg)
+                else:
+                    raise err
+        return wrapped_f
+    return wrap
+
+
 def git_clone(url: str, path: str = None) -> None:
-    alt_path = path or ''
-    sb.run(f'git clone "{url}" {alt_path}'.strip(), shell=True, stdout=sb.PIPE)
+    alt_path = f' "{path}"' or ''
+    sb.run(f'git clone -q "{url}"{alt_path}'.strip(), shell=True, stdout=sb.PIPE)
 
 
 def download_file(url: str, path: str) -> None:
@@ -41,44 +57,38 @@ def cmd_as_bool(command: str) -> bool:
     return bool(int(result.stdout))
 
 
+@requires_admin('Administrative privileges are required to create this folder!')
 def create_folder(path: str) -> None:
     as_absolute = abs_path(path)
     if os.path.exists(as_absolute):
-        logger.info(f"'{path}' folder already exists. Skipping...")
+        logger.warn(f"'{path}' folder already exists. Skipping...")
         return
 
     logger.info(f"Creating folder '{path}'...")
     os.makedirs(as_absolute, exist_ok=True)
 
 
+@requires_admin("Administrative privileges are required to make this link!")
 def make_link(original: str, symlink: str) -> None:
     abs_symlink = abs_path(symlink)
     abs_original = abs_path(original)
 
-    try:
-        if not os.path.exists(abs_original):
-            logger.info(f"Origin '{original}' does not exist. Skipping...")
+    if not os.path.exists(abs_original):
+        logger.warn(f"Origin '{original}' does not exist. Skipping...")
+        return
+
+    if os.path.lexists(abs_symlink):
+        if os.path.islink(abs_symlink) and os.path.realpath(abs_symlink) == abs_original:
+            logger.warn(f"Link '{symlink}' -> '{abs_original}' already exists and is updated. Skipping...")
             return
-
-        if os.path.lexists(abs_symlink):
-            if os.path.islink(abs_symlink) and os.path.realpath(abs_symlink) == abs_original:
-                logger.info(f"Link '{symlink}' -> '{abs_original}' already exists and is updated. Skipping...")
-                return
-            else:
-                logger.info(f"File already exists, removing and creating link to '{symlink}' -> '{abs_original}'...")
-                os.remove(abs_symlink)
         else:
-            logger.info(f"Creating link '{symlink}' -> '{abs_original}'...")
-            os.makedirs(os.path.dirname(abs_symlink), exist_ok=True)
+            logger.info(f"File already exists, removing and creating link to '{symlink}' -> '{abs_original}'...")
+            os.remove(abs_symlink)
+    else:
+        logger.info(f"Creating link '{symlink}' -> '{abs_original}'...")
+        os.makedirs(os.path.dirname(abs_symlink), exist_ok=True)
 
-        os.symlink(abs_original, abs_symlink)
-
-    except OSError as err:
-        if err.winerror == 1314:
-            logger.error(f'This script needs administrative permissions to create a symlink in "{abs_symlink}"'
-                         f' pointing to "{abs_original}".\nGrant the permission and try again!')
-        else:
-            raise err
+    os.symlink(abs_original, abs_symlink)
 
 
 class SystemDependent:
@@ -87,23 +97,30 @@ class SystemDependent:
             raise RuntimeError("This script can't be run in the current platform!")
 
     @staticmethod
+    @requires_admin('Administrative privileges are required to run this script!')
     def __run_script(terminal: str, script_path: str, args: List[str], sudo: bool = False) -> None:
         sudo_token = 'sudo' if sudo else ''
-
         args_token = ''
         if args and len(args):
-            args_token = ' ' + ' '.join(args) if len(args) > 1 else args[0]
+            args_token = ' '.join(args) if len(args) > 1 else args[0]
 
-        sb.run(f'{sudo_token} {terminal} {script_path}{args_token}', shell=True, stdout=sb.PIPE)
+        script_name = os.path.basename(script_path)
+        args_log = f"with args '{args_token}'" if args_token != '' else 'without args'
+        logger.info(
+            f"Using terminal '{terminal}' to run the script '{script_name}'{' as sudo' if sudo else '' } {args_log}"
+        )
+
+        sb.run(f'{sudo_token} {terminal} {script_path}{" " + args_token}', shell=True, stdout=sb.PIPE)
 
     @classmethod
+    @requires_admin('Administrative privileges are required for this installation!')
     def install(cls, cmd_name: str, install_fn: Callable, check_exists=True, alias=None):
         display_name = alias or cmd_name
 
         if check_exists and cls.exists(cmd_name):
-            logger.info(f'{display_name} already installed, skipping...')
+            logger.warn(f"'{display_name}' already installed, skipping...")
         else:
-            logger.info(f'Installing {display_name}...')
+            logger.info(f"Installing '{display_name}'...")
             install_fn()
             logger.info('Done!')
 
@@ -130,7 +147,7 @@ class AndroidDependent(SystemDependent):
 class Wsl(WslDependent):
     @classmethod
     def exists(cls, arg: str) -> bool:
-        return cmd_as_bool(f'command -v {arg} > /dev/null 2>&1')
+        return cmd_as_bool(f'command -v "{arg}" > /dev/null 2>&1')
 
     @classmethod
     def execute_sh(cls, script_path: str, args: List[str] = None, sudo=False) -> None:
@@ -160,20 +177,24 @@ class Windows(WindowsDependent):
 
         import ctypes.wintypes
 
+        logger.debug('Getting fonts folder location...')
         buffer = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
         ctypes.windll.shell32.SHGetFolderPathW(0, Windows.FONTS_NAMESPACE, 0, 0, buffer)
         Windows.FONTS_FOLDER = buffer.value
+        logger.debug(f'Located font folder at "{buffer.value}"')
 
     @classmethod
     def exists(cls, arg: str) -> bool:
-        return cmd_as_bool(f'WHERE /Q {arg}')
+        return cmd_as_bool(f'WHERE /Q "{arg}"')
 
     @classmethod
     def execute_ps1(cls, script_path: str, args: List[str] = None) -> None:
-        cls.__run_script('powershell.exe', script_path, args, sudo=False)
+        cls.__run_script('powershell.exe', script_path, args)
 
     @classmethod
+    @requires_admin('Administrative privileges are required to setup the keyboard layout!')
     def set_keyboard_layouts(cls, layouts: List[str]) -> None:
+        logger.info('Setting up keyboard layout...')
         from winreg import \
             OpenKey, \
             EnumValue, \
@@ -183,12 +204,20 @@ class Windows(WindowsDependent):
             SetValueEx, \
             HKEY_CURRENT_USER, REG_SZ
 
+        keyboard_regname = f'HKEY_CURRENT_USER/{cls.KEYBOARD_REGKEY}'
+        substitutes_regname = f'{keyboard_regname}/{cls.SUBSTITUTES_REGKEY}'
+        preload_regname = f'{keyboard_regname}/{cls.PRELOAD_REGKEY}'
+
+        logger.debug(f'Opening registry key "{keyboard_regname}"')
         with OpenKey(HKEY_CURRENT_USER, cls.KEYBOARD_REGKEY) as keyboard_layout:
             updated = True
 
+            logger.debug(f'Opening registry key "{substitutes_regname}"')
             with OpenKey(keyboard_layout, cls.SUBSTITUTES_REGKEY) as substitutes:
                 substitutes_values_count = QueryInfoKey(substitutes)
+                logger.debug(f'Closing registry key "{substitutes_regname}"')
 
+            logger.debug(f'Opening registry key "{preload_regname}"')
             with OpenKey(keyboard_layout, cls.PRELOAD_REGKEY) as preload:
                 preload_values_count = QueryInfoKey(preload)
 
@@ -203,6 +232,7 @@ class Windows(WindowsDependent):
                         if value[2] != REG_SZ or value[1] not in layouts:
                             updated = False
                             break
+                logger.debug(f'Closing registry key "{preload_regname}"')
 
             if updated:
                 logger.info('Keyboard layout is updated, skipping...')
@@ -263,7 +293,7 @@ class Winget(WindowsDependent):
     def install(packages_id: List[str]) -> None:
         for pck_id in packages_id:
             if Winget.exists(pck_id):
-                logger.info(f"Package with ID '{pck_id}' is already installed, skipping...")
+                logger.warn(f"Package with ID '{pck_id}' is already installed, skipping...")
                 continue
 
             logger.info(f"Installing package with ID '{pck_id}'...")
@@ -279,18 +309,21 @@ class Winget(WindowsDependent):
 
 class Apt(WslDependent):
     @staticmethod
+    @requires_admin('Administrative privileges are required to use "apt-get upgrade"!')  # TODO: is it really?
     def upgrade() -> None:
         sb.check_call(('sudo', 'apt-get', 'upgrade', '-y'))
 
     @staticmethod
+    @requires_admin('Administrative privileges are required to install packages using apt!')
     def install(packages: List[str]) -> None:
         sb.check_call(['sudo', 'apt-get', 'install', '-y'] + packages)
 
     @staticmethod
     def update() -> None:
-        sb.check_call(('sudo', 'apt-get', 'update'))
+        sb.check_call(('apt-get', 'update'))
 
     @staticmethod
+    @requires_admin('Administrative privileges are required to add repositories to apt!')  # TODO: is it really?
     def add_repository(repo_name: str) -> None:
         sb.check_call(('sudo', 'add-apt-repository', f'ppa:{repo_name}', '-y'))
 
@@ -301,5 +334,7 @@ class Apt(WslDependent):
 
 class Dpkg(WslDependent):
     @staticmethod
+    @requires_admin('Administrative privileges are required to install packages using dpkg!')
     def install(deb_paths: List[str]) -> None:
-        sb.check_call(['sudo', 'dpkg', '-i'] + deb_paths)
+        for path in deb_paths:
+            sb.check_call(['sudo', 'dpkg', '-i', f'"{path}"'])
