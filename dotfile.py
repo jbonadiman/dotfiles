@@ -4,27 +4,27 @@ import os
 import log
 import platform
 import subprocess as sb
-from typing import List, Callable
+from typing import List, Callable, Dict
 from functools import wraps
 
 import requests
 
-logger = log.get_logger(level=log.LogLevel.WARNING)
+logger = log.get_logger()
 
 
-def requires_admin(error_msg: str):
-    def wrap(fn: Callable):
-        @wraps(fn)
-        def wrapped_f(*args):
-            try:
-                return fn(*args)
-            except (OSError, PermissionError) as err:
-                if err.errno == 13 or (err.winerror and err.winerror == 1314):
-                    logger.error(f'{error_msg}\nFUNCTION: {fn.__name__}\nARGUMENTS: {args}')
-                else:
-                    raise err
-        return wrapped_f
-    return wrap
+def requires_admin(fn: Callable):
+    @wraps(fn)
+    def wrapped_f(*args, **kwargs):
+        logger.info(f"Using administrative privileges to '{fn.__qualname__}'...")
+        try:
+            return fn(*args, **kwargs)
+        except (OSError, PermissionError) as err:
+            if err.errno == 13 or (err.winerror and err.winerror == 1314):
+                logger.error(f"Administrative privileges are required to {fn.__qualname__}\n"
+                             f'ARGUMENTS: {args} {kwargs}')
+            else:
+                raise err
+    return wrapped_f
 
 
 def git_clone(url: str, path: str = None) -> None:
@@ -57,38 +57,48 @@ def cmd_as_bool(command: str) -> bool:
     return bool(int(result.stdout))
 
 
-@requires_admin('Administrative privileges are required to create this folder!')
-def create_folder(path: str) -> None:
-    as_absolute = abs_path(path)
-    if os.path.exists(as_absolute):
-        logger.warn(f"'{path}' folder already exists. Skipping...")
-        return
+@requires_admin
+def create_folders(paths: List[str]) -> None:
+    import os.path
 
-    logger.info(f"Creating folder '{path}'...")
-    os.makedirs(as_absolute, exist_ok=True)
+    logger.info('Creating folders...')
+    for p in paths:
+        as_absolute = abs_path(p)
+        if os.path.exists(as_absolute):
+            logger.warn(f"'{p}' folder already exists, skipping...")
+            continue
+
+        logger.info(f"Creating folder '{p}'...")
+        os.makedirs(as_absolute, exist_ok=True)
 
 
-@requires_admin("Administrative privileges are required to make this link!")
-def make_link(original: str, symlink: str) -> None:
-    abs_symlink = abs_path(symlink)
-    abs_original = abs_path(original)
+@requires_admin
+def make_links(links: Dict[str, str]) -> None:
+    import os
+    import os.path
 
-    if not os.path.exists(abs_original):
-        logger.warn(f"Origin '{original}' does not exist. Skipping...")
-        return
+    logger.info('Creating symlinks...')
 
-    if os.path.lexists(abs_symlink):
-        if os.path.islink(abs_symlink) and os.path.realpath(abs_symlink) == abs_original:
-            logger.warn(f"Link '{symlink}' -> '{abs_original}' already exists and is updated. Skipping...")
-            return
+    for symlink, original in links.items():
+        abs_symlink = abs_path(symlink)
+        abs_original = abs_path(original)
+
+        if not os.path.exists(abs_original):
+            logger.warn(f"Origin '{original}' does not exist, skipping...")
+            continue
+
+        if os.path.lexists(abs_symlink):
+            if os.path.islink(abs_symlink) and os.path.realpath(abs_symlink) == abs_original:
+                logger.warn(f"Link '{symlink}' -> '{abs_original}' already exists and is updated, skipping...")
+                continue
+            else:
+                logger.info(f"File already exists, removing and creating link to '{symlink}' -> '{abs_original}'...")
+                os.remove(abs_symlink)
         else:
-            logger.info(f"File already exists, removing and creating link to '{symlink}' -> '{abs_original}'...")
-            os.remove(abs_symlink)
-    else:
-        logger.info(f"Creating link '{symlink}' -> '{abs_original}'...")
-        os.makedirs(os.path.dirname(abs_symlink), exist_ok=True)
+            logger.info(f"Creating link '{symlink}' -> '{abs_original}'...")
+            os.makedirs(os.path.dirname(abs_symlink), exist_ok=True)
 
-    os.symlink(abs_original, abs_symlink)
+        os.symlink(abs_original, abs_symlink)
 
 
 class SystemDependent:
@@ -96,9 +106,9 @@ class SystemDependent:
         if not self._can_execute():
             raise RuntimeError("This script can't be run in the current platform!")
 
-    @staticmethod
-    @requires_admin('Administrative privileges are required to run this script!')
-    def __run_script(terminal: str, script_path: str, args: List[str], sudo: bool = False) -> None:
+    @classmethod
+    @requires_admin
+    def _run_script(cls, terminal: str, script_path: str, args: List[str], sudo: bool = False) -> None:
         sudo_token = 'sudo' if sudo else ''
         args_token = ''
         if args and len(args):
@@ -113,7 +123,7 @@ class SystemDependent:
         sb.run(f'{sudo_token} {terminal} {script_path}{" " + args_token}', shell=True, stdout=sb.PIPE)
 
     @classmethod
-    @requires_admin('Administrative privileges are required for this installation!')
+    @requires_admin
     def install(cls, cmd_name: str, install_fn: Callable, check_exists=True, alias=None):
         display_name = alias or cmd_name
 
@@ -151,11 +161,43 @@ class Wsl(WslDependent):
 
     @classmethod
     def execute_sh(cls, script_path: str, args: List[str] = None, sudo=False) -> None:
-        cls.__run_script('sh', script_path, args, sudo)
+        cls._run_script('sh', script_path, args, sudo)
 
     @classmethod
     def execute_bash(cls, script_path: str, args: List[str] = None, sudo=False) -> None:
-        cls.__run_script('bash', script_path, args, sudo)
+        cls._run_script('bash', script_path, args, sudo)
+
+    @classmethod
+    @requires_admin
+    def set_login_shell(cls, shell: str) -> None:
+        logger.info('Setting up login shell...')
+        if cmd_as_bool(f'echo $SHELL | grep --quiet "{shell}"'):
+            logger.warn(f'Login shell is already {shell}, skipping...')
+        else:
+            logger.info(f'Changing login shell to {shell}...')
+            execute_cmd(f'sudo usermod --shell $(which {shell}) $(whoami)')
+        logger.info('Finished setting up login shell!')
+
+    @classmethod
+    @requires_admin
+    def set_locales(cls, locales: List[str]) -> None:
+        import locale
+        must_install = []
+
+        logger.info("Setting up locales...")
+        for localization in locales:
+            try:
+                locale.setlocale(locale.LC_ALL, localization)
+                logger.warn(f"Locale '{localization}' is already installed, skipping...")
+            except locale.Error:
+                must_install.append(localization)
+
+        if len(must_install) > 0:
+            logger.info('Installing missing locales...')
+            execute_cmd(f'sudo locale-gen {" ".join(must_install)}; sudo update-locale')
+
+        locale.setlocale(locale.LC_ALL, '')
+        logger.info('Finished setting up locales!')
 
 
 class Windows(WindowsDependent):
@@ -189,10 +231,10 @@ class Windows(WindowsDependent):
 
     @classmethod
     def execute_ps1(cls, script_path: str, args: List[str] = None) -> None:
-        cls.__run_script('powershell.exe', script_path, args)
+        cls._run_script('powershell.exe', script_path, args)
 
     @classmethod
-    @requires_admin('Administrative privileges are required to setup the keyboard layout!')
+    @requires_admin
     def set_keyboard_layouts(cls, layouts: List[str]) -> None:
         logger.info('Setting up keyboard layout...')
         from winreg import \
@@ -309,23 +351,25 @@ class Winget(WindowsDependent):
 
 class Apt(WslDependent):
     @staticmethod
-    @requires_admin('Administrative privileges are required to use "apt-get upgrade"!')  # TODO: is it really?
+    @requires_admin  # TODO: is it really?
     def upgrade() -> None:
         sb.check_call(('sudo', 'apt-get', 'upgrade', '-y'))
 
     @staticmethod
-    @requires_admin('Administrative privileges are required to install packages using apt!')
+    @requires_admin
     def install(packages: List[str]) -> None:
         sb.check_call(['sudo', 'apt-get', 'install', '-y'] + packages)
 
     @staticmethod
-    @requires_admin('Administrative privileges are required to use "apt-get upgrade"!')
+    @requires_admin
     def update() -> None:
+        logger.info('Updating apt references...')
         sb.check_call(('sudo', 'apt-get', 'update'))
 
     @staticmethod
-    @requires_admin('Administrative privileges are required to add repositories to apt!')  # TODO: is it really?
+    @requires_admin # TODO: is it really?
     def add_repository(repo_name: str) -> None:
+        logger.info(f"Adding '{repo_name}' repository to apt...")
         sb.check_call(('sudo', 'add-apt-repository', f'ppa:{repo_name}', '-y'))
 
     @staticmethod
@@ -335,7 +379,7 @@ class Apt(WslDependent):
 
 class Dpkg(WslDependent):
     @staticmethod
-    @requires_admin('Administrative privileges are required to install packages using dpkg!')
+    @requires_admin
     def install(deb_paths: List[str]) -> None:
         for path in deb_paths:
-            sb.check_call(['sudo', 'dpkg', '-i', f'"{path}"'])
+            sb.check_call(['sudo', 'dpkg', '-i', f'{path}'])

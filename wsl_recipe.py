@@ -1,33 +1,29 @@
-import os
-import os.path
-import shutil
+#!/usr/bin/env python3
+
 import tempfile
 
-from dotfile import Apt
-from dotfile import Dpkg
-from dotfile import Wsl
-from dotfile import \
-    create_folder, \
-    make_link, \
-    download_file, \
-    git_clone, \
-    cmd_as_bool, \
-    execute_cmd, \
-    abs_path
+from dotfile import Wsl, Apt, Dpkg
+from dotfile import abs_path
+from dotfile import logger
+
 
 apt = Apt()
 dpkg = Dpkg()
 wsl = Wsl()
 
-print('Installing essential packages...')
-tmpdir = tempfile.mkdtemp(prefix='wsl_recipe')
 
 # TODO: read from file
-apt_pcks = [
+apt_pkgs = [
     'httpie',
     'clang',
     'exa',
     'make'
+]
+
+login_shell = 'zsh'
+locales = [
+    'pt_BR',
+    'pt_BR.utf8'
 ]
 
 folders = [
@@ -44,103 +40,88 @@ links = {
 
 
 def install_bat_fn() -> None:
-    bat_url = r'https://github.com/sharkdp/bat/releases/download/v0.18.3/bat_0.18.3_amd64.deb'
-    bat_deb_path = os.path.join(tmpdir, 'bat_0.18.3_amd64.deb')
+    import os.path
+    from dotfile import download_file
+
+    bat_url = 'https://github.com/sharkdp/bat/releases/download/v0.18.3/bat_0.18.3_amd64.deb'
+    bat_deb_path = os.path.join(tmpdir, os.path.basename(bat_url))
     download_file(bat_url, bat_deb_path)
-    dpkg.install(bat_deb_path)
+    dpkg.install([bat_deb_path])
 
 
 def install_rust_fn() -> None:
+    import os.path
+    from dotfile import download_file
+
     rust_installer = os.path.join(tmpdir, 'rust_installer.sh')
-    download_file(r'https://sh.rustup.rs', rust_installer)
-    Wsl.execute_sh(rust_installer, ['--', '-y'])
+    download_file('https://sh.rustup.rs', rust_installer)
+    wsl.execute_sh(rust_installer, ['-y'])
 
 
 def install_bat_extras_fn() -> None:
+    import os.path
+    from dotfile import git_clone
+
     bat_extras_dir = os.path.join(tmpdir, 'bat-extras')
     git_clone('https://github.com/eth-p/bat-extras', bat_extras_dir)
-    Wsl.execute_bash(os.path.join(bat_extras_dir, 'build.sh'), ['--install'], sudo=True)
+    wsl.execute_bash(os.path.join(bat_extras_dir, 'build.sh'), ['--install'], sudo=True)
 
 
 def install_n_fn() -> None:
+    import os.path
+    from dotfile import download_file
+
     n_installer = os.path.join(tmpdir, 'n_install')
     download_file(r'https://git.io/n-install', n_installer)
     os.chmod(n_installer, 0o755)
-    Wsl.execute_bash(n_installer, ['-y'])
+    wsl.execute_bash(n_installer, ['-y'])
 
 
-def setup_login_shell():
-    default_shell = 'zsh'
+def install_vundle():
+    import os.path
+    from dotfile import git_clone
 
-    if cmd_as_bool(f'echo $SHELL | grep --quiet "{default_shell}"'):
-        print(f'Login shell is already {default_shell}, skipping...')
-    else:
-        print(f'Changing login shell to {default_shell}...')
-        execute_cmd(f'sudo usermod --shell $(which {default_shell}) $(whoami)')
-
-
-def setup_locales():
-    should_be_installed = (
-        'pt_BR',
-        'pt_BR.utf8'
-    )
-
-    must_install = []
-
-    print("Setting up locales...")
-
-    import locale
-    for localization in should_be_installed:
-        try:
-            locale.setlocale(locale.LC_ALL, localization)
-            print(f"Locale '{localization}' is already installed, skipping...")
-        except locale.Error:
-            must_install.append(localization)
-
-    if len(must_install) > 0:
-        print('Installing missing locales...')
-        execute_cmd(f'sudo locale-gen {" ".join(must_install)}; sudo update-locale')
-        print('Done!')
-
-    locale.setlocale(locale.LC_ALL, '')
-
-
-def setup_vundle():
     vundle_path = abs_path('~/.vim/bundle/Vundle.vim')
     if os.path.isdir(vundle_path):
-        print('Vundle already installed, skipping...')
+        logger.warn('Vundle already installed, skipping...')
     else:
-        print('Installing Vundle...')
+        logger.info('Installing Vundle...')
         git_clone('https://github.com/VundleVim/Vundle.vim.git', vundle_path)
-        print('Done!')
+        logger.info('Finished installing Vundle!')
 
 
 if __name__ == '__main__':
+    from dotfile import create_folders
+    from dotfile import make_links
+    from shutil import rmtree
+
+    logger.info('Running WSL recipe...', True)
+    tmpdir = tempfile.mkdtemp(prefix='wsl_recipe')
+
     try:
-        list(map(create_folder, folders))
+        create_folders(folders)
+        logger.info('Finished creating folders!', True)
 
-        for symlink, original in links.items():
-            make_link(original, symlink)
+        make_links(links)
+        logger.info('Finished creating symlinks!', True)
 
-        setup_login_shell()
-
+        wsl.set_login_shell(login_shell)
         exa_repo = 'spvkgn/exa'
         if apt.is_repository_added(exa_repo):
-            print('exa repository already added, skipping...')
+            logger.warn('exa repository already added, skipping...')
         else:
-            print('Adding exa repository to apt...')
             apt.add_repository(exa_repo)
             apt.update()
 
-        print('Installing apt packages...')
-        apt.install(apt_pcks)
+        wsl.set_locales(locales)
+        logger.info('Finished setups!', True)
 
+        apt.install(apt_pkgs)
+        install_vundle()
         wsl.install('bat', install_bat_fn)
         wsl.install('rustup', install_rust_fn)
         wsl.install('batman', install_bat_extras_fn, alias='bat-extras')
         wsl.install('n', install_n_fn)
-
-        setup_locales()
-        setup_vundle()
+        logger.info('Finished installing packages!', True)
     finally:
-        shutil.rmtree(tmpdir)
+        rmtree(tmpdir)

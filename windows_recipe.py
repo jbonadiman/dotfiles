@@ -2,13 +2,13 @@
 
 import tempfile
 import os.path
-import log
 
 from dotfile import abs_path
+from dotfile import logger
 
 from dotfile import Msix, Scoop, Winget, Windows
 
-logger = log.get_logger(level=log.LogLevel.WARNING)
+
 windows = Windows()
 scoop = Scoop()
 msix = Msix()
@@ -199,21 +199,18 @@ def install_wsl_fn() -> None:
 
 
 if __name__ == '__main__':
-    from dotfile import create_folder
-    from dotfile import make_link
+    from dotfile import create_folders
+    from dotfile import make_links
     from shutil import rmtree
 
     logger.info('Running Windows recipe...', True)
     tmpdir = tempfile.mkdtemp(prefix='windows_recipe')
 
     try:
-        logger.info('Creating folders...')
-        list(map(create_folder, folders))
+        create_folders(folders)
         logger.info('Finished creating folders!', True)
 
-        logger.info('Creating symlinks...')
-        for symlink, original in links.items():
-            make_link(original, symlink)
+        make_links(links)
         logger.info('Finished creating symlinks!', True)
 
         windows.set_keyboard_layouts(keyboard_layouts)

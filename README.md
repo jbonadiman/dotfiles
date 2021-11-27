@@ -2,13 +2,14 @@
 
 ### TODO:
 
-- [WSL] Review WSL recipe
+- [WSL] Install vim plugins from outside
 - [WSL] Install shfmt so that bat-extras can be minified
 - [WSL] Find a way to use the trash, so I don't use rm directly
 - [WSL] Syntax highlighting in commands
 - [WSL] Autocomplete in commands
 - [WSL] Create keyboard layout routine
 - [Windows] Add scoop update and cleanup as part of recipe
+- [WSL] Fix N and rust checks, they are being installed everytime
 - [Windows] Netflix package keeps reinstalling itself
 - [Windows] Verify if WSL is installed -- A recently installed windows would be nice
 - [Windows] winget search is so slow, I should find an alternative
