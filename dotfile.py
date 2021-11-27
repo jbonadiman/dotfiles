@@ -319,8 +319,9 @@ class Apt(WslDependent):
         sb.check_call(['sudo', 'apt-get', 'install', '-y'] + packages)
 
     @staticmethod
+    @requires_admin('Administrative privileges are required to use "apt-get upgrade"!')
     def update() -> None:
-        sb.check_call(('apt-get', 'update'))
+        sb.check_call(('sudo', 'apt-get', 'update'))
 
     @staticmethod
     @requires_admin('Administrative privileges are required to add repositories to apt!')  # TODO: is it really?
