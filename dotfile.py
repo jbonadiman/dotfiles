@@ -9,7 +9,7 @@ from functools import wraps
 
 import requests
 
-logger = log.get_logger()
+logger = log.get_logger(level=log.LogLevel.WARNING)
 
 
 def requires_admin(error_msg: str):

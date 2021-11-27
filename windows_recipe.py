@@ -8,7 +8,7 @@ from dotfile import abs_path
 
 from dotfile import Msix, Scoop, Winget, Windows
 
-logger = log.get_logger()
+logger = log.get_logger(level=log.LogLevel.WARNING)
 windows = Windows()
 scoop = Scoop()
 msix = Msix()
@@ -87,11 +87,43 @@ folders = [
     '~/sources'
 ]
 
+
+# BEGIN aliases
+jn = os.path.join
+c = jn('config', 'PowerToys')
+
+
+def pt_cfg(cfg):
+    return jn('config', 'PowerToys', cfg, f'{cfg}.settings.json')
+# END aliases
+
+
 links = {
     TERMINAL_SETTINGS: 'terminal.settings.json',
     WINGET_SETTINGS: 'winget.settings.json',
     '~/Documents/PowerShell/Microsoft.PowerShell_profile.ps1': 'PowerShell_Profile.ps1',
-    '%APPDATA%/Rainmeter/Layouts/default/Rainmeter.ini': 'rainmeter_layout.ini'
+    '%APPDATA%/Rainmeter/Layouts/default/Rainmeter.ini': 'rainmeter_layout.ini',
+
+    # POWERTOYS SECTION
+    '%LOCALAPPDATA%/Microsoft/PowerToys/settings.json': 'config/PowerToys/PowerToys.settings.json',
+    '%LOCALAPPDATA%/Microsoft/PowerToys/Awake/settings.json': pt_cfg('Awake'),
+    '%LOCALAPPDATA%/Microsoft/PowerToys/ColorPicker/settings.json': pt_cfg('ColorPicker'),
+    '%LOCALAPPDATA%/Microsoft/PowerToys/FancyZones/settings.json': pt_cfg('FancyZones'),
+    '%LOCALAPPDATA%/Microsoft/PowerToys/FancyZones/zones-settings.json': jn(c, 'FancyZones', 'zones-settings.json'),
+    '%LOCALAPPDATA%/Microsoft/PowerToys/File Explorer/settings.json': pt_cfg('FileExplorer'),
+    '%LOCALAPPDATA%/Microsoft/PowerToys/Find My Mouse/settings.json': pt_cfg('FindMyMouse'),
+    '%LOCALAPPDATA%/Microsoft/PowerToys/ImageResizer/settings.json': pt_cfg('ImageResizer'),
+    '%LOCALAPPDATA%/Microsoft/PowerToys/ImageResizer/image-resizer-settings.json':
+        jn(c, 'ImageResizer', 'image-resizer-settings.json'),
+
+    '%LOCALAPPDATA%/Microsoft/PowerToys/KeyboardManager/settings.json': pt_cfg('KeyboardManager'),
+    '%LOCALAPPDATA%/Microsoft/PowerToys/KeyboardManager/default.json': jn(c, 'KeyboardManager', 'default.json'),
+    '%LOCALAPPDATA%/Microsoft/PowerToys/PowerRename/power-rename-settings.json':
+        jn(c, 'PowerRename', 'power-rename-settings.json'),
+
+    '%LOCALAPPDATA%/Microsoft/PowerToys/PowerToys Run/settings.json': pt_cfg('PowerToysRun'),
+    '%LOCALAPPDATA%/Microsoft/PowerToys/Shortcut Guide/settings.json': pt_cfg('ShortcutGuide'),
+    '%LOCALAPPDATA%/Microsoft/PowerToys/Video Conference/settings.json': pt_cfg('VideoConference'),
 }
 
 
@@ -168,7 +200,7 @@ if __name__ == '__main__':
     from dotfile import make_link
     from shutil import rmtree
 
-    print('Installing Windows packages...')
+    logger.info('Running Windows recipe...', True)
     tmpdir = tempfile.mkdtemp(prefix='windows_recipe')
 
     try:

@@ -2,7 +2,6 @@
 
 ### TODO:
 
-- [Windows] Verify if WSL is installed
 - [WSL] Fix bug and guarantee that Windows exe will be executed successfully
 - [WSL] Add symlink to windows user in home
 - [WSL] Install shfmt so that bat-extras can be minified
@@ -10,7 +9,9 @@
 - [WSL] Syntax highlighting in commands
 - [WSL] Autocomplete in commands
 - [WSL] Create keyboard layout routine
+- [Windows] Add scoop update and cleanup as part of recipe
 - [Windows] Netflix package keeps reinstalling itself
+- [Windows] Verify if WSL is installed -- A recently installed windows would be nice
 - [Windows] winget search is so slow, I should find an alternative
 - [All] Add separation installations tags (personal, essential, dev...)
 - [All] Add command line options that defines what tags should be installed and if upgrades must be run

@@ -1,0 +1,9 @@
+{
+  "properties": {
+    "do_not_activate_on_game_mode": {
+      "value": true
+    }
+  },
+  "name": "Find My Mouse",
+  "version": "1.0"
+}
