@@ -2,8 +2,8 @@
 
 ### TODO:
 
-- [WSL] Fix bug and guarantee that Windows exe will be executed successfully
 - [WSL] Add symlink to windows user in home
+- [WSL] Review WSL recipe
 - [WSL] Install shfmt so that bat-extras can be minified
 - [WSL] Find a way to use the trash, so I don't use rm directly
 - [WSL] Syntax highlighting in commands

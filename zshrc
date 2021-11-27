@@ -24,6 +24,7 @@ alias man='batman'
 alias trail='<<<${(F)path}'
 alias cat='bat'
 alias python='python3'
+alias clip='/mnt/c/Windows/System32/clip.exe'
 
 # customize prompt
 PROMPT='
