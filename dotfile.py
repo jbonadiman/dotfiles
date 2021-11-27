@@ -19,8 +19,8 @@ def requires_admin(error_msg: str):
             try:
                 return fn(*args)
             except (OSError, PermissionError) as err:
-                if err.winerror == 1314 or err.errno == 13:
-                    logger.error(error_msg)
+                if err.errno == 13 or (err.winerror and err.winerror == 1314):
+                    logger.error(f'{error_msg}\nFUNCTION: {fn.__name__}\nARGUMENTS: {args}')
                 else:
                     raise err
         return wrapped_f

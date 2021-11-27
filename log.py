@@ -32,7 +32,7 @@ class Log:
 
     @staticmethod
     def __error_stylized(message: str) -> str:
-        return f'{Style.BRIGHT + Fore.RED} ERROR: {message}{Style.RESET_ALL}'
+        return f'{Style.BRIGHT + Fore.RED}ERROR: {message}{Style.RESET_ALL}'
 
     def __init__(self, level: LogLevel):
         self.level: LogLevel = level
