@@ -38,7 +38,8 @@ links = {
     '~/.vimrc': 'vimrc',
     '~/.zshrc': 'zshrc',
     '~/.zshenv': 'zshenv',
-    '~/.docker_service.zsh': 'docker_service.zsh'
+    '~/.docker_service.zsh': 'docker_service.zsh',
+    '/etc/wsl.conf': 'wsl.conf'
 }
 
 
