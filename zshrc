@@ -1,11 +1,6 @@
 # keybinds
 
 # set variables
-DOCKER_SOCK="/mnt/wsl/shared-docker/docker.sock"
-
-if [ -S "$DOCKER_SOCK" ]; then
-  export DOCKER_HOST="unix://$DOCKER_SOCK"
-fi
 
 export NULLCMD=bat
 export N_PREFIX="$HOME/.n"; [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"  # Added by n-install (see http://git.io/n-install-repo).
@@ -56,4 +51,4 @@ function mkcd() {
 # zsh plugins
 
 # init procedures
-~/.docker_service.zsh
+source ~/.docker_service.zsh
