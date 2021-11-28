@@ -117,8 +117,8 @@ links = {
     '%LOCALAPPDATA%/Microsoft/PowerToys/ImageResizer/image-resizer-settings.json':
         jn('PowerToys', 'ImageResizer', 'image-resizer-settings.json'),
 
-    '%LOCALAPPDATA%/Microsoft/PowerToys/KeyboardManager/settings.json': pt_cfg('KeyboardManager'),
-    '%LOCALAPPDATA%/Microsoft/PowerToys/KeyboardManager/default.json':
+    '%LOCALAPPDATA%/Microsoft/PowerToys/Keyboard Manager/settings.json': pt_cfg('KeyboardManager'),
+    '%LOCALAPPDATA%/Microsoft/PowerToys/Keyboard Manager/default.json':
         jn('PowerToys', 'KeyboardManager', 'default.json'),
 
     '%LOCALAPPDATA%/Microsoft/PowerToys/PowerRename/power-rename-settings.json':
@@ -136,7 +136,7 @@ def install_scoop_fn() -> None:
     from os import environ
 
     scoop_installer = os.path.join(tmpdir, 'install.ps1')
-    download_file(r'get.scoop.sh', scoop_installer)
+    download_file(r'http://get.scoop.sh', scoop_installer)
     windows.execute_ps1(scoop_installer)
     if Scoop.SCOOP_VAR not in environ:
         logger.info(f"Adding '{Scoop.SCOOP_VAR}' to environment variables...")

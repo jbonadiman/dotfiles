@@ -327,7 +327,7 @@ class Msix(WindowsDependent):
     def install(packages_paths: List[str]) -> None:
         for path in packages_paths:
             logger.info(f"Installing {os.path.basename(path)}...")
-            sb.check_call(['powershell.exe', '-c', 'Add-AppPackage', '-path', path], shell=True)
+            sb.check_call(['powershell.exe', '-c', 'Add-AppxPackage', '-Path', path], shell=True)
 
 
 class Winget(WindowsDependent):
@@ -339,8 +339,7 @@ class Winget(WindowsDependent):
                 continue
 
             logger.info(f"Installing package with ID '{pck_id}'...")
-            sb.check_call(
-                ['winget', 'install', '-e', '--id', f'"{pck_id}"', '--accept-package-agreements', '--force'],
+            sb.run(f'winget install -e --id {pck_id} --accept-package-agreements --force',
                 shell=True)
             logger.info('Done!')
 
