@@ -47,6 +47,7 @@ scoop_apps = [
     'treesize-free',
     'vlc',
     'bitwarden',
+    'imagemagick'
     # dev
     'gitkraken',
     'jetbrains-toolbox',
@@ -76,6 +77,7 @@ winget_ids = [
     'Ubisoft.Connect',
     'WhatsApp.WhatsApp',
     'StartIsBack.StartAllBack',
+    'Stremio.Stremio'
 
     # dev
     'dbeaver.dbeaver',
@@ -140,7 +142,7 @@ def install_scoop_fn() -> None:
         execute_cmd(f'setx {scoop.SCOOP_VAR} "{abs_path("~/scoop")}"')
         environ[scoop.SCOOP_VAR] = abs_path('~/scoop')
     logger.info('Installing scoop essential packages...')
-    scoop.install(['7zip', 'git', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
+    scoop.install(['7zip', 'git', 'shellcheck', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
 
 
 def download_and_install_font(url: str) -> None:
