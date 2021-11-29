@@ -237,6 +237,11 @@ class Windows(WindowsDependent):
 
     @classmethod
     @requires_admin
+    def set_powershell_execution_policy(cls):
+        execute_cmd("powershell.exe Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned")
+
+    @classmethod
+    @requires_admin
     def set_keyboard_layouts(cls, layouts: List[str]) -> None:
         logger.info('Setting up keyboard layout...')
         from winreg import \

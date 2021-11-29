@@ -187,7 +187,7 @@ def install_winget_fn() -> None:
     download_url = 'https://github.com/microsoft/winget-cli/releases/download/v1.1.12653/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
     winget_setup = os.path.join(tmpdir, os.path.basename(download_url))
 
-    download_file(download_url, winget_setup) 
+    download_file(download_url, winget_setup)
     msix.install(winget_setup, dependencies_paths=[dep_setup])
 
 
@@ -223,6 +223,7 @@ if __name__ == '__main__':
         logger.info('Finished creating symlinks!', True)
 
         windows.set_keyboard_layouts(KEYBOARD_LAYOUTS)
+        windows.set_powershell_execution_policy()
 
         setup_wsl()
 

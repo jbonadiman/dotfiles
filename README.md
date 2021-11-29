@@ -1,11 +1,7 @@
 # Dotfiles
 
-### Fixes:
-- [Windows] Dependency error installing winget through MSIX. Installing manually is just fine
-
 ### TODO:
 
-- [Windows] Should set powershell Execution-Policy that allow script execution for new fresh installations
 - [Windows] Shellcheck should be installed as a scoop base package
 - [Windows] Find a way to backup StartAllBack cfg
 - [Windows] Install imagemagick through scoop
