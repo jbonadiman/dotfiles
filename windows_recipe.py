@@ -47,7 +47,7 @@ scoop_apps = [
     'treesize-free',
     'vlc',
     'bitwarden',
-    'imagemagick'
+    'imagemagick',
     # dev
     'gitkraken',
     'jetbrains-toolbox',
@@ -77,7 +77,7 @@ winget_ids = [
     'Ubisoft.Connect',
     'WhatsApp.WhatsApp',
     'StartIsBack.StartAllBack',
-    'Stremio.Stremio'
+    'Stremio.Stremio',
 
     # dev
     'dbeaver.dbeaver',
@@ -139,8 +139,7 @@ def install_scoop_fn() -> None:
     windows.execute_ps1(scoop_installer)
     if scoop.SCOOP_VAR not in environ:
         logger.info(f"Adding '{scoop.SCOOP_VAR}' to environment variables...")
-        execute_cmd(f'setx {scoop.SCOOP_VAR} "{abs_path("~/scoop")}"')
-        environ[scoop.SCOOP_VAR] = abs_path('~/scoop')
+        windows.set_environment_var(scoop.SCOOP_VAR, abs_path('~/scoop'))
     logger.info('Installing scoop essential packages...')
     scoop.install(['7zip', 'git', 'shellcheck', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
 
@@ -195,23 +194,22 @@ def install_winget_fn() -> None:
 
 def setup_wsl() -> None:
     from dotfile import execute_cmd, cmd_as_bool
-    if cmd_as_bool('wsl --status'):
+    if cmd_as_bool('wsl --status > NUL'):
         logger.warn('WSL is already installed, skipping installation...')
     else:
         logger.info(f"Installing WSL with distro {WSL_DISTRO}...")
-        execute_cmd(f'wsl --install -d "{WSL_DISTRO}"')
+        execute_cmd(f'wsl --install -d {WSL_DISTRO} > NUL')
 
     logger.info(f"Setting WSL version 2 as default...")
-    execute_cmd(f'wsl --set-default-version 2')
+    execute_cmd(f'wsl --set-default-version 2 > NUL')
 
     logger.info(f"Setting distro '{WSL_DISTRO}' as default...")
-    execute_cmd(f'wsl --set-default "{WSL_DISTRO}"')
+    execute_cmd(f'wsl --set-default {WSL_DISTRO} > NUL')
     logger.info('Done!')
 
 
 if __name__ == '__main__':
     from dotfile import create_folders
-    from dotfile import make_links
     from shutil import rmtree
 
     logger.info('Running Windows recipe...', True)
@@ -221,7 +219,7 @@ if __name__ == '__main__':
         create_folders(folders)
         logger.info('Finished creating folders!', True)
 
-        make_links(links)
+        windows.make_links(links)
         logger.info('Finished creating symlinks!', True)
 
         windows.set_keyboard_layouts(KEYBOARD_LAYOUTS)
@@ -231,7 +229,7 @@ if __name__ == '__main__':
 
         if 'WSLENV' not in os.environ or 'USERPROFILE' not in os.environ['WSLENV']:
             logger.info('Adding Windows profile in WSL environment variables')
-            os.environ['WSLENV'] = 'USERPROFILE/p'
+            windows.set_environment_var('WSLENV', 'USERPROFILE/p')
         else:
             logger.warn('Windows profile already added to WSL environment variables, skipping...')
 

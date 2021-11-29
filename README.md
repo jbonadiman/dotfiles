@@ -2,9 +2,7 @@
 
 ### TODO:
 
-- [WSL] When script is run with sudo, all paths become relative to root
 - [Windows] Find a way to backup StartAllBack cfg
-- [WSL] Install vim plugins from outside
 - [WSL] Install shfmt so that bat-extras can be minified
 - [WSL] Find a way to use the trash, so I don't use rm directly
 - [WSL] Syntax highlighting in commands

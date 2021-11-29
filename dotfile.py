@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
 import os
-import log
 import platform
 import subprocess as sb
-from typing import List, Callable, Dict
 from functools import wraps
+from typing import List, Callable, Dict
 
 import requests
+
+import log
 
 logger = log.get_logger()
 
@@ -74,8 +75,7 @@ def create_folders(paths: List[str]) -> None:
 
 
 @requires_admin
-def make_links(links: Dict[str, str]) -> None:
-    import os
+def _make_links(links: Dict[str, str]) -> None:
     import os.path
 
     logger.info('Creating symlinks...')
@@ -156,6 +156,12 @@ class AndroidDependent(SystemDependent):
 
 
 class Wsl(WslDependent):
+    HOME: str = None
+
+    def __init__(self):
+        super().__init__()
+        Wsl.HOME = abs_path('~')
+
     @classmethod
     def exists(cls, arg: str) -> bool:
         return cmd_as_bool(f'command -v "{arg}" > /dev/null 2>&1')
@@ -167,6 +173,35 @@ class Wsl(WslDependent):
     @classmethod
     def execute_bash(cls, script_path: str, args: List[str] = None, sudo=False) -> None:
         cls._run_script('bash', script_path, args, sudo)
+
+    @classmethod
+    @requires_admin
+    def make_links(cls, links: Dict[str, str]) -> None:
+        import os.path
+
+        logger.info('Creating symlinks...')
+
+        for symlink, original in links.items():
+            abs_symlink = abs_path(symlink)
+            abs_original = abs_path(original)
+
+            if not os.path.exists(abs_original):
+                logger.warn(f"Origin '{original}' does not exist, skipping...")
+                continue
+
+            if os.path.lexists(abs_symlink):
+                if os.path.islink(abs_symlink) and os.path.realpath(abs_symlink) == abs_original:
+                    logger.warn(f"Link '{symlink}' -> '{abs_original}' already exists and is updated, skipping...")
+                    continue
+                else:
+                    logger.info(
+                        f"File already exists, removing and creating link to '{symlink}' -> '{abs_original}'...")
+                    # os.remove(abs_symlink)
+            else:
+                logger.info(f"Creating link '{symlink}' -> '{abs_original}'...")
+                os.makedirs(os.path.dirname(abs_symlink), exist_ok=True)
+
+            execute_cmd(f'sudo ln -sf "{abs_original}" "{abs_symlink}"')
 
     @classmethod
     @requires_admin
@@ -226,6 +261,17 @@ class Windows(WindowsDependent):
         ctypes.windll.shell32.SHGetFolderPathW(0, Windows.FONTS_NAMESPACE, 0, 0, buffer)
         Windows.FONTS_FOLDER = buffer.value
         logger.debug(f'Located font folder at "{buffer.value}"')
+
+    @classmethod
+    def set_environment_var(cls, name: str, value: str) -> None:
+        from os import environ
+        execute_cmd(f'SETX {name.upper()} {value} > NUL')
+        environ[name.upper()] = value
+
+    @classmethod
+    @requires_admin
+    def make_links(cls, links: Dict[str, str]) -> None:
+        return _make_links(links)
 
     @classmethod
     def exists(cls, arg: str) -> bool:

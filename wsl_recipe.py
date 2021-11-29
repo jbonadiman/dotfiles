@@ -27,15 +27,16 @@ locales = [
 ]
 
 folders = [
-    '$HOME/.local/bin'
+    f'{wsl.HOME}/.local/bin'
 ]
 
 links = {
-    '$HOME/.vimrc': 'vimrc',
-    '$HOME/.zshrc': 'zshrc',
-    '$HOME/.zshenv': 'zshenv',
-    '$HOME/.docker_service.zsh': 'docker_service.zsh',
-    '/etc/wsl.conf': 'wsl.conf'
+    f'{wsl.HOME}/.vimrc': 'vimrc',
+    f'{wsl.HOME}/.zshrc': 'zshrc',
+    f'{wsl.HOME}/.zshenv': 'zshenv',
+    f'{wsl.HOME}/.docker_service.zsh': 'docker_service.zsh',
+    '/etc/wsl.conf': 'wsl.conf',
+    f'{wsl.HOME}/sources': '$USERPROFILE/sources'
 }
 
 
@@ -82,13 +83,10 @@ def install_vundle():
     from dotfile import git_clone, execute_cmd
     import subprocess as sb
 
-    vundle_path = abs_path('$HOME/.vim/bundle/Vundle.vim')
-    print(vundle_path)
+    vundle_path = abs_path(f'{wsl.HOME}/.vim/bundle/Vundle.vim')
     if os.path.isdir(vundle_path):
-        print('this shit is a dir')
         logger.warn('Vundle already installed, skipping...')
     else:
-        print('not a dir')
         logger.info('Installing Vundle...')
         git_clone('https://github.com/VundleVim/Vundle.vim.git', vundle_path)
         logger.info('Finished installing Vundle!')
@@ -98,7 +96,6 @@ def install_vundle():
 
 if __name__ == '__main__':
     from dotfile import create_folders
-    from dotfile import make_links
     from shutil import rmtree
 
     logger.info('Running WSL recipe...', True)
@@ -108,7 +105,7 @@ if __name__ == '__main__':
         create_folders(folders)
         logger.info('Finished creating folders!', True)
 
-        make_links(links)
+        wsl.make_links(links)
         logger.info('Finished creating symlinks!', True)
 
         wsl.set_login_shell(login_shell)
