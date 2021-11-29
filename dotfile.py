@@ -278,7 +278,7 @@ class Windows(WindowsDependent):
                 logger.debug(f'Closing registry key "{preload_regname}"')
 
             if updated:
-                logger.info('Keyboard layout is updated, skipping...')
+                logger.warn('Keyboard layout is updated, skipping...')
                 return
 
             logger.info('Updating keyboard layout settings...')
@@ -312,7 +312,7 @@ class Scoop(WindowsDependent):
     @staticmethod
     def add_bucket(bucket_name: str) -> None:
         if cmd_as_bool(f'scoop bucket list | findstr {bucket_name} > NUL'):
-            logger.info(f"Bucket '{bucket_name}' already added, skipping...")
+            logger.warn(f"Bucket '{bucket_name}' already added, skipping...")
             return
 
         logger.info(f"Adding bucket '{bucket_name}'...")
