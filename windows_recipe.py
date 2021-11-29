@@ -14,7 +14,9 @@ scoop = Scoop()
 msix = Msix()
 winget = Winget()
 
-keyboard_layouts = [
+WSL_DISTRO = 'Ubuntu-20.04'
+
+KEYBOARD_LAYOUTS = [
     '00020409'  # en-US International
 ]
 
@@ -77,10 +79,6 @@ winget_ids = [
 
     # dev
     'dbeaver.dbeaver',
-
-    # TODO: Should only be installed if WSL is present
-    # 'Canonical.Ubuntu.2004'
-
 ]
 
 folders = [
@@ -190,11 +188,19 @@ def install_winget_fn() -> None:
     msix.install([winget_setup])
 
 
-def install_wsl_fn() -> None:
-    from dotfile import execute_cmd
+def setup_wsl() -> None:
+    from dotfile import execute_cmd, cmd_as_bool
+    if cmd_as_bool('wsl --status'):
+        logger.warn('WSL is already installed, skipping installation...')
+    else:
+        logger.info(f"Installing WSL with distro {WSL_DISTRO}...")
+        execute_cmd(f'wsl --install -d "{WSL_DISTRO}"')
 
-    logger.info('Installing WSL...')
-    execute_cmd('wsl --install')
+    logger.info(f"Setting WSL version 2 as default...")
+    execute_cmd(f'wsl --set-default-version 2')
+
+    logger.info(f"Setting distro '{WSL_DISTRO}' as default...")
+    execute_cmd(f'wsl --set-default "{WSL_DISTRO}"')
     logger.info('Done!')
 
 
@@ -213,10 +219,9 @@ if __name__ == '__main__':
         make_links(links)
         logger.info('Finished creating symlinks!', True)
 
-        windows.set_keyboard_layouts(keyboard_layouts)
+        windows.set_keyboard_layouts(KEYBOARD_LAYOUTS)
 
-        # TODO: how to check if wsl is installed?
-        # windows.install('wsl', install_wsl_fn)
+        setup_wsl()
 
         if 'WSLENV' not in os.environ or 'USERPROFILE' not in os.environ['WSLENV']:
             logger.info('Adding Windows profile in WSL environment variables')

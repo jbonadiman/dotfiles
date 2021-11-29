@@ -1,8 +1,6 @@
 # Dotfiles
 
 ### Fixes:
-- [WSL] Install by distro name (Ubuntu20.04) and define as default
-- [WSL] Rust and n keep being reinstalled
 - [Windows] Scoop already added bucket message is not a warning
 - [Windows] Scoop env var doesnt get updated in the same execution. Is it because the subshell is still running? Should I run a separate one?
 - [Windows] Scoops install script could not be run because of the policy, but there was no error
@@ -14,7 +12,6 @@
 
 - [Windows] Should set powershell Execution-Policy that allow script execution for new fresh installations
 - [Windows] Shellcheck should be installed as a scoop base package
-- [Windows] Use wsl --status to check if wsl is installed
 - [Windows] Find a way to backup StartAllBack cfg
 - [Windows] Install imagemagick through scoop
 - [Windows] Symlink powershell profile
@@ -28,7 +25,6 @@
 - [Windows] Add scoop update and cleanup as part of recipe
 - [WSL] Fix N and rust checks, they are being installed everytime
 - [Windows] Netflix package keeps reinstalling itself
-- [Windows] Verify if WSL is installed -- A recently installed windows would be nice
 - [Windows] winget search is so slow, I should find an alternative
 - [All] Add separation installations tags (personal, essential, dev...)
 - [All] Add command line options that defines what tags should be installed and if upgrades must be run
