@@ -129,16 +129,16 @@ links = {
 
 
 def install_scoop_fn() -> None:
-    from dotfile import download_file
-    from dotfile import abs_path
+    from dotfile import download_file, execute_cmd, abs_path
     from os import environ
 
     scoop_installer = os.path.join(tmpdir, 'install.ps1')
     download_file(r'http://get.scoop.sh', scoop_installer)
     windows.execute_ps1(scoop_installer)
-    if Scoop.SCOOP_VAR not in environ:
-        logger.info(f"Adding '{Scoop.SCOOP_VAR}' to environment variables...")
-        environ[Scoop.SCOOP_VAR] = abs_path('~/scoop')
+    if scoop.SCOOP_VAR not in environ:
+        logger.info(f"Adding '{scoop.SCOOP_VAR}' to environment variables...")
+        execute_cmd(f'setx {scoop.SCOOP_VAR} "{abs_path("~/scoop")}"')
+        environ[scoop.SCOOP_VAR] = abs_path('~/scoop')
     logger.info('Installing scoop essential packages...')
     scoop.install(['7zip', 'git', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
 

@@ -120,7 +120,7 @@ class SystemDependent:
             f"Using terminal '{terminal}' to run the script '{script_name}'{' as sudo' if sudo else '' } {args_log}"
         )
 
-        sb.run(f'{sudo_token} {terminal} {script_path}{" " + args_token}', shell=True, stdout=sb.PIPE)
+        sb.run(f'{sudo_token} {terminal} {script_path}{" " + args_token}', shell=True, stdout=sb.PIPE, check=True)
 
     @classmethod
     @requires_admin

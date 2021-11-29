@@ -1,8 +1,6 @@
 # Dotfiles
 
 ### Fixes:
-- [Windows] Scoop env var doesnt get updated in the same execution. Is it because the subshell is still running? Should I run a separate one?
-- [Windows] Scoops install script could not be run because of the policy, but there was no error
 - [Windows] Accept winget first run policy agreement
 - [Windows] winget install not working with checkcall
 - [Windows] Dependency error installing winget through MSIX. Installing manually is just fine
