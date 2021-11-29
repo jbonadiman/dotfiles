@@ -27,14 +27,14 @@ locales = [
 ]
 
 folders = [
-    '~/.local/bin'
+    '$HOME/.local/bin'
 ]
 
 links = {
-    '~/.vimrc': 'vimrc',
-    '~/.zshrc': 'zshrc',
-    '~/.zshenv': 'zshenv',
-    '~/.docker_service.zsh': 'docker_service.zsh',
+    '$HOME/.vimrc': 'vimrc',
+    '$HOME/.zshrc': 'zshrc',
+    '$HOME/.zshenv': 'zshenv',
+    '$HOME/.docker_service.zsh': 'docker_service.zsh',
     '/etc/wsl.conf': 'wsl.conf'
 }
 
@@ -79,15 +79,21 @@ def install_n_fn() -> None:
 
 def install_vundle():
     import os.path
-    from dotfile import git_clone
+    from dotfile import git_clone, execute_cmd
+    import subprocess as sb
 
-    vundle_path = abs_path('~/.vim/bundle/Vundle.vim')
+    vundle_path = abs_path('$HOME/.vim/bundle/Vundle.vim')
+    print(vundle_path)
     if os.path.isdir(vundle_path):
+        print('this shit is a dir')
         logger.warn('Vundle already installed, skipping...')
     else:
+        print('not a dir')
         logger.info('Installing Vundle...')
         git_clone('https://github.com/VundleVim/Vundle.vim.git', vundle_path)
         logger.info('Finished installing Vundle!')
+    logger.info('Installing vim plugins...')
+    sb.run('vim -esn -c PluginInstall -c q', shell=True)
 
 
 if __name__ == '__main__':
