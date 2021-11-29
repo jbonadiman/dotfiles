@@ -1,6 +1,8 @@
 # Dotfiles
 
 ### Fixes:
+- [WSL] Install by distro name (Ubuntu20.04) and define as default
+- [WSL] Rust and n keep being reinstalled
 - [Windows] Scoop already added bucket message is not a warning
 - [Windows] Scoop env var doesnt get updated in the same execution. Is it because the subshell is still running? Should I run a separate one?
 - [Windows] Scoops install script could not be run because of the policy, but there was no error
