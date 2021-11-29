@@ -1,8 +1,6 @@
 # Dotfiles
 
 ### Fixes:
-- [Windows] Accept winget first run policy agreement
-- [Windows] winget install not working with checkcall
 - [Windows] Dependency error installing winget through MSIX. Installing manually is just fine
 
 ### TODO:

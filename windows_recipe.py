@@ -180,12 +180,15 @@ def install_shovel_fn() -> None:
 def install_winget_fn() -> None:
     from dotfile import download_file
 
+    dep_url = 'https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx'
+    dep_setup = os.path.join(tmpdir, os.path.basename(dep_url))
+    download_file(dep_url, dep_setup)
+
     download_url = 'https://github.com/microsoft/winget-cli/releases/download/v1.1.12653/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
     winget_setup = os.path.join(tmpdir, os.path.basename(download_url))
 
-    download_file(download_url, winget_setup)
-
-    msix.install([winget_setup])
+    download_file(download_url, winget_setup) 
+    msix.install(winget_setup, dependencies_paths=[dep_setup])
 
 
 def setup_wsl() -> None:

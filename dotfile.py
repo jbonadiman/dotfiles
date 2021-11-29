@@ -24,6 +24,7 @@ def requires_admin(fn: Callable):
                              f'ARGUMENTS: {args} {kwargs}')
             else:
                 raise err
+
     return wrapped_f
 
 
@@ -117,7 +118,7 @@ class SystemDependent:
         script_name = os.path.basename(script_path)
         args_log = f"with args '{args_token}'" if args_token != '' else 'without args'
         logger.info(
-            f"Using terminal '{terminal}' to run the script '{script_name}'{' as sudo' if sudo else '' } {args_log}"
+            f"Using terminal '{terminal}' to run the script '{script_name}'{' as sudo' if sudo else ''} {args_log}"
         )
 
         sb.run(f'{sudo_token} {terminal} {script_path}{" " + args_token}', shell=True, stdout=sb.PIPE, check=True)
@@ -325,10 +326,16 @@ class Scoop(WindowsDependent):
 
 class Msix(WindowsDependent):
     @staticmethod
-    def install(packages_paths: List[str]) -> None:
-        for path in packages_paths:
-            logger.info(f"Installing {os.path.basename(path)}...")
-            sb.check_call(['powershell.exe', '-c', 'Add-AppxPackage', '-Path', path], shell=True)
+    def install(package_path: str, dependencies_paths: List[str] = None) -> None:
+        logger.info(f"Installing {os.path.basename(package_path)}...")
+        dep_token = ''
+
+        if dependencies_paths:
+            dep_token = f' {" ".join(dependencies_paths)}'
+
+        sb.check_call(
+            ['powershell.exe', '-c', 'Add-AppxPackage', '-Path', package_path]
+            + ['-DependencyPackages', dep_token] if dependencies_paths else [], shell=True)
 
 
 class Winget(WindowsDependent):
@@ -340,8 +347,9 @@ class Winget(WindowsDependent):
                 continue
 
             logger.info(f"Installing package with ID '{pck_id}'...")
-            sb.run(f'winget install -e --id {pck_id} --accept-package-agreements --force',
-                shell=True)
+            sb.run(f'winget install -e --id {pck_id} --accept-package-agreements --accept-source-agreements --force',
+                   shell=True,
+                   check=True)
             logger.info('Done!')
 
     @classmethod
@@ -367,7 +375,7 @@ class Apt(WslDependent):
         sb.check_call(('sudo', 'apt-get', 'update'))
 
     @staticmethod
-    @requires_admin # TODO: is it really?
+    @requires_admin  # TODO: is it really?
     def add_repository(repo_name: str) -> None:
         logger.info(f"Adding '{repo_name}' repository to apt...")
         sb.check_call(('sudo', 'add-apt-repository', f'ppa:{repo_name}', '-y'))
