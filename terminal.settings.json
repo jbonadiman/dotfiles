@@ -2,32 +2,30 @@
     "$schema": "https://aka.ms/terminal-profiles-schema",
     "actions": [],
     "defaultProfile": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
-    "initialCols": 140,
-    "initialRows": 40,
-    "launchMode": "maximized",
-    "useAcrylicInTabRow": true,
-    "tabWidthMode": "compact",
-    "disabledProfileSources": [
+    "disabledProfileSources": 
+    [
         "Windows.Terminal.Wsl",
         "Windows.Terminal.Azure",
         "Windows.Terminal.PowershellCore"
     ],
-    "theme": "dark",
-    "profiles":
+    "initialCols": 140,
+    "initialRows": 40,
+    "launchMode": "maximized",
+    "profiles": 
     {
-        "defaults": {
-            "colorScheme": "One Half Dark",
-            "font":
-                {
-                    "face": "CaskaydiaCove NF",
-                    "size": 13
-                },
-            "opacity": 90,
-            "useAcrylic": true,
+        "defaults": 
+        {
             "antialiasingMode": "cleartype",
-            "hidden": false,
+            "colorScheme": "One Half Dark",
             "cursorShape": "vintage",
-            "startingDirectory": "%USERPROFILE%"
+            "font": 
+            {
+                "face": "CaskaydiaCove NF",
+                "size": 13
+            },
+            "hidden": false,
+            "startingDirectory": "%USERPROFILE%",
+            "useAcrylic": true
         },
         "list": 
         [
@@ -45,7 +43,8 @@
                 "commandline": "wsl.exe -d Ubuntu-20.04 --cd ~",
                 "guid": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
                 "name": "zsh"
-            }
+            },
+            {}
         ]
     },
     "schemes": 
@@ -303,5 +302,8 @@
             "white": "#C0C0C0",
             "yellow": "#808000"
         }
-    ]
+    ],
+    "tabWidthMode": "compact",
+    "theme": "dark",
+    "useAcrylicInTabRow": true
 }

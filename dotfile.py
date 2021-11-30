@@ -20,7 +20,7 @@ def requires_admin(fn: Callable):
         try:
             return fn(*args, **kwargs)
         except (OSError, PermissionError) as err:
-            if err.errno == 13 or (err.winerror and err.winerror == 1314):
+            if err.errno == 13 or ('winerror' in err.__dict__ and err.winerror == 1314):
                 logger.error(f"Administrative privileges are required to {fn.__qualname__}\n"
                              f'ARGUMENTS: {args} {kwargs}')
             else:
@@ -39,7 +39,7 @@ def download_file(url: str, path: str) -> None:
     resp = requests.get(url, allow_redirects=True)
     with open(path, 'wb') as f:
         f.write(resp.content)
-    logger.info('Done!')
+    logger.info('Finished downloading!')
 
 
 def abs_path(path: str) -> str:

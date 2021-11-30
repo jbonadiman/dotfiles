@@ -3,6 +3,8 @@
 # set variables
 
 export NULLCMD=bat
+export GOROOT=/usr/local/go
+export GOPATH=~/.go
 
 # change zsh options
 HISTFILE=~/.zsh_history
@@ -12,8 +14,8 @@ setopt INC_APPEND_HISTORY_TIME
 
 # create aliases
 
-alias ls='exa -1aFh --git --icons'
-alias exa='exa -1aFh --git --icons'
+alias ls='exa -laFh --git --icons'
+alias exa='exa -laFh --git --icons'
 alias man='batman'
 alias trail='<<<${(F)path}'
 alias cat='bat'
@@ -39,7 +41,9 @@ typeset -U path
 
 path=(
   $path
-  "$HOME/.local/bin"
+  "$HOME/.local/bin",
+  "$GOROOT/bin",
+  "$GOPATH/bin"
 )
 
 # functions

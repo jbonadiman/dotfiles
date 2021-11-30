@@ -5,7 +5,7 @@ import tempfile
 from dotfile import Wsl, Apt, Dpkg
 from dotfile import abs_path
 from dotfile import logger
-
+from dotfile import requires_admin
 
 apt = Apt()
 dpkg = Dpkg()
@@ -17,7 +17,7 @@ apt_pkgs = [
     'httpie',
     'clang',
     'exa',
-    'make'
+    'make',
 ]
 
 login_shell = 'zsh'
@@ -40,7 +40,7 @@ links = {
 }
 
 
-def install_bat_fn() -> None:
+def install_bat() -> None:
     import os.path
     from dotfile import download_file
 
@@ -50,7 +50,7 @@ def install_bat_fn() -> None:
     dpkg.install([bat_deb_path])
 
 
-def install_rust_fn() -> None:
+def install_rust() -> None:
     import os.path
     from dotfile import download_file
 
@@ -59,7 +59,7 @@ def install_rust_fn() -> None:
     wsl.execute_sh(rust_installer, ['-y'])
 
 
-def install_bat_extras_fn() -> None:
+def install_bat_extras() -> None:
     import os.path
     from dotfile import git_clone
 
@@ -68,7 +68,7 @@ def install_bat_extras_fn() -> None:
     wsl.execute_bash(os.path.join(bat_extras_dir, 'build.sh'), ['--install'], sudo=True)
 
 
-def install_n_fn() -> None:
+def install_n() -> None:
     import os.path
     from dotfile import download_file
 
@@ -80,7 +80,7 @@ def install_n_fn() -> None:
 
 def install_vundle():
     import os.path
-    from dotfile import git_clone, execute_cmd
+    from dotfile import git_clone
     import subprocess as sb
 
     vundle_path = abs_path(f'{wsl.HOME}/.vim/bundle/Vundle.vim')
@@ -92,6 +92,29 @@ def install_vundle():
         logger.info('Finished installing Vundle!')
     logger.info('Installing vim plugins...')
     sb.run('vim -esn -c PluginInstall -c q', shell=True)
+
+
+def install_shfmt():
+    from dotfile import execute_cmd
+    execute_cmd('go get mvdan.cc/sh/v3/cmd/shfmt@latest')
+
+
+@requires_admin
+def install_go():
+    from dotfile import download_file, execute_cmd
+    import os.path
+
+    go_url = 'https://go.dev/dl/go1.17.3.linux-amd64.tar.gz'
+    go_archive = os.path.join(tmpdir, os.path.basename(go_url))
+
+    download_file(go_url, go_archive)
+    logger.info('Extracting go files...')
+    execute_cmd(f'sudo tar -C /usr/local -xzf {go_archive}')
+    os.makedirs(os.path.join(wsl.HOME, '.go'), exist_ok=True)
+
+    logger.info('Registering go command...')
+    execute_cmd(f'sudo update-alternatives --install "/usr/bin/go" "go" "/usr/local/go/bin/go" 0 > /dev/null')
+    execute_cmd(f'sudo update-alternatives --set go /usr/local/go/bin/go > /dev/null')
 
 
 if __name__ == '__main__':
@@ -121,10 +144,13 @@ if __name__ == '__main__':
 
         apt.install(apt_pkgs)
         install_vundle()
-        wsl.install('bat', install_bat_fn)
-        wsl.install('rustup', install_rust_fn)
-        wsl.install('batman', install_bat_extras_fn, alias='bat-extras')
-        wsl.install('n', install_n_fn)
+
+        wsl.install('go', install_go)
+        wsl.install('shfmt', install_shfmt)
+        wsl.install('bat', install_bat)
+        wsl.install('rustup', install_rust)
+        wsl.install('batman', install_bat_extras, alias='bat-extras')
+        wsl.install('n', install_n)
         logger.info('Finished installing packages!', True)
     finally:
         rmtree(tmpdir)

@@ -3,7 +3,6 @@
 ### TODO:
 
 - [Windows] Find a way to backup StartAllBack cfg
-- [WSL] Install shfmt so that bat-extras can be minified
 - [WSL] Find a way to use the trash, so I don't use rm directly
 - [WSL] Syntax highlighting in commands
 - [WSL] Autocomplete in commands
@@ -18,6 +17,5 @@
 - [All] Use Yaml files for recipes 
 - [Windows] Intercept Scoop messages and use them with the log library
 - [Windows] Install Battle.net, Origin
-- [WSL] exa is really slow right now with the -l option. I'm using -1 option for now, but I should change it back in exa version 0.11.0 (this improvement is marked for that version miletone)
 
 ### Annotations
