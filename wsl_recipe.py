@@ -14,6 +14,7 @@ wsl = Wsl()
 
 # TODO: read from file
 apt_pkgs = [
+    'python3-pip',
     'httpie',
     'clang',
     'exa',
@@ -37,7 +38,8 @@ links = {
     f'{wsl.HOME}/.docker_service.zsh': 'docker_service.zsh',
     '/etc/wsl.conf': 'wsl.conf',
     f'{wsl.HOME}/sources': '$USERPROFILE/sources',
-    f'{wsl.HOME}/.config/nvim/init.vim': 'vimrc'
+    f'{wsl.HOME}/.config/nvim/init.vim': 'vimrc',
+    '/usr/bin/sh': '/usr/bin/zsh'
 }
 
 
@@ -98,8 +100,22 @@ def install_go():
     os.makedirs(os.path.join(wsl.HOME, '.go'), exist_ok=True)
 
     logger.info('Registering go command...')
-    execute_cmd(f'sudo update-alternatives --install "/usr/bin/go" "go" "/usr/local/go/bin/go" 0 > /dev/null')
-    execute_cmd(f'sudo update-alternatives --set go /usr/local/go/bin/go > /dev/null')
+    execute_cmd('sudo update-alternatives --install "/usr/bin/go" "go" "/usr/local/go/bin/go" 0 > /dev/null')
+    execute_cmd('sudo update-alternatives --set go /usr/local/go/bin/go > /dev/null')
+
+
+@requires_admin
+def install_trash():
+    from dotfile import execute_cmd
+
+    logger.info('Installing trash-cli...')
+    execute_cmd('sudo -H pip install trash-cli')
+    logger.info('Done!...')
+
+
+def install_node():
+    from dotfile import execute_cmd
+    execute_cmd('n latest')
 
 
 if __name__ == '__main__':
@@ -134,11 +150,13 @@ if __name__ == '__main__':
         apt.install(apt_pkgs)
 
         wsl.install('go', install_go)
+        wsl.install('trash --version', install_trash, 'trash-cli')
         wsl.install('shfmt', install_shfmt)
         wsl.install('bat', install_bat)
         wsl.install('rustup', install_rust)
         wsl.install('batman', install_bat_extras, alias='bat-extras')
         wsl.install('n', install_n)
+        wsl.install('node', install_node)
         logger.info('Finished installing packages!', True)
     finally:
         rmtree(tmpdir)

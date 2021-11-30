@@ -2,7 +2,6 @@
 
 ### TODO:
  
-- [WSL] Find a way to use the trash, so I don't use rm directly
 - [WSL] Syntax highlighting in commands
 - [WSL] Autocomplete in commands
 - [WSL] Create keyboard layout routine
@@ -14,6 +13,7 @@
 - [All] Add command line options that defines what tags should be installed and if upgrades must be run
 - [All] Upgrade also upgrade pip and/or python
 - [All] Use Yaml files for recipes 
+- [All] Find a way to express dependent installations
 - [Windows] Find a way to backup StartAllBack cfg
 - [Windows] Intercept Scoop messages and use them with the log library
 - [Windows] Install Battle.net, Origin

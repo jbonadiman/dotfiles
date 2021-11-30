@@ -21,6 +21,7 @@ alias trail='<<<${(F)path}'
 alias cat='bat'
 alias python='python3'
 alias clip='/mnt/c/Windows/System32/clip.exe'
+alias rm='trash-put'
 
 # customize prompt
 PROMPT='
@@ -54,6 +55,8 @@ function mkcd() {
 # zsh plugins
 
 # init procedures
-# source ~/.docker_service.zsh
+if exists docker; then
+    source ~/.docker_service.zsh
+fi
 
 export N_PREFIX="$HOME/n"; [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"  # Added by n-install (see http://git.io/n-install-repo).
