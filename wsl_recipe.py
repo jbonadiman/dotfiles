@@ -36,7 +36,8 @@ links = {
     f'{wsl.HOME}/.zshenv': 'zshenv',
     f'{wsl.HOME}/.docker_service.zsh': 'docker_service.zsh',
     '/etc/wsl.conf': 'wsl.conf',
-    f'{wsl.HOME}/sources': '$USERPROFILE/sources'
+    f'{wsl.HOME}/sources': '$USERPROFILE/sources',
+    f'{wsl.HOME}/.config/nvim/init.vim': 'vimrc'
 }
 
 
