@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import os
 import tempfile
 
 from dotfile import Wsl, Apt, Dpkg
@@ -123,6 +123,10 @@ if __name__ == '__main__':
     from shutil import rmtree
 
     logger.info('Running WSL recipe...', True)
+
+    logger.info(f"Changing working directory to the script's directory...")
+    os.chdir(os.path.dirname(__file__))
+
     tmpdir = tempfile.mkdtemp(prefix='wsl_recipe')
 
     try:

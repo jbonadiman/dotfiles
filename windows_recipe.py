@@ -212,6 +212,9 @@ if __name__ == '__main__':
     from dotfile import create_folders
     from shutil import rmtree
 
+    logger.info(f"Changing working directory to the script's directory...")
+    os.chdir(os.path.dirname(__file__))
+
     logger.info('Running Windows recipe...', True)
     tmpdir = tempfile.mkdtemp(prefix='windows_recipe')
 

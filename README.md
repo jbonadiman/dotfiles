@@ -2,7 +2,6 @@
 
 ### TODO:
 
-- [WSL] Fix relative paths towards the script
 - [WSL] Fix VIM plugin installation
 - [Windows] Find a way to backup StartAllBack cfg
 - [WSL] Find a way to use the trash, so I don't use rm directly
