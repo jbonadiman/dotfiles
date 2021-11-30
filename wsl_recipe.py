@@ -79,22 +79,6 @@ def install_n() -> None:
     wsl.execute_bash(n_installer, ['-y'])
 
 
-def install_vundle():
-    import os.path
-    from dotfile import git_clone
-    import subprocess as sb
-
-    vundle_path = abs_path(f'{wsl.HOME}/.vim/bundle/Vundle.vim')
-    if os.path.isdir(vundle_path):
-        logger.warn('Vundle already installed, skipping...')
-    else:
-        logger.info('Installing Vundle...')
-        git_clone('https://github.com/VundleVim/Vundle.vim.git', vundle_path)
-        logger.info('Finished installing Vundle!')
-    logger.info('Installing vim plugins...')
-    sb.run('vim -esn -c PluginInstall -c q', shell=True)
-
-
 def install_shfmt():
     from dotfile import execute_cmd
     execute_cmd('go get mvdan.cc/sh/v3/cmd/shfmt@latest')
@@ -148,7 +132,6 @@ if __name__ == '__main__':
         logger.info('Finished setups!', True)
 
         apt.install(apt_pkgs)
-        install_vundle()
 
         wsl.install('go', install_go)
         wsl.install('shfmt', install_shfmt)
