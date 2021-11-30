@@ -2,8 +2,6 @@
 
 ### TODO:
  
-- [WSL] Autocomplete in commands
-- [WSL] Create keyboard layout routine
 - [Windows] Add scoop update and cleanup as part of recipe
 - [WSL] Fix N and rust checks, they are being installed everytime
 - [Windows] Netflix package keeps reinstalling itself
