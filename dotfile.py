@@ -439,6 +439,10 @@ class Apt(WslDependent):
     def is_repository_added(repo_name: str) -> bool:
         return cmd_as_bool(f'grep -q "^deb .*{repo_name}" /etc/apt/sources.list /etc/apt/sources.list.d/*')
 
+    @staticmethod
+    def clean():
+        sb.check_call(('sudo', 'apt-get', 'autoremove'))
+
 
 class Dpkg(WslDependent):
     @staticmethod

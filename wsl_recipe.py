@@ -137,11 +137,11 @@ if __name__ == '__main__':
             logger.warn('exa repository already added, skipping...')
         else:
             apt.add_repository(exa_repo)
-            apt.update()
 
         wsl.set_locales(locales)
         logger.info('Finished setups!', True)
 
+        apt.update()
         apt.install(apt_pkgs)
 
         wsl.install('go', install_go)
@@ -152,6 +152,8 @@ if __name__ == '__main__':
         wsl.install('batman', install_bat_extras, alias='bat-extras')
         wsl.install('n', install_n)
         wsl.install('node', install_node)
+
+        apt.clean()
         logger.info('Finished installing packages!', True)
     finally:
         rmtree(tmpdir)
