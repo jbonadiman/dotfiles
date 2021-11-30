@@ -3,7 +3,6 @@ import os
 import tempfile
 
 from dotfile import Wsl, Apt, Dpkg
-from dotfile import abs_path
 from dotfile import logger
 from dotfile import requires_admin
 
@@ -14,6 +13,8 @@ wsl = Wsl()
 
 # TODO: read from file
 apt_pkgs = [
+    'zsh',
+    'zsh-syntax-highlighting',
     'python3-pip',
     'httpie',
     'clang',

@@ -2,7 +2,6 @@
 
 ### TODO:
  
-- [WSL] Syntax highlighting in commands
 - [WSL] Autocomplete in commands
 - [WSL] Create keyboard layout routine
 - [Windows] Add scoop update and cleanup as part of recipe
