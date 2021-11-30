@@ -4,7 +4,6 @@ import tempfile
 
 from dotfile import Wsl, Apt, Dpkg
 from dotfile import logger
-from dotfile import requires_admin
 
 apt = Apt()
 dpkg = Dpkg()
@@ -87,7 +86,6 @@ def install_shfmt():
     execute_cmd('go get mvdan.cc/sh/v3/cmd/shfmt@latest')
 
 
-@requires_admin
 def install_go():
     from dotfile import download_file, execute_cmd
     import os.path
@@ -105,13 +103,9 @@ def install_go():
     execute_cmd('sudo update-alternatives --set go /usr/local/go/bin/go > /dev/null')
 
 
-@requires_admin
 def install_trash():
     from dotfile import execute_cmd
-
-    logger.info('Installing trash-cli...')
     execute_cmd('sudo -H pip install trash-cli')
-    logger.info('Done!...')
 
 
 def install_node():
@@ -151,7 +145,7 @@ if __name__ == '__main__':
         apt.install(apt_pkgs)
 
         wsl.install('go', install_go)
-        wsl.install('trash --version', install_trash, 'trash-cli')
+        wsl.install('trash', install_trash, alias='trash-cli')
         wsl.install('shfmt', install_shfmt)
         wsl.install('bat', install_bat)
         wsl.install('rustup', install_rust)

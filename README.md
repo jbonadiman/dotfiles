@@ -2,8 +2,8 @@
 
 ### TODO:
  
-- [Windows] Add scoop update and cleanup as part of recipe
 - [WSL] Fix N and rust checks, they are being installed everytime
+- [All] Create decorator to check installation, so that skip messages are not preceded by admin installation msgs
 - [Windows] Netflix package keeps reinstalling itself
 - [Windows] winget search is so slow, I should find an alternative
 - [All] Add separation installations tags (personal, essential, dev...)

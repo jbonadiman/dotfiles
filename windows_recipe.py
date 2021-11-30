@@ -248,6 +248,8 @@ if __name__ == '__main__':
         scoop.add_bucket('extras')
         scoop.install(scoop_apps)
 
+        scoop.clean()
+
         windows.install('winget', install_winget_fn)
 
         winget.install(winget_ids)

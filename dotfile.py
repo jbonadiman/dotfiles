@@ -374,6 +374,10 @@ class Scoop(WindowsDependent):
     def change_repo(repo: str) -> None:
         sb.check_call(['scoop', 'config', 'SCOOP_REPO', repo], shell=True)
 
+    @staticmethod
+    def clean() -> None:
+        sb.check_call(['scoop', 'cleanup', '*'], shell=True)
+
 
 class Msix(WindowsDependent):
     @staticmethod
