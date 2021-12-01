@@ -100,6 +100,7 @@ def pt_cfg(cfg):
 links = {
     TERMINAL_SETTINGS: 'terminal.settings.json',
     WINGET_SETTINGS: 'winget.settings.json',
+    '%USERPROFILE%/.gitconfig': 'gitconfig',
     '~/Documents/PowerShell/Microsoft.PowerShell_profile.ps1': 'PowerShell_Profile.ps1',
     '%APPDATA%/Rainmeter/Layouts/default/Rainmeter.ini': 'rainmeter_layout.ini',
 
