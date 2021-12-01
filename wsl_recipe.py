@@ -14,6 +14,7 @@ wsl = Wsl()
 apt_pkgs = [
     'zsh',
     'zsh-syntax-highlighting',
+    'zsh-autosuggestions',
     'python3-pip',
     'httpie',
     'clang',

@@ -1,4 +1,5 @@
 #!/usr/bin/env zsh
+
 DOCKER_DISTRO="$WSL_DISTRO_NAME"
 DOCKER_DIR=/mnt/wsl/shared-docker
 DOCKER_SOCK="$DOCKER_DIR/docker.sock"
