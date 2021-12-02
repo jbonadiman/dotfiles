@@ -2,7 +2,6 @@
 
 ### TODO:
  
-- [WSL] Fix N and rust checks, they are being installed everytime
 - [All] Create decorator to check installation, so that skip messages are not preceded by admin installation msgs
 - [Windows] Netflix package keeps reinstalling itself
 - [Windows] winget search is so slow, I should find an alternative

@@ -1,105 +1,21 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 
 import os
 import platform
 import subprocess as sb
-from functools import wraps
-from typing import List, Callable, Dict
-
-import requests
+from typing import Callable
 
 import log
+from utils import \
+    requires_admin, \
+    abs_path, \
+    execute_cmd, \
+    cmd_as_bool, \
+    _make_links, \
+    exhaust
 
 logger = log.get_logger()
-
-
-def requires_admin(fn: Callable):
-    @wraps(fn)
-    def wrapped_f(*args, **kwargs):
-        logger.info(f"Using administrative privileges to '{fn.__qualname__}'...")
-        try:
-            return fn(*args, **kwargs)
-        except (OSError, PermissionError) as err:
-            if err.errno == 13 or (hasattr(err, 'winerror') and err.winerror == 1314):
-                logger.error(f"Administrative privileges are required to {fn.__qualname__}\n"
-                             f'ARGUMENTS: {args} {kwargs}')
-            else:
-                raise err
-
-    return wrapped_f
-
-
-def git_clone(url: str, path: str = None) -> None:
-    alt_path = f' "{path}"' or ''
-    sb.run(f'git clone -q "{url}"{alt_path}'.strip(), shell=True, stdout=sb.PIPE)
-
-
-def download_file(url: str, path: str) -> None:
-    logger.info('Downloading...')
-    resp = requests.get(url, allow_redirects=True)
-    with open(path, 'wb') as f:
-        f.write(resp.content)
-    logger.info('Finished downloading!')
-
-
-def abs_path(path: str) -> str:
-    return os.path.abspath(
-        os.path.expandvars(
-            os.path.expanduser(path)
-        )
-    )
-
-
-def execute_cmd(command: str) -> None:
-    sb.check_call(command, shell=True)
-
-
-def cmd_as_bool(command: str) -> bool:
-    result = sb.run(f'{command} && echo 1 || echo 0', shell=True, stdout=sb.PIPE)
-    return bool(int(result.stdout))
-
-
-@requires_admin
-def create_folders(paths: List[str]) -> None:
-    import os.path
-
-    logger.info('Creating folders...')
-    for p in paths:
-        as_absolute = abs_path(p)
-        if os.path.exists(as_absolute):
-            logger.warn(f"'{p}' folder already exists, skipping...")
-            continue
-
-        logger.info(f"Creating folder '{p}'...")
-        os.makedirs(as_absolute, exist_ok=True)
-
-
-@requires_admin
-def _make_links(links: Dict[str, str]) -> None:
-    import os.path
-
-    logger.info('Creating symlinks...')
-
-    for symlink, original in links.items():
-        abs_symlink = abs_path(symlink)
-        abs_original = abs_path(original)
-
-        if not os.path.exists(abs_original):
-            logger.warn(f"Origin '{original}' does not exist, skipping...")
-            continue
-
-        if os.path.lexists(abs_symlink):
-            if os.path.islink(abs_symlink) and os.path.realpath(abs_symlink) == abs_original:
-                logger.warn(f"Link '{symlink}' -> '{abs_original}' already exists and is updated, skipping...")
-                continue
-            else:
-                logger.info(f"File already exists, removing and creating link to '{symlink}' -> '{abs_original}'...")
-                os.remove(abs_symlink)
-        else:
-            logger.info(f"Creating link '{symlink}' -> '{abs_original}'...")
-            os.makedirs(os.path.dirname(abs_symlink), exist_ok=True)
-
-        os.symlink(abs_original, abs_symlink)
 
 
 class SystemDependent:
@@ -109,19 +25,23 @@ class SystemDependent:
 
     @classmethod
     @requires_admin
-    def _run_script(cls, terminal: str, script_path: str, args: List[str], sudo: bool = False) -> None:
+    def _run_script(cls, terminal: str, script_path: str, args: list[str] | None, sudo: bool | None) -> None:
         sudo_token = 'sudo' if sudo else ''
         args_token = ''
         if args and len(args):
             args_token = ' '.join(args) if len(args) > 1 else args[0]
 
         script_name = os.path.basename(script_path)
-        args_log = f"with args '{args_token}'" if args_token != '' else 'without args'
+        args_log = f"with args '{args_token}'" if args_token else 'without args'
         logger.info(
             f"Using terminal '{terminal}' to run the script '{script_name}'{' as sudo' if sudo else ''} {args_log}"
         )
 
         sb.run(f'{sudo_token} {terminal} {script_path}{" " + args_token}', shell=True, stdout=sb.PIPE, check=True)
+
+    @classmethod
+    def exists(cls, arg: str):
+        pass
 
     @classmethod
     @requires_admin
@@ -164,19 +84,19 @@ class Wsl(WslDependent):
 
     @classmethod
     def exists(cls, arg: str) -> bool:
-        return cmd_as_bool(f'command -v "{arg}" > /dev/null 2>&1')
+        return cmd_as_bool(f'command -v "{arg}"')
 
     @classmethod
-    def execute_sh(cls, script_path: str, args: List[str] = None, sudo=False) -> None:
+    def execute_sh(cls, script_path: str, args: list[str] = None, sudo=False) -> None:
         cls._run_script('sh', script_path, args, sudo)
 
     @classmethod
-    def execute_bash(cls, script_path: str, args: List[str] = None, sudo=False) -> None:
+    def execute_bash(cls, script_path: str, args: list[str] = None, sudo=False) -> None:
         cls._run_script('bash', script_path, args, sudo)
 
     @classmethod
     @requires_admin
-    def make_links(cls, links: Dict[str, str]) -> None:
+    def make_links(cls, links: dict[str, str]):
         import os.path
 
         logger.info('Creating symlinks...')
@@ -196,7 +116,6 @@ class Wsl(WslDependent):
                 else:
                     logger.info(
                         f"File already exists, removing and creating link to '{symlink}' -> '{abs_original}'...")
-                    # os.remove(abs_symlink)
             else:
                 logger.info(f"Creating link '{symlink}' -> '{abs_original}'...")
                 os.makedirs(os.path.dirname(abs_symlink), exist_ok=True)
@@ -205,7 +124,7 @@ class Wsl(WslDependent):
 
     @classmethod
     @requires_admin
-    def set_login_shell(cls, shell: str) -> None:
+    def set_login_shell(cls, shell: str):
         logger.info('Setting up login shell...')
         if cmd_as_bool(f'echo $SHELL | grep --quiet "{shell}"'):
             logger.warn(f'Login shell is already {shell}, skipping...')
@@ -217,7 +136,7 @@ class Wsl(WslDependent):
 
     @classmethod
     @requires_admin
-    def set_locales(cls, locales: List[str]) -> None:
+    def set_locales(cls, locales: list[str]):
         import locale
         must_install = []
 
@@ -263,14 +182,14 @@ class Windows(WindowsDependent):
         logger.debug(f'Located font folder at "{buffer.value}"')
 
     @classmethod
-    def set_environment_var(cls, name: str, value: str) -> None:
+    def set_environment_var(cls, name: str, value: str):
         from os import environ
         execute_cmd(f'SETX {name.upper()} {value} > NUL')
         environ[name.upper()] = value
 
     @classmethod
     @requires_admin
-    def make_links(cls, links: Dict[str, str]) -> None:
+    def make_links(cls, links: dict[str, str]):
         return _make_links(links)
 
     @classmethod
@@ -278,7 +197,7 @@ class Windows(WindowsDependent):
         return cmd_as_bool(f'WHERE /Q "{arg}"')
 
     @classmethod
-    def execute_ps1(cls, script_path: str, args: List[str] = None) -> None:
+    def execute_ps1(cls, script_path: str, args: list[str] = None):
         cls._run_script('powershell.exe', script_path, args)
 
     @classmethod
@@ -288,7 +207,7 @@ class Windows(WindowsDependent):
 
     @classmethod
     @requires_admin
-    def set_keyboard_layouts(cls, layouts: List[str]) -> None:
+    def set_keyboard_layouts(cls, layouts: list[str]):
         logger.info('Setting up keyboard layout...')
         from winreg import \
             OpenKey, \
@@ -345,24 +264,69 @@ class Windows(WindowsDependent):
             logger.info('Done!')
 
 
+class App:
+    def __init__(self,
+                 name: str,
+                 system: SystemDependent,
+                 depends_on: list[App] | None = None,
+                 exists_function_or_command: Callable[[None], bool] | str = None,
+                 install_function_or_commands: Callable[[None], None] | list[str] = None):
+        if not name.strip():
+            raise ValueError('Application name is required!')
+        if not system:
+            raise ValueError('Application system is required!')
+        if not install_function_or_commands:
+            raise ValueError('Custom install function or commands list must be supplied!')
+        if not exists_function_or_command:
+            raise ValueError('Custom exists function or commands list must be supplied!')
+
+        self.name: str = name
+        self.system: SystemDependent = system
+        self.depends_on: list[App] = depends_on
+
+        self.install_routine: Callable[[None], None] = lambda: exhaust(
+            (execute_cmd(cmd) for cmd in install_function_or_commands)
+        ) if install_function_or_commands is str else install_function_or_commands
+
+        self.exists_routine: Callable[[None], bool] = \
+            lambda: system.exists(exists_function_or_command) \
+                if exists_function_or_command is str \
+                else exists_function_or_command
+
+    def install(self):
+        if self.exists:
+            logger.warn(f"'{self.name}' is already installed, skipping...")
+        else:
+            if self.depends_on:
+                logger.info(f"Installing dependencies for '{self.name}'...")
+                for dependency in self.depends_on:
+                    dependency.install()
+
+            logger.info(f"Installing '{self.name}'...")
+            self.install_routine()
+
+    def exists(self) -> bool:
+        return self.exists_routine()
+
+
 class Scoop(WindowsDependent):
     SCOOP_VAR = 'SCOOP'
     SHOVEL_VAR = 'SHOVEL'
 
     @staticmethod
-    def upgrade() -> None:
+    def upgrade():
         sb.check_call(['scoop', 'update', '-q', '*'], shell=True)
 
     @staticmethod
-    def install(packages: List[str]) -> None:
+    def install(packages: list[str]):
         sb.check_call(['scoop', 'install'] + packages, shell=True)
 
     @staticmethod
-    def update() -> None:
+    def update():
         sb.check_call(['scoop', 'update', '-q'], shell=True)
 
     @staticmethod
-    def add_bucket(bucket_name: str) -> None:
+    def add_bucket(bucket_name: str):
         if cmd_as_bool(f'scoop bucket list | findstr {bucket_name} > NUL'):
             logger.warn(f"Bucket '{bucket_name}' already added, skipping...")
             return
@@ -371,17 +335,17 @@ class Scoop(WindowsDependent):
         sb.check_call(['scoop', 'bucket', 'add', bucket_name], shell=True)
 
     @staticmethod
-    def change_repo(repo: str) -> None:
+    def change_repo(repo: str):
         sb.check_call(['scoop', 'config', 'SCOOP_REPO', repo], shell=True)
 
     @staticmethod
-    def clean() -> None:
+    def clean():
         sb.check_call(['scoop', 'cleanup', '*'], shell=True)
 
 
 class Msix(WindowsDependent):
     @staticmethod
-    def install(package_path: str, dependencies_paths: List[str] = None) -> None:
+    def install(package_path: str, dependencies_paths: list[str] = None):
         logger.info(f"Installing {os.path.basename(package_path)}...")
         dep_token = ''
 
@@ -395,7 +359,7 @@ class Msix(WindowsDependent):
 
 class Winget(WindowsDependent):
     @staticmethod
-    def install(packages_id: List[str]) -> None:
+    def install(packages_id: list[str]):
         for pck_id in packages_id:
             if Winget.exists(pck_id):
                 logger.warn(f"Package with ID '{pck_id}' is already installed, skipping...")
@@ -415,23 +379,23 @@ class Winget(WindowsDependent):
 class Apt(WslDependent):
     @staticmethod
     @requires_admin  # TODO: is it really?
-    def upgrade() -> None:
+    def upgrade():
         sb.check_call(('sudo', 'apt-get', 'upgrade', '-y'))
 
     @staticmethod
     @requires_admin
-    def install(packages: List[str]) -> None:
+    def install(packages: list[str]):
         sb.check_call(['sudo', 'apt-get', 'install', '-y'] + packages)
 
     @staticmethod
     @requires_admin
-    def update() -> None:
+    def update():
         logger.info('Updating apt references...')
         sb.check_call(('sudo', 'apt-get', 'update'))
 
     @staticmethod
     @requires_admin  # TODO: is it really?
-    def add_repository(repo_name: str) -> None:
+    def add_repository(repo_name: str):
         logger.info(f"Adding '{repo_name}' repository to apt...")
         sb.check_call(('sudo', 'add-apt-repository', f'ppa:{repo_name}', '-y'))
 
@@ -447,6 +411,6 @@ class Apt(WslDependent):
 class Dpkg(WslDependent):
     @staticmethod
     @requires_admin
-    def install(deb_paths: List[str]) -> None:
+    def install(deb_paths: list[str]):
         for path in deb_paths:
             sb.check_call(['sudo', 'dpkg', '-i', f'{path}'])
