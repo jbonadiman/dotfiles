@@ -34,16 +34,22 @@ def abs_path(path: str) -> str:
 
 
 def execute_cmd(command: str, quiet: bool | None = None) -> Any:
-    return sp.check_output(
+    if quiet:
+        return sp.check_call(
+            command,
+            shell=True,
+            stdin=sp.DEVNULL,
+            stderr=sp.DEVNULL
+        )
+    return sp.check_call(
         command,
-        shell=True,
-        stderr=sp.DEVNULL if quiet else sp.STD_ERROR_HANDLE
+        shell=True
     )
 
 
 def cmd_as_bool(command: str) -> bool:
     result = execute_cmd(f'{command} && echo 1 || echo 0', quiet=True)
-    return bool(int(result.stdout))
+    return bool(int(result))
 
 
 def exhaust(generator: Generator):

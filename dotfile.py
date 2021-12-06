@@ -25,7 +25,7 @@ class SystemDependent:
 
     @classmethod
     @requires_admin
-    def _run_script(cls, terminal: str, script_path: str, args: list[str] | None, sudo: bool | None) -> None:
+    def _run_script(cls, terminal: str, script_path: str, args: list[str] | None, sudo: bool | None=None) -> None:
         sudo_token = 'sudo' if sudo else ''
         args_token = ''
         if args and len(args):
@@ -184,7 +184,7 @@ class Windows(WindowsDependent):
     @classmethod
     def set_environment_var(cls, name: str, value: str):
         from os import environ
-        execute_cmd(f'SETX {name.upper()} {value} > NUL')
+        execute_cmd(f'SETX {name.upper()} {value}', quiet=True)
         environ[name.upper()] = value
 
     @classmethod
@@ -327,7 +327,7 @@ class Scoop(WindowsDependent):
 
     @staticmethod
     def add_bucket(bucket_name: str):
-        if cmd_as_bool(f'scoop bucket list | findstr {bucket_name} > NUL'):
+        if cmd_as_bool(f'scoop bucket list | findstr {bucket_name}'):
             logger.warn(f"Bucket '{bucket_name}' already added, skipping...")
             return
 
@@ -373,7 +373,7 @@ class Winget(WindowsDependent):
 
     @classmethod
     def exists(cls, package_id: str) -> bool:
-        return cmd_as_bool(f'winget list -e --id "{package_id}" > NUL')
+        return cmd_as_bool(f'winget list -e --id "{package_id}"')
 
 
 class Apt(WslDependent):

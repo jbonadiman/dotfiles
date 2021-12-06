@@ -52,12 +52,12 @@ scoop_apps = [
     'gitkraken',
     'jetbrains-toolbox',
     # personal
-    'ccleaner',
-    'discord',
-    'gimp',
-    'inkscape',
-    'qbittorrent',
-    'rainmeter'
+    # 'ccleaner',
+    # 'discord',
+    # 'gimp',
+    # 'inkscape',
+    # 'qbittorrent',
+    # 'rainmeter'
 ]
 
 winget_ids = [
@@ -68,19 +68,19 @@ winget_ids = [
 
     # personal
     # '9WZDNCRFJ3TJ',  # Netflix
-    'Amazon.Games',
+    # 'Amazon.Games',
     'Amazon.Kindle',
-    'EpicGames.EpicGamesLauncher',
-    'GOG.Galaxy',
-    'Valve.Steam',
+    # 'EpicGames.EpicGamesLauncher',
+    # 'GOG.Galaxy',
+    # 'Valve.Steam',
     'Telegram.TelegramDesktop',
-    'Ubisoft.Connect',
+    # 'Ubisoft.Connect',
     'WhatsApp.WhatsApp',
-    'StartIsBack.StartAllBack',
-    'Stremio.Stremio',
+    # 'StartIsBack.StartAllBack',
+    # 'Stremio.Stremio',
 
     # dev
-    'dbeaver.dbeaver',
+    # 'dbeaver.dbeaver',
 ]
 
 folders = [
@@ -132,7 +132,7 @@ links = {
 
 
 def install_scoop_fn() -> None:
-    from dotfile import download_file, execute_cmd, abs_path
+    from utils import download_file, execute_cmd, abs_path
     from os import environ
 
     scoop_installer = os.path.join(tmpdir, 'install.ps1')
@@ -155,7 +155,7 @@ def download_and_install_font(url: str) -> None:
         return
 
     from windows_font_installer import install_font
-    from dotfile import download_file
+    from utils import download_file
 
     logger.info(f"Downloading and installing font '{font_name}'...")
     font_path = os.path.join(tmpdir, font_name)
@@ -171,7 +171,7 @@ def install_shovel_fn() -> None:
 
     scoop.change_repo('https://github.com/Ash258/Scoop-Core')
     scoop.update()
-    scoop.add_bucket('Base')
+    # scoop.add_bucket('Base') # Se o bucket existir, não pode adicionar
     p = os.path
     # copy everything that is /scoop.ext to the same folder as /shovel.ext
     for file_path in glob(p.join(os.environ['SCOOP'], 'shims', 'scoop.*')):
@@ -180,7 +180,7 @@ def install_shovel_fn() -> None:
 
 
 def install_winget_fn() -> None:
-    from dotfile import download_file
+    from utils import download_file
 
     dep_url = 'https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx'
     dep_setup = os.path.join(tmpdir, os.path.basename(dep_url))
@@ -194,23 +194,23 @@ def install_winget_fn() -> None:
 
 
 def setup_wsl() -> None:
-    from dotfile import execute_cmd, cmd_as_bool
-    if cmd_as_bool('wsl --status > NUL'):
+    from utils import execute_cmd, cmd_as_bool
+    if cmd_as_bool('wsl --status'):
         logger.warn('WSL is already installed, skipping installation...')
     else:
         logger.info(f"Installing WSL with distro {WSL_DISTRO}...")
-        execute_cmd(f'wsl --install -d {WSL_DISTRO} > NUL')
+        execute_cmd(f'wsl --install -d {WSL_DISTRO}', quiet=False)
 
     logger.info(f"Setting WSL version 2 as default...")
-    execute_cmd(f'wsl --set-default-version 2 > NUL')
+    execute_cmd(f'wsl --set-default-version 2', quiet=True)
 
     logger.info(f"Setting distro '{WSL_DISTRO}' as default...")
-    execute_cmd(f'wsl --set-default {WSL_DISTRO} > NUL')
+    execute_cmd(f'wsl --set-default {WSL_DISTRO}', quiet=True)
     logger.info('Done!')
 
 
 if __name__ == '__main__':
-    from dotfile import create_folders
+    from utils import create_folders
     from shutil import rmtree
 
     logger.info(f"Changing working directory to the script's directory...")
@@ -227,9 +227,9 @@ if __name__ == '__main__':
         logger.info('Finished creating symlinks!', True)
 
         windows.set_keyboard_layouts(KEYBOARD_LAYOUTS)
-        windows.set_powershell_execution_policy()
+        # windows.set_powershell_execution_policy()
 
-        setup_wsl()
+        # setup_wsl()
 
         if 'WSLENV' not in os.environ or 'USERPROFILE' not in os.environ['WSLENV']:
             logger.info('Adding Windows profile in WSL environment variables')
@@ -243,15 +243,16 @@ if __name__ == '__main__':
 
         logger.info('Finished setups!', True)
 
-        windows.install('scoop', install_scoop_fn)
-        windows.install('shovel', install_shovel_fn)
+        # windows.install('scoop', install_scoop_fn)
+        scoop.install(['7zip', 'git', 'shellcheck', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
+        # windows.install('shovel', install_shovel_fn) # Keeps being reinstalled
 
-        scoop.add_bucket('extras')
+        # scoop.add_bucket('extras')
         scoop.install(scoop_apps)
 
         scoop.clean()
 
-        windows.install('winget', install_winget_fn)
+        # windows.install('winget', install_winget_fn) # Keeps being reinstalled
 
         winget.install(winget_ids)
         logger.info('Finished installing packages!', True)
