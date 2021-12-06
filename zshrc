@@ -13,7 +13,6 @@ SAVEHIST=10000
 setopt INC_APPEND_HISTORY_TIME
 
 # create aliases
-
 alias ls='exa -laFh --git --icons'
 alias exa='exa -laFh --git --icons'
 alias man='batman'
@@ -58,6 +57,7 @@ function mkcd() {
 if exists docker; then
     source ~/.docker_service.zsh
 fi
+cd ~
 
 export N_PREFIX="$HOME/n"; [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"  # Added by n-install (see http://git.io/n-install-repo).
 

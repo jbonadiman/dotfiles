@@ -40,11 +40,10 @@
                 "name": "PowerShell"
             },
             {
-                "commandline": "wsl.exe -d Ubuntu-20.04 --cd ~",
+                "commandline": "wsl.exe -d Ubuntu-20.04",
                 "guid": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
                 "name": "zsh"
-            },
-            {}
+            }
         ]
     },
     "schemes": 

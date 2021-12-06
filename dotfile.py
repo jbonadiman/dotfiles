@@ -25,7 +25,7 @@ class SystemDependent:
 
     @classmethod
     @requires_admin
-    def _run_script(cls, terminal: str, script_path: str, args: list[str] | None, sudo: bool | None=None) -> None:
+    def _run_script(cls, terminal: str, script_path: str, args: list[str] | None, sudo: bool | None = None) -> None:
         sudo_token = 'sudo' if sudo else ''
         args_token = ''
         if args and len(args):
@@ -40,7 +40,7 @@ class SystemDependent:
         sb.run(f'{sudo_token} {terminal} {script_path}{" " + args_token}', shell=True, stdout=sb.PIPE, check=True)
 
     @classmethod
-    def exists(cls, arg: str):
+    def exists(cls, arg: str) -> bool:
         pass
 
     @classmethod
@@ -268,7 +268,7 @@ class App:
     def __init__(self,
                  name: str,
                  system: SystemDependent,
-                 depends_on: list[App] | None = None,
+                 depends_on: list[App] | App | None = None,
                  exists_function_or_command: Callable[[None], bool] | str = None,
                  install_function_or_commands: Callable[[None], None] | list[str] = None):
         if not name.strip():
@@ -282,7 +282,11 @@ class App:
 
         self.name: str = name
         self.system: SystemDependent = system
-        self.depends_on: list[App] = depends_on
+
+        if depends_on is App:
+            self.depends_on: list[App] = [depends_on]
+        else:
+            self.depends_on: list[App] = depends_on
 
         self.install_routine: Callable[[None], None] = lambda: exhaust(
             (execute_cmd(cmd) for cmd in install_function_or_commands)
@@ -290,8 +294,8 @@ class App:
 
         self.exists_routine: Callable[[None], bool] = \
             lambda: system.exists(exists_function_or_command) \
-                if exists_function_or_command is str \
-                else exists_function_or_command
+            if exists_function_or_command is str \
+            else exists_function_or_command
 
     def install(self):
         if self.exists:
@@ -310,16 +314,17 @@ class App:
 
 
 class Scoop(WindowsDependent):
-    SCOOP_VAR = 'SCOOP'
-    SHOVEL_VAR = 'SHOVEL'
+    SCOOP_VAR_NAME = 'SCOOP'
+    SHOVEL_VAR_NAME = 'SHOVEL'
+    PATH = abs_path('~/scoop')
 
-    @staticmethod
-    def upgrade():
-        sb.check_call(['scoop', 'update', '-q', '*'], shell=True)
+    @classmethod
+    def upgrade(cls):
+        execute_cmd(f'{cls.PATH} update *', quiet=True)
 
-    @staticmethod
-    def install(packages: list[str]):
-        sb.check_call(['scoop', 'install'] + packages, shell=True)
+    @classmethod
+    def install(cls, packages: list[str]):
+        execute_cmd(f'{cls.PATH} install {" ".join(packages)}', quiet=True)
 
     @staticmethod
     def update():
