@@ -130,7 +130,7 @@ class Wsl(WslDependent):
             logger.warn(f'Login shell is already {shell}, skipping...')
         else:
             logger.info(f'Changing login shell to {shell}...')
-            Apt.install(shell)
+            Apt.install([shell])
             execute_cmd(f'sudo usermod --shell $(which {shell}) $(whoami)')
         logger.info('Finished setting up login shell!')
 

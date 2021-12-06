@@ -46,7 +46,7 @@ links = {
 
 def install_bat() -> None:
     import os.path
-    from dotfile import download_file
+    from utils import download_file
 
     bat_url = 'https://github.com/sharkdp/bat/releases/download/v0.18.3/bat_0.18.3_amd64.deb'
     bat_deb_path = os.path.join(tmpdir, os.path.basename(bat_url))
@@ -56,7 +56,7 @@ def install_bat() -> None:
 
 def install_rust() -> None:
     import os.path
-    from dotfile import download_file
+    from utils import download_file
 
     rust_installer = os.path.join(tmpdir, 'rust_installer.sh')
     download_file('https://sh.rustup.rs', rust_installer)
@@ -65,7 +65,7 @@ def install_rust() -> None:
 
 def install_bat_extras() -> None:
     import os.path
-    from dotfile import git_clone
+    from utils import git_clone
 
     bat_extras_dir = os.path.join(tmpdir, 'bat-extras')
     git_clone('https://github.com/eth-p/bat-extras', bat_extras_dir)
@@ -74,7 +74,7 @@ def install_bat_extras() -> None:
 
 def install_n() -> None:
     import os.path
-    from dotfile import download_file
+    from utils import download_file
 
     n_installer = os.path.join(tmpdir, 'n_install')
     download_file(r'https://git.io/n-install', n_installer)
@@ -83,12 +83,12 @@ def install_n() -> None:
 
 
 def install_shfmt():
-    from dotfile import execute_cmd
+    from utils import execute_cmd
     execute_cmd('go get mvdan.cc/sh/v3/cmd/shfmt@latest')
 
 
 def install_go():
-    from dotfile import download_file, execute_cmd
+    from utils import download_file, execute_cmd
     import os.path
 
     go_url = 'https://go.dev/dl/go1.17.3.linux-amd64.tar.gz'
@@ -105,17 +105,17 @@ def install_go():
 
 
 def install_trash():
-    from dotfile import execute_cmd
+    from utils import execute_cmd
     execute_cmd('sudo -H pip install trash-cli')
 
 
 def install_node():
-    from dotfile import execute_cmd
+    from utils import execute_cmd
     execute_cmd('n latest')
 
 
 if __name__ == '__main__':
-    from dotfile import create_folders
+    from utils import create_folders
     from shutil import rmtree
 
     logger.info('Running WSL recipe...', True)
