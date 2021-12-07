@@ -313,6 +313,18 @@ class App:
         return self.exists_routine()
 
 
+def read_yaml(path: str):
+    import yaml
+
+    with open(path, 'r') as stream:
+        try:
+            yaml_file = yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
+
+    print(yaml_file)
+
+
 class Scoop(WindowsDependent):
     SCOOP_VAR_NAME = 'SCOOP'
     SHOVEL_VAR_NAME = 'SHOVEL'
@@ -419,3 +431,7 @@ class Dpkg(WslDependent):
     def install(deb_paths: list[str]):
         for path in deb_paths:
             sb.check_call(['sudo', 'dpkg', '-i', f'{path}'])
+
+
+if __name__ == '__main__':
+    read_yaml('C:/Users/joao.bonadiman/sources/Personal/dotfiles/test.yaml')

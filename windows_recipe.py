@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
-import tempfile
 import os.path
+import tempfile
 
+from dotfile import Msix, Scoop, Winget, Windows, App
 from dotfile import abs_path
 from dotfile import logger
-
-from dotfile import Msix, Scoop, Winget, Windows
-
 
 windows = Windows()
 scoop = Scoop()
@@ -130,17 +128,18 @@ links = {
 }
 
 
-def install_scoop_fn() -> None:
-    from utils import download_file, execute_cmd, abs_path
+def install_scoop() -> None:
+    from utils import download_file, abs_path
     from os import environ
 
     scoop_installer = os.path.join(tmpdir, 'install.ps1')
     download_file(r'http://get.scoop.sh', scoop_installer)
     windows.execute_ps1(scoop_installer)
-    if scoop.SCOOP_VAR not in environ:
-        logger.info(f"Adding '{scoop.SCOOP_VAR}' to environment variables...")
-        windows.set_environment_var(scoop.SCOOP_VAR, abs_path('~/scoop'))
+    if scoop.SCOOP_VAR_NAME not in environ:
+        logger.info(f"Adding '{scoop.SCOOP_VAR_NAME}' to environment variables...")
+        windows.set_environment_var(scoop.SCOOP_VAR_NAME, scoop.PATH)
     logger.info('Installing scoop essential packages...')
+
     scoop.install(['7zip', 'git', 'shellcheck', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
 
 
@@ -241,6 +240,41 @@ if __name__ == '__main__':
         )
 
         logger.info('Finished setups!', True)
+
+        app_scoop = App(
+            'scoop',
+            windows,
+            depends_on=None,
+            install_function_or_commands=install_scoop,
+            exists_function_or_command='scoop'
+        )
+
+        seven_zip = App(
+            '7zip',
+            windows,
+            depends_on=app_scoop,
+            install_function_or_commands=[f'{os.environ["SCOOP"]} install 7zip'],
+            exists_function_or_command='7zip'
+        )
+
+        git = App(
+            'git',
+            windows,
+            depends_on=app_scoop,
+            install_function_or_commands=[f'{os.environ["SCOOP"]} install git'],
+            exists_function_or_command='git'
+        )
+
+        shellcheck = App(
+            'git',
+            windows,
+            depends_on=app_scoop,
+            install_function_or_commands=[f'{os.environ["SCOOP"]} install git'],
+            exists_function_or_command='git'
+        )
+
+        # scoop.install(['shellcheck', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
+
 
         # windows.install('scoop', install_scoop_fn)
         scoop.install(['7zip', 'git', 'shellcheck', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
