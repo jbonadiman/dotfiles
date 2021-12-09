@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from typing import Generator, Callable, Any
 import os
 import os.path
+import subprocess as sp
 from collections import deque
 from functools import wraps
-import subprocess as sp
-import log
+from typing import Generator, Callable, Any
+
 import requests
+
+import log
 
 logger = log.get_logger()
 
@@ -33,22 +35,21 @@ def abs_path(path: str) -> str:
     )
 
 
-def execute_cmd(command: str, quiet: bool | None = None) -> Any:
-    if quiet:
-        return sp.check_call(
-            command,
-            shell=True,
-            stdin=sp.DEVNULL,
-            stderr=sp.DEVNULL
-        )
+def execute_cmd(command: str, stdout: bool | None = None, stderr: bool | None = None) -> Any:
     return sp.check_call(
         command,
-        shell=True
+        shell=True,
+        stdout=sp.DEVNULL if not stdout else None,
+        stderr=sp.DEVNULL if not stderr else None
     )
 
 
 def cmd_as_bool(command: str) -> bool:
-    result = execute_cmd(f'{command} && echo 1 || echo 0', quiet=True)
+    result = execute_cmd(
+        f'{command} && echo 1 || echo 0',
+        stdout=False,
+        stderr=False
+    )
     return bool(int(result))
 
 

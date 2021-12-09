@@ -19,9 +19,13 @@ logger = log.get_logger()
 
 
 class SystemDependent:
-    def __init__(self):
-        if not self._can_execute():
-            raise RuntimeError("This script can't be run in the current platform!")
+    @classmethod
+    def make_links(cls, links: dict[str, str]):
+        pass
+
+    @classmethod
+    def can_execute(cls):
+        pass
 
     @classmethod
     @requires_admin
@@ -57,21 +61,21 @@ class SystemDependent:
 
 
 class WslDependent(SystemDependent):
-    @staticmethod
-    def _can_execute() -> bool:
+    @classmethod
+    def can_execute(cls) -> bool:
         return platform.system().lower() == 'linux' and \
                'microsoft' in platform.release().lower()
 
 
 class WindowsDependent(SystemDependent):
-    @staticmethod
-    def _can_execute() -> bool:
+    @classmethod
+    def can_execute(cls) -> bool:
         return platform.system().lower() == 'windows'
 
 
 class AndroidDependent(SystemDependent):
-    @staticmethod
-    def _can_execute() -> bool:
+    @classmethod
+    def can_execute(cls) -> bool:
         return 'ANDROID_DATA' in os.environ
 
 
@@ -184,7 +188,7 @@ class Windows(WindowsDependent):
     @classmethod
     def set_environment_var(cls, name: str, value: str):
         from os import environ
-        execute_cmd(f'SETX {name.upper()} {value}', quiet=True)
+        execute_cmd(f'SETX {name.upper()} {value}', stdout=False, stderr=False)
         environ[name.upper()] = value
 
     @classmethod
@@ -294,8 +298,8 @@ class App:
 
         self.exists_routine: Callable[[None], bool] = \
             lambda: system.exists(exists_function_or_command) \
-            if exists_function_or_command is str \
-            else exists_function_or_command
+                if exists_function_or_command is str \
+                else exists_function_or_command
 
     def install(self):
         if self.exists:
@@ -313,16 +317,38 @@ class App:
         return self.exists_routine()
 
 
-def read_yaml(path: str):
+def read_yaml(path: str) -> dict:
     import yaml
 
     with open(path, 'r') as stream:
         try:
-            yaml_file = yaml.safe_load(stream)
+            yaml_content = yaml.safe_load(stream)
         except yaml.YAMLError as exc:
-            print(exc)
+            logger.error(str(exc))
 
-    print(yaml_file)
+    return yaml_content
+
+
+def execute_recipe(recipe: dict, system: SystemDependent):
+    from utils import create_folders, execute_cmd
+
+    logger.info(f"Changing working directory to the script's directory...")
+    os.chdir(os.path.dirname(__file__))
+
+    logger.info(f"Running recipe: {recipe['name']}...", True)
+
+    create_folders(recipe['create'])
+    logger.info('Finished creating folders!', True)
+
+    system.make_links(recipe['link'])
+    logger.info('Finished creating symlinks!', True)
+
+    for execution in recipe['shell']:
+        execute_cmd(
+            command=execution['command'],
+            stdout=execution['stdout'],
+            stderr=execution['stderr']
+        )
 
 
 class Scoop(WindowsDependent):
@@ -434,4 +460,13 @@ class Dpkg(WslDependent):
 
 
 if __name__ == '__main__':
-    read_yaml('C:/Users/joao.bonadiman/sources/Personal/dotfiles/test.yaml')
+    systems: list[SystemDependent] = [
+        Windows(),
+        Wsl(),
+    ]
+
+    recipe_file = read_yaml('/windows_recipe.yaml')
+
+    for host_system in systems:
+        if host_system.can_execute():
+            execute_recipe(recipe_file, host_system)

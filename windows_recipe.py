@@ -100,6 +100,7 @@ links = {
     WINGET_SETTINGS: 'winget.settings.json',
     '~/Documents/PowerShell/Microsoft.PowerShell_profile.ps1': 'PowerShell_Profile.ps1',
     '%APPDATA%/Rainmeter/Layouts/default/Rainmeter.ini': 'rainmeter_layout.ini',
+    '~/.vimrc': 'vimrc',
 
     # POWERTOYS SECTION
     '%LOCALAPPDATA%/Microsoft/PowerToys/settings.json': jn('PowerToys', 'PowerToys.settings.json'),
