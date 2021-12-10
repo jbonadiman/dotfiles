@@ -198,13 +198,13 @@ def setup_wsl() -> None:
         logger.warn('WSL is already installed, skipping installation...')
     else:
         logger.info(f"Installing WSL with distro {WSL_DISTRO}...")
-        execute_cmd(f'wsl --install -d {WSL_DISTRO}', quiet=False)
+        execute_cmd(f'wsl --install -d {WSL_DISTRO}')
 
     logger.info(f"Setting WSL version 2 as default...")
-    execute_cmd(f'wsl --set-default-version 2', quiet=True)
+    execute_cmd(f'wsl --set-default-version 2')
 
     logger.info(f"Setting distro '{WSL_DISTRO}' as default...")
-    execute_cmd(f'wsl --set-default {WSL_DISTRO}', quiet=True)
+    execute_cmd(f'wsl --set-default {WSL_DISTRO}')
     logger.info('Done!')
 
 
@@ -226,9 +226,9 @@ if __name__ == '__main__':
         logger.info('Finished creating symlinks!', True)
 
         windows.set_keyboard_layouts(KEYBOARD_LAYOUTS)
-        # windows.set_powershell_execution_policy()
+        windows.set_powershell_execution_policy()
 
-        # setup_wsl()
+        setup_wsl()
 
         if 'WSLENV' not in os.environ or 'USERPROFILE' not in os.environ['WSLENV']:
             logger.info('Adding Windows profile in WSL environment variables')
@@ -241,52 +241,15 @@ if __name__ == '__main__':
         )
 
         logger.info('Finished setups!', True)
-
-        app_scoop = App(
-            'scoop',
-            windows,
-            depends_on=None,
-            install_function_or_commands=install_scoop,
-            exists_function_or_command='scoop'
-        )
-
-        seven_zip = App(
-            '7zip',
-            windows,
-            depends_on=app_scoop,
-            install_function_or_commands=[f'{os.environ["SCOOP"]} install 7zip'],
-            exists_function_or_command='7zip'
-        )
-
-        git = App(
-            'git',
-            windows,
-            depends_on=app_scoop,
-            install_function_or_commands=[f'{os.environ["SCOOP"]} install git'],
-            exists_function_or_command='git'
-        )
-
-        shellcheck = App(
-            'git',
-            windows,
-            depends_on=app_scoop,
-            install_function_or_commands=[f'{os.environ["SCOOP"]} install git'],
-            exists_function_or_command='git'
-        )
-
-        # scoop.install(['shellcheck', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
-
-
-        # windows.install('scoop', install_scoop_fn)
+        windows.install('scoop', install_scoop)
+        windows.install('shovel', install_shovel_fn) # Keeps being reinstalled
         scoop.install(['7zip', 'git', 'shellcheck', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
-        # windows.install('shovel', install_shovel_fn) # Keeps being reinstalled
-
-        # scoop.add_bucket('extras')
+        scoop.add_bucket('extras')
         scoop.install(scoop_apps)
 
         scoop.clean()
 
-        # windows.install('winget', install_winget_fn) # Keeps being reinstalled
+        windows.install('winget', install_winget_fn) # Keeps being reinstalled
 
         winget.install(winget_ids)
         logger.info('Finished installing packages!', True)

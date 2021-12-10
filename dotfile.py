@@ -358,11 +358,11 @@ class Scoop(WindowsDependent):
 
     @classmethod
     def upgrade(cls):
-        execute_cmd(f'{cls.PATH} update *', quiet=True)
+        execute_cmd(f'{cls.PATH} update *')
 
     @classmethod
     def install(cls, packages: list[str]):
-        execute_cmd(f'{cls.PATH} install {" ".join(packages)}', quiet=True)
+        execute_cmd(f'{cls.PATH} install {" ".join(packages)}')
 
     @staticmethod
     def update():
