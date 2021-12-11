@@ -1,7 +1,10 @@
 name: 'Windows Setup'
 
-defaults:
-  upgrade: true
+#defaults:
+#  upgrade: true
+#  sections:
+#    - personal
+#    - dev
 
 create:
   - ~/sources
@@ -40,3 +43,15 @@ shell:
   - command: 'powershell.exe Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned'
     stdout: true
     stderr: true
+
+personal:
+  create: ""
+  link: ""
+  install: ""
+  shell: ""
+
+dev:
+  create: ""
+  link: ""
+  install: ""
+  shell: ""

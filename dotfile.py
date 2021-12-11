@@ -335,7 +335,7 @@ def execute_recipe(recipe: dict, system: SystemDependent):
     logger.info(f"Changing working directory to the script's directory...")
     os.chdir(os.path.dirname(__file__))
 
-    logger.info(f"Running recipe: {recipe['name']}...", True)
+    logger.info(f"Running essential : {recipe['name']}...", True)
 
     create_folders(recipe['create'])
     logger.info('Finished creating folders!', True)
@@ -344,6 +344,25 @@ def execute_recipe(recipe: dict, system: SystemDependent):
     logger.info('Finished creating symlinks!', True)
 
     for execution in recipe['shell']:
+        execute_cmd(
+            command=execution['command'],
+            stdout=execution['stdout'],
+            stderr=execution['stderr']
+        )
+
+
+def execute_section(section: dict, system: SystemDependent):
+    from utils import create_folders
+
+    logger.info(f"Running section: \'{section['name']}\'...", accented=True)
+
+    create_folders(section['create'])
+    logger.info('Finished creating folders!', True)
+
+    system.make_links(section['link'])
+    logger.info('Finished creating symlinks!', True)
+
+    for execution in section['shell']:
         execute_cmd(
             command=execution['command'],
             stdout=execution['stdout'],
