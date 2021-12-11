@@ -5,6 +5,7 @@ import os
 import platform
 import subprocess as sb
 from typing import Callable
+from colorama import Fore, Style
 
 import log
 from utils import \
@@ -19,17 +20,19 @@ logger = log.get_logger()
 
 
 class SystemDependent:
+    package_managers: dict[str, PackageManager]
+
     @classmethod
     def make_links(cls, links: dict[str, str]):
         pass
 
     @classmethod
-    def can_execute(cls):
+    def can_execute(cls) -> bool:
         pass
 
     @classmethod
     @requires_admin
-    def _run_script(cls, terminal: str, script_path: str, args: list[str] | None, sudo: bool | None = None) -> None:
+    def _run_script(cls, terminal: str, script_path: str, args: list[str] | None, sudo: bool | None = None):
         sudo_token = 'sudo' if sudo else ''
         args_token = ''
         if args and len(args):
@@ -185,6 +188,11 @@ class Windows(WindowsDependent):
         Windows.FONTS_FOLDER = buffer.value
         logger.debug(f'Located font folder at "{buffer.value}"')
 
+        Windows.package_managers = {
+            'scoop': Scoop(),
+            'winget': Winget()
+        }
+
     @classmethod
     def set_environment_var(cls, name: str, value: str):
         from os import environ
@@ -324,8 +332,8 @@ def execute_recipe(recipe: dict, system: SystemDependent):
     execute_section(recipe, system)
 
     if 'sections' in recipe['settings']:
-        for section in recipe['settings']['sections']:
-            execute_section(section, system)
+        for section_name in recipe['settings']['sections']:
+            execute_section(recipe[section_name], system)
 
 
 def execute_section(section: dict, system: SystemDependent):
@@ -342,8 +350,32 @@ def execute_section(section: dict, system: SystemDependent):
         logger.info('Finished creating symlinks!', accented=True)
 
     if 'install' in section:
-        for medium in section['install']:
-            medium.
+        for manager_name, packages_info in section['install'].items():
+            if manager_name in system.package_managers:
+                package_manager = system.package_managers[manager_name]
+                packages: list[str] = []
+                repos: list[str] = []
+
+                for info in packages_info:
+                    if type(info) == str:
+                        packages.append(info)
+                        continue
+
+                    if 'depends_on' in info:
+                        packages.extend((dep for dep in info['depends_on']))
+                    if 'repository' in info:
+                        repos.append(info['repository'])
+                    packages.append(info['name'])
+
+                package_manager.install_itself()
+                package_manager.add_repositories(repos)
+                package_manager.install(packages)
+            elif manager_name == 'custom':
+                for custom_install in packages_info:
+                    for cmd in custom_install['commands']:
+                        execute_cmd(cmd)
+            else:
+                logger.error(f"Invalid package manager: '{manager_name}'")
 
     if 'shell' in section:
         for execution in section['shell']:
@@ -356,39 +388,113 @@ def execute_section(section: dict, system: SystemDependent):
         logger.info('Finished executing scripts!', accented=True)
 
 
-class Scoop(WindowsDependent):
-    SCOOP_VAR_NAME = 'SCOOP'
-    SHOVEL_VAR_NAME = 'SHOVEL'
-    PATH = abs_path('~/scoop')
+class PackageManager:
+    @classmethod
+    def install_itself(cls):
+        logger.info(f'Installing {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL}...')
+
+    @classmethod
+    def install(cls, package_names: list[str]):
+        stylized_names = map(
+            lambda name: f'{Fore.BLUE}{name}{Style.RESET_ALL}',
+            package_names
+        )
+
+        logger.info(f'Using {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL} to install package(s): '
+                    f"{', '.join(stylized_names)}...")
 
     @classmethod
     def upgrade(cls):
-        execute_cmd(f'{cls.PATH} update *')
+        logger.info(f'Upgrading {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL} packages...')
 
     @classmethod
-    def install(cls, packages: list[str]):
-        execute_cmd(f'{cls.PATH} install {" ".join(packages)}')
+    def update(cls):
+        logger.info(f'Updating {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL} references...')
 
-    @staticmethod
-    def update():
-        sb.check_call(['scoop', 'update', '-q'], shell=True)
+    @classmethod
+    def add_repositories(cls, repositories: list[str]):
+        logger.info(f'Adding repositories to {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL}...')
 
-    @staticmethod
-    def add_bucket(bucket_name: str):
-        if cmd_as_bool(f'scoop bucket list | findstr {bucket_name}'):
-            logger.warn(f"Bucket '{bucket_name}' already added, skipping...")
-            return
+    @classmethod
+    def clean(cls):
+        logger.info(f'Cleaning up {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL} cache...')
 
-        logger.info(f"Adding bucket '{bucket_name}'...")
-        sb.check_call(['scoop', 'bucket', 'add', bucket_name], shell=True)
 
-    @staticmethod
-    def change_repo(repo: str):
-        sb.check_call(['scoop', 'config', 'SCOOP_REPO', repo], shell=True)
+class Scoop(PackageManager):
+    SCOOP_VAR_NAME = 'SCOOP'
+    SHOVEL_VAR_NAME = 'SHOVEL'
 
-    @staticmethod
-    def clean():
-        sb.check_call(['scoop', 'cleanup', '*'], shell=True)
+    # TODO: This should be gone when I find a way to update the env var after installation
+    PATH = abs_path('~/scoop/shims/scoop')
+    CMD = 'scoop' if SCOOP_VAR_NAME in os.environ else PATH
+
+    @classmethod
+    def install_itself(cls):
+        if cls.SCOOP_VAR_NAME in os.environ and os.path.isfile(cls.PATH):
+            pass
+        else:
+            super().install_itself()
+
+            import tempfile
+            from utils import download_file
+            from glob import glob
+            from shutil import copy2
+
+            global tmpdir
+            if not tmpdir:
+                tmpdir = str(tempfile.mkdtemp(prefix=os.path.basename(__file__)))
+
+            scoop_installer = os.path.join(tmpdir, 'install.ps1')
+            download_file(r'https://get.scoop.sh', scoop_installer)
+            windows.execute_ps1(scoop_installer)
+            if cls.SCOOP_VAR_NAME not in os.environ:
+                logger.info(f"Adding '{cls.SCOOP_VAR_NAME}' to environment variables...")
+                windows.set_environment_var(cls.SCOOP_VAR_NAME, cls.PATH)
+
+            scoop.change_repo('https://github.com/Ash258/Scoop-Core')
+            # shovel installation
+            for file in glob(f'{cls.PATH}.*'):
+                new_filename = os.path.join(
+                    os.path.dirname(file),
+                    f'shovel{os.path.splitext(file)[1]}'
+                )
+                copy2(file, new_filename)
+
+    @classmethod
+    def upgrade(cls):
+        super().upgrade()
+        execute_cmd(f'{cls.CMD} update *')
+
+    @classmethod
+    def install(cls, package_names: list[str]):
+        super().install(package_names)
+        execute_cmd(f'{cls.CMD} install {" ".join(package_names)}')
+
+    @classmethod
+    def update(cls):
+        super().update()
+        execute_cmd(f'{cls.CMD} update')
+
+    @classmethod
+    def clean(cls):
+        super().clean()
+        execute_cmd(f'{cls.CMD} cleanup *')
+
+    @classmethod
+    def add_repositories(cls, repositories: list[str]):
+        super().add_repositories(repositories)
+        for bucket_name in repositories:
+            if cmd_as_bool(f'{cls.CMD} bucket list | findstr {bucket_name}'):
+                logger.warn(f"Bucket '{bucket_name}' already added, skipping...")
+                return
+
+            logger.info(f"Adding bucket '{bucket_name}' to {cls.__name__.lower()}...")
+            execute_cmd(f'{cls.CMD} bucket add {bucket_name}')
+
+    @classmethod
+    def change_repo(cls, repo: str):
+        logger.info(f"Changing {cls.__name__.lower()} repository to '{repo}'...")
+        execute_cmd(f'{cls.CMD} config SCOOP_REPO {repo}')
 
 
 class Msix(WindowsDependent):
@@ -405,19 +511,18 @@ class Msix(WindowsDependent):
             + ['-DependencyPackages', dep_token] if dependencies_paths else [], shell=True)
 
 
-class Winget(WindowsDependent):
-    @staticmethod
-    def install(packages_id: list[str]):
-        for pck_id in packages_id:
-            if Winget.exists(pck_id):
+class Winget(PackageManager):
+    @classmethod
+    def install(cls, package_names: list[str]):
+        super().install(package_names)
+
+        for pck_id in package_names:
+            if cls.exists(pck_id):
                 logger.warn(f"Package with ID '{pck_id}' is already installed, skipping...")
                 continue
 
-            logger.info(f"Installing package with ID '{pck_id}'...")
-            sb.run(f'winget install -e --id {pck_id} --accept-package-agreements --accept-source-agreements --force',
-                   shell=True,
-                   check=True)
-            logger.info('Done!')
+            execute_cmd(
+                f'winget install -e --id {pck_id} --accept-package-agreements --accept-source-agreements --force')
 
     @classmethod
     def exists(cls, package_id: str) -> bool:
@@ -464,13 +569,20 @@ class Dpkg(WslDependent):
             sb.check_call(['sudo', 'dpkg', '-i', f'{path}'])
 
 
+# TODO: This should be improved
+tmpdir: str = ''
+
+windows = Windows()
+wsl = Wsl()
+
+scoop = Scoop()
+winget = Winget()
+apt = Apt()
+
 if __name__ == '__main__':
     from utils import read_yaml
 
-    systems: list[SystemDependent] = [
-        Windows(),
-        Wsl(),
-    ]
+    systems: list[SystemDependent] = [windows, wsl]
 
     recipe_file = read_yaml('./windows_recipe.yaml')
 

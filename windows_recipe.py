@@ -36,32 +36,7 @@ WINGET_SETTINGS = abs_path(
     )
 )
 
-# TODO: read from file
-scoop_apps = [
-    # essential
-    'aria2',
-    'advancedrenamer',
-    'authy',
-    'treesize-free',
-    'vlc',
-    'bitwarden',
-    'imagemagick',
-    # dev
-    'gitkraken',
-    'jetbrains-toolbox',
-    # personal
-    # 'ccleaner',
-    # 'discord',
-    # 'gimp',
-    # 'inkscape',
-    # 'qbittorrent',
-    # 'rainmeter'
-]
-
 winget_ids = [
-    # essential
-    'Mozilla.Firefox',
-    'Microsoft.PowerToys',
     'da2x.EdgeDeflector',
 
     # personal
@@ -129,21 +104,6 @@ links = {
 }
 
 
-def install_scoop() -> None:
-    from utils import download_file, abs_path
-    from os import environ
-
-    scoop_installer = os.path.join(tmpdir, 'install.ps1')
-    download_file(r'http://get.scoop.sh', scoop_installer)
-    windows.execute_ps1(scoop_installer)
-    if scoop.SCOOP_VAR_NAME not in environ:
-        logger.info(f"Adding '{scoop.SCOOP_VAR_NAME}' to environment variables...")
-        windows.set_environment_var(scoop.SCOOP_VAR_NAME, scoop.PATH)
-    logger.info('Installing scoop essential packages...')
-
-    scoop.install(['7zip', 'git', 'shellcheck', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
-
-
 def download_and_install_font(url: str) -> None:
     from urllib.parse import unquote
 
@@ -162,20 +122,6 @@ def download_and_install_font(url: str) -> None:
 
     logger.info('Installing...')
     install_font(font_path)
-
-
-def install_shovel_fn() -> None:
-    from glob import glob
-    from shutil import copy2
-
-    scoop.change_repo('https://github.com/Ash258/Scoop-Core')
-    scoop.update()
-    # scoop.add_bucket('Base') # Se o bucket existir, não pode adicionar
-    p = os.path
-    # copy everything that is /scoop.ext to the same folder as /shovel.ext
-    for file_path in glob(p.join(os.environ['SCOOP'], 'shims', 'scoop.*')):
-        new_filename = p.join(p.dirname(file_path), f'shovel{p.splitext(file_path)[1]}')
-        copy2(file_path, new_filename)
 
 
 def install_winget_fn() -> None:

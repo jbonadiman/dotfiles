@@ -1,7 +1,11 @@
-name: 'Windows Setup'
+name: 'Windows Essential Setup'
 
 settings:
   upgrade: true
+  sections:
+    - personal
+    - dev
+    - corp
 
 create:
   - ~/sources
@@ -29,6 +33,61 @@ link:
   '%LOCALAPPDATA%/Microsoft/PowerToys/Video Conference/settings.json': 'PowerToys/VideoConference/VideoConference.settings.json'
 
 install:
+  custom:
+    - scoop bucket add extras
   scoop:
-    - name: 'git'
-      depends_on: ''
+    - aria2
+    - 7zip
+    - shellcheck
+    - innounp
+    - dark
+    - wixtoolset
+    - lessmsi
+    - git
+    - firefox
+    - advancedrenamer
+    - bitwarden
+    - vlc
+    - fontreg
+    - gsudo
+    - powertoys
+    - windowsdesktop-runtime
+    - vcredist
+
+personal:
+  name: 'Personal Packages Setup'
+  install:
+    scoop:
+      - authy
+      - treesize-free
+      - blender
+      - calibre
+      - imagemagick
+      - ccleaner
+      - gimp
+      - inkscape
+      - qbittorrent
+      - rainmeter
+
+chat:
+  name: 'Chat Personal Packages'
+  install:
+    scoop:
+      - whatsapp
+      - telegram
+      - discord
+
+dev:
+  name: 'Dev Packages Setup'
+  install:
+    scoop:
+      - windows-terminal
+      - gitkraken
+      - jetbrains-toolbox
+      - dotnet-sdk
+
+corp:
+  name: 'Corporate Packages Setup'
+  install:
+    scoop:
+      - microsoft-teams

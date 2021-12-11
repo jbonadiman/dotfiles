@@ -35,7 +35,7 @@ def abs_path(path: str) -> str:
     )
 
 
-def execute_cmd(command: str, stdout: bool | None = None, stderr: bool | None = None) -> Any:
+def execute_cmd(command: str, stdout: bool = False, stderr: bool = False) -> Any:
     return sp.check_call(
         command,
         shell=True,
