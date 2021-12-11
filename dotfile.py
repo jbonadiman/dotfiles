@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 import platform
 import subprocess as sb
-from typing import Callable
+from typing import Callable, Iterable
 from colorama import Fore, Style
 
 import log
@@ -353,27 +353,28 @@ def execute_section(section: dict, system: SystemDependent):
         for manager_name, packages_info in section['install'].items():
             if manager_name in system.package_managers:
                 package_manager = system.package_managers[manager_name]
-                packages: list[str] = []
-                repos: list[str] = []
+                packages: set[str] = set()
+                repos: set[str] = set()
 
                 for info in packages_info:
                     if type(info) == str:
-                        packages.append(info)
+                        packages.add(info)
                         continue
 
                     if 'depends_on' in info:
-                        packages.extend((dep for dep in info['depends_on']))
+                        packages.update((dep for dep in info['depends_on']))
                     if 'repository' in info:
-                        repos.append(info['repository'])
-                    packages.append(info['name'])
+                        repos.add(info['repository'])
+                    packages.add(info['name'])
 
                 package_manager.install_itself()
                 package_manager.add_repositories(repos)
                 package_manager.install(packages)
             elif manager_name == 'custom':
                 for custom_install in packages_info:
+                    logger.info(custom_install["name"])
                     for cmd in custom_install['commands']:
-                        execute_cmd(cmd)
+                        execute_cmd(cmd, stdout=True, stderr=True)
             else:
                 logger.error(f"Invalid package manager: '{manager_name}'")
 
@@ -394,7 +395,7 @@ class PackageManager:
         logger.info(f'Installing {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL}...')
 
     @classmethod
-    def install(cls, package_names: list[str]):
+    def install(cls, package_names: Iterable[str]):
         stylized_names = map(
             lambda name: f'{Fore.BLUE}{name}{Style.RESET_ALL}',
             package_names
@@ -412,7 +413,7 @@ class PackageManager:
         logger.info(f'Updating {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL} references...')
 
     @classmethod
-    def add_repositories(cls, repositories: list[str]):
+    def add_repositories(cls, repositories: Iterable[str]):
         logger.info(f'Adding repositories to {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL}...')
 
     @classmethod
@@ -466,9 +467,9 @@ class Scoop(PackageManager):
         execute_cmd(f'{cls.CMD} update *')
 
     @classmethod
-    def install(cls, package_names: list[str]):
+    def install(cls, package_names: Iterable[str]):
         super().install(package_names)
-        execute_cmd(f'{cls.CMD} install {" ".join(package_names)}')
+        execute_cmd(f'{cls.CMD} install {" ".join(package_names)}', stdout=True, stderr=True)
 
     @classmethod
     def update(cls):
@@ -481,7 +482,7 @@ class Scoop(PackageManager):
         execute_cmd(f'{cls.CMD} cleanup *')
 
     @classmethod
-    def add_repositories(cls, repositories: list[str]):
+    def add_repositories(cls, repositories: Iterable[str]):
         super().add_repositories(repositories)
         for bucket_name in repositories:
             if cmd_as_bool(f'{cls.CMD} bucket list | findstr {bucket_name}'):
@@ -513,7 +514,7 @@ class Msix(WindowsDependent):
 
 class Winget(PackageManager):
     @classmethod
-    def install(cls, package_names: list[str]):
+    def install(cls, package_names: Iterable[str]):
         super().install(package_names)
 
         for pck_id in package_names:
@@ -582,7 +583,7 @@ apt = Apt()
 if __name__ == '__main__':
     from utils import read_yaml
 
-    systems: list[SystemDependent] = [windows, wsl]
+    systems: Iterable[SystemDependent] = [windows, wsl]
 
     recipe_file = read_yaml('./windows_recipe.yaml')
 

@@ -4,8 +4,9 @@ settings:
   upgrade: true
   sections:
     - personal
+    - chat
     - dev
-    - corp
+#    - corp
 
 create:
   - ~/sources
@@ -34,7 +35,9 @@ link:
 
 install:
   custom:
-    - scoop bucket add extras
+    - name: "Adding 'extras' bucket to scoop..."
+      commands:
+        - scoop bucket add extras
   scoop:
     - aria2
     - 7zip
@@ -68,6 +71,10 @@ personal:
       - inkscape
       - qbittorrent
       - rainmeter
+      - name: duckstation
+        repository: games
+      - name: pcsx2
+        repository: games
 
 chat:
   name: 'Chat Personal Packages'
