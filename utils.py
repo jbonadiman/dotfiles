@@ -53,6 +53,18 @@ def cmd_as_bool(command: str) -> bool:
     return bool(int(result))
 
 
+def read_yaml(path: str) -> dict:
+    import yaml
+
+    yaml_content: dict
+    with open(path, 'r') as stream:
+        try:
+            yaml_content = yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            logger.error(str(exc))
+    return yaml_content
+
+
 def exhaust(generator: Generator):
     deque(generator, maxlen=0)
 

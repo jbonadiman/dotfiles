@@ -317,57 +317,43 @@ class App:
         return self.exists_routine()
 
 
-def read_yaml(path: str) -> dict:
-    import yaml
-
-    with open(path, 'r') as stream:
-        try:
-            yaml_content = yaml.safe_load(stream)
-        except yaml.YAMLError as exc:
-            logger.error(str(exc))
-
-    return yaml_content
-
-
 def execute_recipe(recipe: dict, system: SystemDependent):
-    from utils import create_folders, execute_cmd
-
     logger.info(f"Changing working directory to the script's directory...")
     os.chdir(os.path.dirname(__file__))
 
-    logger.info(f"Running essential : {recipe['name']}...", True)
+    execute_section(recipe, system)
 
-    create_folders(recipe['create'])
-    logger.info('Finished creating folders!', True)
-
-    system.make_links(recipe['link'])
-    logger.info('Finished creating symlinks!', True)
-
-    for execution in recipe['shell']:
-        execute_cmd(
-            command=execution['command'],
-            stdout=execution['stdout'],
-            stderr=execution['stderr']
-        )
+    if 'sections' in recipe['settings']:
+        for section in recipe['settings']['sections']:
+            execute_section(section, system)
 
 
 def execute_section(section: dict, system: SystemDependent):
     from utils import create_folders
 
-    logger.info(f"Running section: \'{section['name']}\'...", accented=True)
+    logger.info(f"Running \'{section['name']}\'...", accented=True)
 
-    create_folders(section['create'])
-    logger.info('Finished creating folders!', True)
+    if 'create' in section:
+        create_folders(section['create'])
+        logger.info('Finished creating folders!', accented=True)
 
-    system.make_links(section['link'])
-    logger.info('Finished creating symlinks!', True)
+    if 'link' in section:
+        system.make_links(section['link'])
+        logger.info('Finished creating symlinks!', accented=True)
 
-    for execution in section['shell']:
-        execute_cmd(
-            command=execution['command'],
-            stdout=execution['stdout'],
-            stderr=execution['stderr']
-        )
+    if 'install' in section:
+        for medium in section['install']:
+            medium.
+
+    if 'shell' in section:
+        for execution in section['shell']:
+            execute_cmd(
+                command=execution['command'],
+                stdout=execution['stdout'],
+                stderr=execution['stderr']
+            )
+
+        logger.info('Finished executing scripts!', accented=True)
 
 
 class Scoop(WindowsDependent):
@@ -479,12 +465,14 @@ class Dpkg(WslDependent):
 
 
 if __name__ == '__main__':
+    from utils import read_yaml
+
     systems: list[SystemDependent] = [
         Windows(),
         Wsl(),
     ]
 
-    recipe_file = read_yaml('/windows_recipe.yaml')
+    recipe_file = read_yaml('./windows_recipe.yaml')
 
     for host_system in systems:
         if host_system.can_execute():

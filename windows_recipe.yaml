@@ -1,57 +1,34 @@
 name: 'Windows Setup'
 
-#defaults:
-#  upgrade: true
-#  sections:
-#    - personal
-#    - dev
+settings:
+  upgrade: true
 
 create:
   - ~/sources
 
 link:
-  '~/Documents/PowerShell/Microsoft.PowerShell_profile.ps1': 'PowerShell_Profile.ps1',
-  '%APPDATA%/Rainmeter/Layouts/default/Rainmeter.ini': 'rainmeter_layout.ini',
-  '~/.vimrc': 'vimrc',
+  '~/Documents/PowerShell/Microsoft.PowerShell_profile.ps1': 'PowerShell_Profile.ps1'
+  '%APPDATA%/Rainmeter/Layouts/default/Rainmeter.ini': 'rainmeter_layout.ini'
+  '~/.vimrc': 'vimrc'
 
-    # POWERTOYS SECTION
-  '%LOCALAPPDATA%/Microsoft/PowerToys/settings.json': 'PowerToys/PowerToys.settings.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/Awake/settings.json': 'PowerToys/Awake/Awake.settings.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/ColorPicker/settings.json': 'PowerToys/ColorPicker/ColorPicker.settings.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/FancyZones/settings.json': 'PowerToys/FancyZones/FancyZones.settings.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/FancyZones/zones-settings.json': 'PowerToys/FancyZones/zones-settings.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/File Explorer/settings.json': 'PowerToys/FileExplorer/FileExplorer.settings.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/Find My Mouse/settings.json': 'PowerToys/FindMyMouse/FindMyMouse.settings.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/ImageResizer/settings.json': 'PowerToys/ImageResizer/ImageResizer.settings.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/ImageResizer/image-resizer-settings.json': 'PowerToys/ImageResizer/image-resizer-settings.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/Keyboard Manager/settings.json': 'PowerToys/KeyboardManager/KeyboardManager.settings.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/Keyboard Manager/default.json': 'PowerToys/KeyboardManager/default.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/PowerRename/power-rename-settings.json': 'PowerToys/PowerRename/power-rename-settings.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/PowerToys Run/settings.json': 'PowerToys/PowerToysRun/PowerToysRun.settings.json',
-  '%LOCALAPPDATA%/Microsoft/PowerToys/Shortcut Guide/settings.json': 'PowerToys/ShortcutGuide/ShortcutGuide.settings.json',
+  # POWERTOYS SECTION
+  '%LOCALAPPDATA%/Microsoft/PowerToys/settings.json': 'PowerToys/PowerToys.settings.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/Awake/settings.json': 'PowerToys/Awake/Awake.settings.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/ColorPicker/settings.json': 'PowerToys/ColorPicker/ColorPicker.settings.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/FancyZones/settings.json': 'PowerToys/FancyZones/FancyZones.settings.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/FancyZones/zones-settings.json': 'PowerToys/FancyZones/zones-settings.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/File Explorer/settings.json': 'PowerToys/FileExplorer/FileExplorer.settings.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/Find My Mouse/settings.json': 'PowerToys/FindMyMouse/FindMyMouse.settings.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/ImageResizer/settings.json': 'PowerToys/ImageResizer/ImageResizer.settings.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/ImageResizer/image-resizer-settings.json': 'PowerToys/ImageResizer/image-resizer-settings.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/Keyboard Manager/settings.json': 'PowerToys/KeyboardManager/KeyboardManager.settings.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/Keyboard Manager/default.json': 'PowerToys/KeyboardManager/default.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/PowerRename/power-rename-settings.json': 'PowerToys/PowerRename/power-rename-settings.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/PowerToys Run/settings.json': 'PowerToys/PowerToysRun/PowerToysRun.settings.json'
+  '%LOCALAPPDATA%/Microsoft/PowerToys/Shortcut Guide/settings.json': 'PowerToys/ShortcutGuide/ShortcutGuide.settings.json'
   '%LOCALAPPDATA%/Microsoft/PowerToys/Video Conference/settings.json': 'PowerToys/VideoConference/VideoConference.settings.json'
 
 install:
   scoop:
     - name: 'git'
       depends_on: ''
-
-shell:
-  - command: ./essential_packages.sh
-    stdout: true
-    stderr: true
-  - command: 'powershell.exe Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned'
-    stdout: true
-    stderr: true
-
-personal:
-  create: ""
-  link: ""
-  install: ""
-  shell: ""
-
-dev:
-  create: ""
-  link: ""
-  install: ""
-  shell: ""
