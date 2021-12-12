@@ -3,7 +3,7 @@
 import os.path
 import tempfile
 
-from dotfile import Msix, Scoop, Winget, Windows, App
+from dotfile import Msix, Scoop, Winget, Windows
 from dotfile import abs_path
 from dotfile import logger
 
@@ -60,47 +60,19 @@ folders = [
     '~/sources'
 ]
 
-
 # BEGIN aliases
 jn = os.path.join
 
 
 def pt_cfg(cfg):
     return jn('PowerToys', cfg, f'{cfg}.settings.json')
+
+
 # END aliases
 
 
 links = {
-    TERMINAL_SETTINGS: 'terminal.settings.json',
     WINGET_SETTINGS: 'winget.settings.json',
-    '~/Documents/PowerShell/Microsoft.PowerShell_profile.ps1': 'PowerShell_Profile.ps1',
-    '%APPDATA%/Rainmeter/Layouts/default/Rainmeter.ini': 'rainmeter_layout.ini',
-    '~/.vimrc': 'vimrc',
-
-    # POWERTOYS SECTION
-    '%LOCALAPPDATA%/Microsoft/PowerToys/settings.json': jn('PowerToys', 'PowerToys.settings.json'),
-    '%LOCALAPPDATA%/Microsoft/PowerToys/Awake/settings.json': pt_cfg('Awake'),
-    '%LOCALAPPDATA%/Microsoft/PowerToys/ColorPicker/settings.json': pt_cfg('ColorPicker'),
-    '%LOCALAPPDATA%/Microsoft/PowerToys/FancyZones/settings.json': pt_cfg('FancyZones'),
-    '%LOCALAPPDATA%/Microsoft/PowerToys/FancyZones/zones-settings.json':
-        jn('PowerToys', 'FancyZones', 'zones-settings.json'),
-
-    '%LOCALAPPDATA%/Microsoft/PowerToys/File Explorer/settings.json': pt_cfg('FileExplorer'),
-    '%LOCALAPPDATA%/Microsoft/PowerToys/Find My Mouse/settings.json': pt_cfg('FindMyMouse'),
-    '%LOCALAPPDATA%/Microsoft/PowerToys/ImageResizer/settings.json': pt_cfg('ImageResizer'),
-    '%LOCALAPPDATA%/Microsoft/PowerToys/ImageResizer/image-resizer-settings.json':
-        jn('PowerToys', 'ImageResizer', 'image-resizer-settings.json'),
-
-    '%LOCALAPPDATA%/Microsoft/PowerToys/Keyboard Manager/settings.json': pt_cfg('KeyboardManager'),
-    '%LOCALAPPDATA%/Microsoft/PowerToys/Keyboard Manager/default.json':
-        jn('PowerToys', 'KeyboardManager', 'default.json'),
-
-    '%LOCALAPPDATA%/Microsoft/PowerToys/PowerRename/power-rename-settings.json':
-        jn('PowerToys', 'PowerRename', 'power-rename-settings.json'),
-
-    '%LOCALAPPDATA%/Microsoft/PowerToys/PowerToys Run/settings.json': pt_cfg('PowerToysRun'),
-    '%LOCALAPPDATA%/Microsoft/PowerToys/Shortcut Guide/settings.json': pt_cfg('ShortcutGuide'),
-    '%LOCALAPPDATA%/Microsoft/PowerToys/Video Conference/settings.json': pt_cfg('VideoConference'),
 }
 
 
@@ -188,14 +160,14 @@ if __name__ == '__main__':
 
         logger.info('Finished setups!', True)
         windows.install('scoop', install_scoop)
-        windows.install('shovel', install_shovel_fn) # Keeps being reinstalled
+        windows.install('shovel', install_shovel_fn)  # Keeps being reinstalled
         scoop.install(['7zip', 'git', 'shellcheck', 'innounp', 'dark', 'wixtoolset', 'lessmsi'])
         scoop.add_bucket('extras')
         scoop.install(scoop_apps)
 
         scoop.clean()
 
-        windows.install('winget', install_winget_fn) # Keeps being reinstalled
+        windows.install('winget', install_winget_fn)  # Keeps being reinstalled
 
         winget.install(winget_ids)
         logger.info('Finished installing packages!', True)

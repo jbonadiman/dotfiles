@@ -35,11 +35,10 @@ def abs_path(path: str) -> str:
     )
 
 
-def execute_cmd(command: str, stdout: bool = False, stderr: bool = False) -> Any:
-    return sp.check_call(
+def execute_cmd(command: str, stderr: bool = False) -> Any:
+    return sp.check_output(
         command,
         shell=True,
-        stdout=sp.DEVNULL if not stdout else None,
         stderr=sp.DEVNULL if not stderr else None
     )
 
@@ -47,7 +46,6 @@ def execute_cmd(command: str, stdout: bool = False, stderr: bool = False) -> Any
 def cmd_as_bool(command: str) -> bool:
     result = execute_cmd(
         f'{command} && echo 1 || echo 0',
-        stdout=False,
         stderr=False
     )
     return bool(int(result))

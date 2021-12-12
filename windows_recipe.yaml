@@ -3,18 +3,20 @@ name: 'Windows Essential Setup'
 settings:
   upgrade: true
   sections:
-    - personal
-    - chat
+    #    - personal
+    #    - chat
     - dev
-#    - corp
+    - corp
 
 create:
   - ~/sources
 
 link:
-  '~/Documents/PowerShell/Microsoft.PowerShell_profile.ps1': 'PowerShell_Profile.ps1'
-  '%APPDATA%/Rainmeter/Layouts/default/Rainmeter.ini': 'rainmeter_layout.ini'
-  '~/.vimrc': 'vimrc'
+  ~/Documents/PowerShell/Microsoft.PowerShell_profile.ps1: PowerShell_Profile.ps1
+  '%APPDATA%/Rainmeter/Layouts/default/Rainmeter.ini': rainmeter_layout.ini
+  ~/.vimrc: vimrc
+  '%LOCALAPPDATA%/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json': terminal.settings.json
+  '%LOCALAPPDATA%/Packages/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe/LocalState/settings.json': winget.settings.json
 
   # POWERTOYS SECTION
   '%LOCALAPPDATA%/Microsoft/PowerToys/settings.json': 'PowerToys/PowerToys.settings.json'
@@ -34,10 +36,6 @@ link:
   '%LOCALAPPDATA%/Microsoft/PowerToys/Video Conference/settings.json': 'PowerToys/VideoConference/VideoConference.settings.json'
 
 install:
-  custom:
-    - name: "Adding 'extras' bucket to scoop..."
-      commands:
-        - scoop bucket add extras
   scoop:
     - aria2
     - 7zip

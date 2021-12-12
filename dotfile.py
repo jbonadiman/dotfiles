@@ -3,8 +3,10 @@ from __future__ import annotations
 
 import os
 import platform
+import re
 import subprocess as sb
 from typing import Callable, Iterable
+
 from colorama import Fore, Style
 
 import log
@@ -13,8 +15,7 @@ from utils import \
     abs_path, \
     execute_cmd, \
     cmd_as_bool, \
-    _make_links, \
-    exhaust
+    _make_links
 
 logger = log.get_logger()
 
@@ -196,7 +197,7 @@ class Windows(WindowsDependent):
     @classmethod
     def set_environment_var(cls, name: str, value: str):
         from os import environ
-        execute_cmd(f'SETX {name.upper()} {value}', stdout=False, stderr=False)
+        execute_cmd(f'SETX {name.upper()} {value}', stderr=False)
         environ[name.upper()] = value
 
     @classmethod
@@ -276,55 +277,6 @@ class Windows(WindowsDependent):
             logger.info('Done!')
 
 
-class App:
-    def __init__(self,
-                 name: str,
-                 system: SystemDependent,
-                 depends_on: list[App] | App | None = None,
-                 exists_function_or_command: Callable[[None], bool] | str = None,
-                 install_function_or_commands: Callable[[None], None] | list[str] = None):
-        if not name.strip():
-            raise ValueError('Application name is required!')
-        if not system:
-            raise ValueError('Application system is required!')
-        if not install_function_or_commands:
-            raise ValueError('Custom install function or commands list must be supplied!')
-        if not exists_function_or_command:
-            raise ValueError('Custom exists function or commands list must be supplied!')
-
-        self.name: str = name
-        self.system: SystemDependent = system
-
-        if depends_on is App:
-            self.depends_on: list[App] = [depends_on]
-        else:
-            self.depends_on: list[App] = depends_on
-
-        self.install_routine: Callable[[None], None] = lambda: exhaust(
-            (execute_cmd(cmd) for cmd in install_function_or_commands)
-        ) if install_function_or_commands is str else install_function_or_commands
-
-        self.exists_routine: Callable[[None], bool] = \
-            lambda: system.exists(exists_function_or_command) \
-                if exists_function_or_command is str \
-                else exists_function_or_command
-
-    def install(self):
-        if self.exists:
-            logger.warn(f"'{self.name}' is already installed, skipping...")
-        else:
-            if self.depends_on:
-                logger.info(f"Installing dependencies for '{self.name}'...")
-                for dependency in self.depends_on:
-                    dependency.install()
-
-            logger.info(f"Installing '{self.name}'...")
-            self.install_routine()
-
-    def exists(self) -> bool:
-        return self.exists_routine()
-
-
 def execute_recipe(recipe: dict, system: SystemDependent):
     logger.info(f"Changing working directory to the script's directory...")
     os.chdir(os.path.dirname(__file__))
@@ -368,13 +320,14 @@ def execute_section(section: dict, system: SystemDependent):
                     packages.add(info['name'])
 
                 package_manager.install_itself()
-                package_manager.add_repositories(repos)
+                if repos:
+                    package_manager.add_repositories(repos)
                 package_manager.install(packages)
             elif manager_name == 'custom':
                 for custom_install in packages_info:
                     logger.info(custom_install["name"])
                     for cmd in custom_install['commands']:
-                        execute_cmd(cmd, stdout=True, stderr=True)
+                        execute_cmd(cmd, stderr=True)
             else:
                 logger.error(f"Invalid package manager: '{manager_name}'")
 
@@ -382,7 +335,6 @@ def execute_section(section: dict, system: SystemDependent):
         for execution in section['shell']:
             execute_cmd(
                 command=execution['command'],
-                stdout=execution['stdout'],
                 stderr=execution['stderr']
             )
 
@@ -422,12 +374,21 @@ class PackageManager:
 
 
 class Scoop(PackageManager):
-    SCOOP_VAR_NAME = 'SCOOP'
-    SHOVEL_VAR_NAME = 'SHOVEL'
+    SCOOP_VAR_NAME: str = 'SCOOP'
+    SHOVEL_VAR_NAME: str = 'SHOVEL'
+    BUCKETS: set = set()
+    APPS: set = set()
 
     # TODO: This should be gone when I find a way to update the env var after installation
     PATH = abs_path('~/scoop/shims/scoop')
     CMD = 'scoop' if SCOOP_VAR_NAME in os.environ else PATH
+
+    def __init__(self):
+        try:
+            self.load_buckets()
+            self.load_installed()
+        except Exception as exc:
+            logger.warn(exc)
 
     @classmethod
     def install_itself(cls):
@@ -461,6 +422,22 @@ class Scoop(PackageManager):
                 )
                 copy2(file, new_filename)
 
+            cls.load_buckets()
+
+    @classmethod
+    def load_installed(cls):
+        app_list = execute_cmd(f'{cls.CMD} list').decode('utf-8')
+        regex = r'^\s{2}([0-9a-zA-Z-]+)\s+(?:\d*(?:\.\d+)+(?:(?:\-\d+)|\.\w+\.\d+)?)?\s+\[\w+\]'
+        matches = re.finditer(regex, app_list, re.MULTILINE)
+
+        cls.APPS.update((match.group(1) for match in matches))
+
+    @classmethod
+    def load_buckets(cls):
+        cls.BUCKETS.update(
+            execute_cmd(f'{cls.CMD} bucket list').decode('utf-8').split()
+        )
+
     @classmethod
     def upgrade(cls):
         super().upgrade()
@@ -468,8 +445,31 @@ class Scoop(PackageManager):
 
     @classmethod
     def install(cls, package_names: Iterable[str]):
-        super().install(package_names)
-        execute_cmd(f'{cls.CMD} install {" ".join(package_names)}', stdout=True, stderr=True)
+        listed = list(package_names)
+        if not len(listed):
+            logger.warn(f'{Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL} install list is empty, skipping...')
+            return
+
+        inter = cls.APPS.intersection(listed)
+        diff = cls.APPS.difference(listed)
+
+        if len(inter) > 0:
+            if len(diff) == 0:
+                logger.warn(f'All {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL} packages are already installed. '
+                            f'Skipping installation...')
+                return
+
+            stylized_names = map(
+                lambda name: f'{Fore.BLUE}{name}{Style.RESET_ALL}',
+                inter
+            )
+
+            logger.warn(f'The following {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL} package(s) are already '
+                        f'installed and will be skipped: {", ".join(stylized_names)}...')
+        logger.warn()
+        super().install(diff)
+        execute_cmd(f'{cls.CMD} install {" ".join(diff)}', stderr=True)
+        cls.APPS.update(diff)
 
     @classmethod
     def update(cls):
@@ -485,12 +485,13 @@ class Scoop(PackageManager):
     def add_repositories(cls, repositories: Iterable[str]):
         super().add_repositories(repositories)
         for bucket_name in repositories:
-            if cmd_as_bool(f'{cls.CMD} bucket list | findstr {bucket_name}'):
+            if bucket_name in cls.BUCKETS:
                 logger.warn(f"Bucket '{bucket_name}' already added, skipping...")
-                return
+                continue
 
             logger.info(f"Adding bucket '{bucket_name}' to {cls.__name__.lower()}...")
             execute_cmd(f'{cls.CMD} bucket add {bucket_name}')
+            cls.BUCKETS.add(bucket_name)
 
     @classmethod
     def change_repo(cls, repo: str):
