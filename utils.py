@@ -35,12 +35,18 @@ def abs_path(path: str) -> str:
     )
 
 
-def execute_cmd(command: str, stderr: bool = False) -> Any:
-    return sp.check_output(
+def execute_cmd(command: str, stdout: bool = False, stderr: bool = False) -> Any:
+    call = sp.run(
         command,
         shell=True,
-        stderr=sp.DEVNULL if not stderr else None
+        stdout=sp.PIPE,
+        stderr=sp.PIPE
     )
+
+    call_info: tuple[int, str, str]
+
+    call_info[0] = call.returncode
+    if stdout and call.stdout: call_info.append()
 
 
 def cmd_as_bool(command: str) -> bool:

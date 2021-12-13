@@ -445,16 +445,16 @@ class Scoop(PackageManager):
 
     @classmethod
     def install(cls, package_names: Iterable[str]):
-        listed = list(package_names)
+        listed = set(package_names)
         if not len(listed):
             logger.warn(f'{Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL} install list is empty, skipping...')
             return
 
         inter = cls.APPS.intersection(listed)
-        diff = cls.APPS.difference(listed)
+        listed.difference_update(cls.APPS)
 
         if len(inter) > 0:
-            if len(diff) == 0:
+            if len(listed) == 0:
                 logger.warn(f'All {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL} packages are already installed. '
                             f'Skipping installation...')
                 return
@@ -464,12 +464,11 @@ class Scoop(PackageManager):
                 inter
             )
 
-            logger.warn(f'The following {Fore.RED}{cls.__name__.lower()}{Style.RESET_ALL} package(s) are already '
+            logger.warn(f'The following {Style.BRIGHT}{cls.__name__.lower()}{Style.NORMAL} package(s) are already '
                         f'installed and will be skipped: {", ".join(stylized_names)}...')
-        logger.warn()
-        super().install(diff)
-        execute_cmd(f'{cls.CMD} install {" ".join(diff)}', stderr=True)
-        cls.APPS.update(diff)
+        super().install(listed)
+        logger.info(execute_cmd(f'{cls.CMD} install {" ".join(listed)}', stderr=True))
+        cls.APPS.update(listed)
 
     @classmethod
     def update(cls):
