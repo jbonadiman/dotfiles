@@ -43,19 +43,24 @@ def execute_cmd(command: str, stdout: bool = False, stderr: bool = False) -> Any
         stderr=sp.PIPE
     )
 
-    call_info: tuple[int, str, str]
+    call_info: list[int, str, str] = [0]
 
     call_info[0] = call.returncode
-    if stdout and call.stdout: call_info.append()
+    if stdout and call.stdout: call_info.append(call.stdout)
+    if stderr and call.stderr: call_info.append(call.stderr)
+    
+    return call_info
 
 
 def cmd_as_bool(command: str) -> bool:
-    result = execute_cmd(
+    result: list[int, str, str] = execute_cmd(
         f'{command} && echo 1 || echo 0',
         stderr=False
     )
-    return bool(int(result))
+    was_successful = not result[0]
 
+    return was_successful
+ 
 
 def read_yaml(path: str) -> dict:
     import yaml

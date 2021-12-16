@@ -13,8 +13,8 @@ SAVEHIST=10000
 setopt INC_APPEND_HISTORY_TIME
 
 # create aliases
-alias ls='exa -laFh --git --icons'
-alias exa='exa -laFh --git --icons'
+alias ls='exa -laFh --icons'
+alias exa='exa -laFh --icons'
 alias man='batman'
 alias trail='<<<${(F)path}'
 alias cat='bat'

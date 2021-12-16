@@ -573,15 +573,15 @@ class Dpkg(WslDependent):
 # TODO: This should be improved
 tmpdir: str = ''
 
-windows = Windows()
-wsl = Wsl()
-
-scoop = Scoop()
-winget = Winget()
-apt = Apt()
-
 if __name__ == '__main__':
     from utils import read_yaml
+
+    windows = Windows()
+    wsl = Wsl()
+    
+    scoop = Scoop()
+    winget = Winget()
+    apt = Apt()
 
     systems: Iterable[SystemDependent] = [windows, wsl]
 
