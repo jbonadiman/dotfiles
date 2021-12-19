@@ -5,11 +5,16 @@ import os
 import platform
 import re
 import subprocess as sb
-from typing import Callable, Iterable
+import sys
+from typing import Callable, Iterable, Any
+import inspect
+
+from pathlib import Path
+from loguru import logger
+from nanoid import generate as gen_id
 
 from colorama import Fore, Style
 
-import log
 from utils import \
     requires_admin, \
     abs_path, \
@@ -17,7 +22,8 @@ from utils import \
     cmd_as_bool, \
     _make_links
 
-logger = log.get_logger()
+logger.disable('dotfile')
+script_dir = Path(inspect.getframeinfo(inspect.currentframe()).filename).parent
 
 
 class SystemDependent:
@@ -279,13 +285,158 @@ class Windows(WindowsDependent):
 
 def execute_recipe(recipe: dict, system: SystemDependent):
     logger.info(f"Changing working directory to the script's directory...")
-    os.chdir(os.path.dirname(__file__))
-
     execute_section(recipe, system)
 
     if 'sections' in recipe['settings']:
         for section_name in recipe['settings']['sections']:
             execute_section(recipe[section_name], system)
+
+
+def create_file(path: str | os.PathLike):
+    logger.info('Creating file {path}...', path=path)
+    Path(path).touch()
+
+
+def create_folder(path: str | os.PathLike):
+    logger.info('Creating folder {path}...', path=path)
+    Path(path).mkdir(parents=True)
+
+
+def get_create_function(path: str | os.PathLike) -> Callable[[None], None]:
+    path = Path(path).expanduser()
+    if path.exists():
+        if path.is_dir():
+            path_type = 'Folder'
+        elif path.is_symlink():
+            path_type = 'Link'
+        else:
+            path_type = 'File'
+
+        return lambda: logger.warning(
+            "{type} '{path}' already exists. Skipping...",
+            type=path_type,
+            path=path
+        )
+
+    elif path.name.startswith('.') or path.suffix:  # file that still doesn't exist
+        return lambda: create_file(path)
+
+    # it must be a folder, then...
+    return lambda: create_folder(path)
+
+
+def execute_shell(path: os.PathLike | None = None, command: str | None = None) -> Any:
+    if not path and not command:
+        return
+
+    return sb.check_output(
+        path or command,
+        stderr=sb.PIPE,
+        shell=True,
+        cwd=script_dir
+    )
+
+
+def get_shell_function(script_path: str | os.PathLike) -> Callable[[None], None]:
+    script_path: Path = Path(script_path).expanduser()
+    if not script_path.exists():
+        return lambda: logger.error(
+            "Shell script '{path}' doesn't exist. Is this the right path?...",
+            path=script_path
+        )
+
+    return lambda: execute_shell(script_path)
+
+
+def create_link(target: Path, link: Path):
+    if not target or not link:
+        logger.warning('Target and link paths must be provided for symlink creation!')
+        return
+
+    logger.info("Creating link '{link}' -> '{target}'")
+    link.symlink_to(target)
+
+
+def get_link_function(target: str | Path, link: str | Path) -> Callable[[None], None]:
+    target_path = Path(target).expanduser().resolve()
+    link_path = Path(link).expanduser().resolve()
+
+    if link_path.exists():
+        if link_path.is_symlink():
+            link_target = link_path.readlink()
+
+            if link_target == target_path:
+                return lambda: logger.warning(
+                    "Link '{}' already exists. Skipping creation...",
+                    link_path)
+
+        def update_link():
+            logger.info(
+                "Link '{}' already exists. Updating reference...",
+                link_path)
+            link_path.unlink()
+            link_path.symlink_to(target_path)
+
+        return update_link
+
+    if not target_path.exists():
+        return lambda: logger.error(
+            "Target path '{}' doesn't exist. Is this the right path?",
+            target_path
+        )
+
+    return lambda: create_link(target_path, link_path)
+
+
+def parse_section(section: dict, system: SystemDependent):
+    id_dict: dict[str, Callable[[None], None]] = {}
+
+    if 'create' in section:
+        for action in section['create']:
+            path: str = action
+            action_id: str = gen_id()
+
+            if type(action) == dict:
+                if 'id' in action:
+                    # action was already parsed
+                    if action['id'] in id_dict:
+                        continue
+                    action_id = action['id']
+                else:
+                    path = action['path']
+            id_dict[action_id] = get_create_function(path)
+
+    if 'shell' in section:
+        for action in section['shell']:
+            script: str = action
+            action_id: str = gen_id()
+
+            if type(action) == dict:
+                if 'id' in action:
+                    # action was already parsed
+                    if action['id'] in id_dict:
+                        continue
+                    action_id = action['id']
+                else:
+                    script = action['script']
+            id_dict[action_id] = get_shell_function(script)
+
+    if 'link' in section:
+        for action in section['link']:
+            target: str = ''
+            link: str = ''
+            action_id: str = gen_id()
+
+            if 'id' in action:
+                action_id = action['id']
+
+            if 'target' in action and 'link' in action:
+                target = action['target']
+                link = action['link']
+            else:
+                target, link = list(action.items())[0]
+
+            id_dict[action_id] = get_link_function(target, link)
 
 
 def execute_section(section: dict, system: SystemDependent):
@@ -576,9 +727,19 @@ tmpdir: str = ''
 if __name__ == '__main__':
     from utils import read_yaml
 
+    logger.enable('dotfile')
+
+    config = {
+        'handlers': [
+            {'sink': sys.stdout, 'colorize': True, 'format': '[{time}]: {message}'}
+        ]
+    }
+
+    logger.configure(**config)
+
     windows = Windows()
     wsl = Wsl()
-    
+
     scoop = Scoop()
     winget = Winget()
     apt = Apt()

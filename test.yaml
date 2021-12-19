@@ -1,0 +1,24 @@
+essential:
+  link:
+    - id: vim
+      from: vimrc
+      to: ~/.vimrc
+      only_if: neovim
+    - bashrc: ~/.bashrc
+    - from: zshrc
+      to: ~/.zshrc
+      depends_on: zsh
+  create:
+    - id: sources_folder
+      path: ~/sources
+    - ~/.hushlogin
+    - path: ~/test
+  install:
+    scoop:
+      - id: neovim
+        key: neovim
+      - gitkraken
+      - key: dotnet-sdk
+  shell:
+    - id: zsh
+      script: install_script.sh
