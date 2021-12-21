@@ -1,12 +1,12 @@
 essential:
   link:
     - id: vim
-      from: vimrc
-      to: ~/.vimrc
+      target: vimrc
+      link: ~/.vimrc
       only_if: neovim
     - bashrc: ~/.bashrc
-    - from: zshrc
-      to: ~/.zshrc
+    - target: zshrc
+      link: ~/.zshrc
       depends_on: zsh
   create:
     - id: sources_folder

@@ -1,0 +1,21 @@
+pkgs:
+  scoop:
+    install:
+      - firefox
+      - notepad
+      - sudo
+      - id: neovim
+        name: neovim
+  winget:
+    install:
+      '--id':
+        - terminal
+        - cmd
+        - name: vundle
+          must_have: neovim
+      '--moniker':
+        - qualquerCoisa
+    freeze:
+      '--id':
+        - firefox
+    update: '*'

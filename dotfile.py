@@ -292,17 +292,17 @@ def execute_recipe(recipe: dict, system: SystemDependent):
             execute_section(recipe[section_name], system)
 
 
-def create_file(path: str | os.PathLike):
+def create_file(path: str | Path):
     logger.info('Creating file {path}...', path=path)
     Path(path).touch()
 
 
-def create_folder(path: str | os.PathLike):
+def create_folder(path: str | Path):
     logger.info('Creating folder {path}...', path=path)
     Path(path).mkdir(parents=True)
 
 
-def get_create_function(path: str | os.PathLike) -> Callable[[None], None]:
+def get_create_function(path: str | Path) -> Callable[[None], None]:
     path = Path(path).expanduser()
     if path.exists():
         if path.is_dir():
@@ -325,7 +325,7 @@ def get_create_function(path: str | os.PathLike) -> Callable[[None], None]:
     return lambda: create_folder(path)
 
 
-def execute_shell(path: os.PathLike | None = None, command: str | None = None) -> Any:
+def execute_shell(path: Path | None = None, command: str | None = None) -> Any:
     if not path and not command:
         return
 
@@ -337,7 +337,7 @@ def execute_shell(path: os.PathLike | None = None, command: str | None = None) -
     )
 
 
-def get_shell_function(script_path: str | os.PathLike) -> Callable[[None], None]:
+def get_shell_function(script_path: str | Path) -> Callable[[None], None]:
     script_path: Path = Path(script_path).expanduser()
     if not script_path.exists():
         return lambda: logger.error(
@@ -388,6 +388,24 @@ def get_link_function(target: str | Path, link: str | Path) -> Callable[[None], 
     return lambda: create_link(target_path, link_path)
 
 
+def get_install_functions(collection: str | dict | list, buffer: str = '') -> dict[str, Callable[[None], None]]:
+    cmds = {}
+    for token in collection:
+        if type(collection) == dict:
+            cmds.update(other_parse(collection[token], f'{buffer.strip()} {token}'))
+            continue
+        elif type(token) == str:
+            final_token = token
+        elif type(token) == dict:
+            final_token = token['name']
+        elif type(collection) == str:  # for key: value cases
+            final_token = collection
+
+        action_id = token['id'] if type(token) == dict and 'id' in token else gen_id()
+        cmds[action_id] = lambda: execute_shell(command=f'{buffer} {final_token}')
+    return cmds
+
+
 def parse_section(section: dict, system: SystemDependent):
     id_dict: dict[str, Callable[[None], None]] = {}
 
@@ -425,10 +443,13 @@ def parse_section(section: dict, system: SystemDependent):
         for action in section['link']:
             target: str = ''
             link: str = ''
-            action_id: str = gen_id()
 
             if 'id' in action:
+                if action['id'] in id_dict:
+                    continue
                 action_id = action['id']
+            else:
+                action_id: str = gen_id()
 
             if 'target' in action and 'link' in action:
                 target = action['target']
@@ -437,6 +458,9 @@ def parse_section(section: dict, system: SystemDependent):
                 target, link = list(action.items())[0]
 
             id_dict[action_id] = get_link_function(target, link)
+
+    if 'package' in section:
+        id_dict.update(get_install_functions(section['package']))
 
 
 def execute_section(section: dict, system: SystemDependent):
