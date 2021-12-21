@@ -1,5 +1,5 @@
 essential:
-  link:
+  links:
     - id: vim
       target: vimrc
       link: ~/.vimrc
@@ -7,18 +7,36 @@ essential:
     - bashrc: ~/.bashrc
     - target: zshrc
       link: ~/.zshrc
-      depends_on: zsh
+      must_have: zsh
+
   create:
     - id: sources_folder
       path: ~/sources
     - ~/.hushlogin
     - path: ~/test
-  install:
-    scoop:
-      - id: neovim
-        key: neovim
-      - gitkraken
-      - key: dotnet-sdk
+
   shell:
     - id: zsh
       script: install_script.sh
+
+  packages:
+    scoop:
+      install:
+        - firefox
+        - notepad
+        - sudo
+        - id: neovim
+          name: neovim
+    winget:
+      install:
+        '--id':
+          - terminal
+          - cmd
+          - name: vundle
+            must_have: neovim
+        '--moniker':
+          - qualquerCoisa
+      freeze:
+        '--id':
+          - firefox
+      update: '*'

@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import inspect
 import os
 import platform
 import re
 import subprocess as sb
 import sys
-from typing import Callable, Iterable, Any
-import inspect
-
 from pathlib import Path
-from loguru import logger
-from nanoid import generate as gen_id
+from typing import Callable, Iterable, Any
 
 from colorama import Fore, Style
+from loguru import logger
+from nanoid import generate as gen_id
 
 from utils import \
     requires_admin, \
@@ -353,7 +352,7 @@ def create_link(target: Path, link: Path):
         logger.warning('Target and link paths must be provided for symlink creation!')
         return
 
-    logger.info("Creating link '{link}' -> '{target}'")
+    logger.info("Creating link '{link}' -> '{target}'", link=link, target=target)
     link.symlink_to(target)
 
 
@@ -388,31 +387,47 @@ def get_link_function(target: str | Path, link: str | Path) -> Callable[[None], 
     return lambda: create_link(target_path, link_path)
 
 
-def get_install_functions(collection: str | dict | list, buffer: str = '') -> dict[str, Callable[[None], None]]:
-    cmds = {}
-    for token in collection:
-        if type(collection) == dict:
-            cmds.update(other_parse(collection[token], f'{buffer.strip()} {token}'))
+def get_install_functions(
+        token_col: str | dict | list,
+        current_id_dict: dict[str, dict[str, Callable[[None], None]] | str],
+        buffer: str = ''):
+    for token in token_col:
+        action_id: str = gen_id()
+        action_dict: dict = {}
+        if type(token_col) == dict:
+            get_install_functions(
+                token_col[token],
+                current_id_dict,
+                f'{buffer.strip()} {token}')
             continue
         elif type(token) == str:
             final_token = token
         elif type(token) == dict:
+            if 'id' in token:
+                if token['id'] in current_id_dict:
+                    continue
+                action_id = token['id']
+            if 'must_have' in token:
+                action_dict['must_have'] = token['must_have']
+            if 'only_if' in token:
+                action_dict['only_if'] = token['only_if']
+
             final_token = token['name']
-        elif type(collection) == str:  # for key: value cases
-            final_token = collection
+        elif type(token_col) == str:  # for key: value cases
+            final_token = token_col
 
-        action_id = token['id'] if type(token) == dict and 'id' in token else gen_id()
-        cmds[action_id] = lambda: execute_shell(command=f'{buffer} {final_token}')
-    return cmds
+        action_dict['function'] = lambda: execute_shell(command=f'{buffer} {final_token}')
+        current_id_dict[action_id] = action_dict
 
 
-def parse_section(section: dict, system: SystemDependent):
-    id_dict: dict[str, Callable[[None], None]] = {}
+def parse_actions(section: dict) -> dict[str, dict[str, Callable[[None], None] | str]]:
+    id_dict: dict[str, dict[str, Callable[[None], None] | str]] = {}
 
     if 'create' in section:
         for action in section['create']:
             path: str = action
             action_id: str = gen_id()
+            action_dict: dict = {}
 
             if type(action) == dict:
                 if 'id' in action:
@@ -420,14 +435,21 @@ def parse_section(section: dict, system: SystemDependent):
                     if action['id'] in id_dict:
                         continue
                     action_id = action['id']
-                else:
+                if 'path' in action:
                     path = action['path']
-            id_dict[action_id] = get_create_function(path)
+                if 'must_have' in action:
+                    action_dict['must_have'] = action['must_have']
+                if 'only_if' in action:
+                    action_dict['only_if'] = action['only_if']
+
+            action_dict['function'] = get_create_function(path)
+            id_dict[action_id] = action_dict
 
     if 'shell' in section:
         for action in section['shell']:
             script: str = action
             action_id: str = gen_id()
+            action_dict: dict = {}
 
             if type(action) == dict:
                 if 'id' in action:
@@ -435,85 +457,134 @@ def parse_section(section: dict, system: SystemDependent):
                     if action['id'] in id_dict:
                         continue
                     action_id = action['id']
-                else:
+                if 'script' in action:
                     script = action['script']
-            id_dict[action_id] = get_shell_function(script)
+                if 'must_have' in action:
+                    action_dict['must_have'] = action['must_have']
+                if 'only_if' in action:
+                    action_dict['only_if'] = action['only_if']
+            action_dict['function'] = get_shell_function(script)
+            id_dict[action_id] = action_dict
 
-    if 'link' in section:
+    if 'links' in section:
         for action in section['link']:
-            target: str = ''
-            link: str = ''
+            action_id: str = gen_id()
+            action_dict: dict = {}
 
-            if 'id' in action:
-                if action['id'] in id_dict:
-                    continue
-                action_id = action['id']
-            else:
-                action_id: str = gen_id()
+            if type(action) == dict:
+                if 'id' in action:
+                    if action['id'] in id_dict:
+                        continue
+                    action_id = action['id']
 
-            if 'target' in action and 'link' in action:
-                target = action['target']
-                link = action['link']
+                if 'target' in action and 'link' in action:
+                    target = action['target']
+                    link = action['link']
+
+                if 'must_have' in action:
+                    action_dict['must_have'] = action['must_have']
+                if 'only_if' in action:
+                    action_dict['only_if'] = action['only_if']
             else:
                 target, link = list(action.items())[0]
 
-            id_dict[action_id] = get_link_function(target, link)
+            action_dict['function'] = get_link_function(target, link)
+            id_dict[action_id] = action_dict
 
-    if 'package' in section:
-        id_dict.update(get_install_functions(section['package']))
+    if 'packages' in section:
+        get_install_functions(section['packages'], id_dict)
+
+    return id_dict
 
 
-def execute_section(section: dict, system: SystemDependent):
-    from utils import create_folders
+def filter_dicts_with_keys(
+        collection: dict[str, dict[str, Callable[[None], None] | str]],
+        keys: set[str]) -> list[dict[str, Any]]:
+    filtered = []
 
-    logger.info(f"Running \'{section['name']}\'...", accented=True)
+    # if type(collection) == list:
+    #     for item in collection:
+    #         if type(item) == dict:
+    #             filtered.extend(filter_dicts_with_keys(item, keys))
+    #         else:
+    #             continue
+    # else:
+    #     if not keys.isdisjoint(set(collection)):
+    #         filtered.append(collection)
+    #
+    #     for k, v in collection.items():
+    #         if type(v) == dict or type(v) == list:
+    #             filtered.extend(filter_dicts_with_keys(v, keys))
 
-    if 'create' in section:
-        create_folders(section['create'])
-        logger.info('Finished creating folders!', accented=True)
+    return filtered
 
-    if 'link' in section:
-        system.make_links(section['link'])
-        logger.info('Finished creating symlinks!', accented=True)
 
-    if 'install' in section:
-        for manager_name, packages_info in section['install'].items():
-            if manager_name in system.package_managers:
-                package_manager = system.package_managers[manager_name]
-                packages: set[str] = set()
-                repos: set[str] = set()
+def execute_section(section: dict):
+    actions = parse_actions(section)
+    priorities_dict = {action_id: 0 for action_id in actions}
+    dependent_items = filter_dicts_with_keys(section, {'only_if', 'must_have'})
 
-                for info in packages_info:
-                    if type(info) == str:
-                        packages.add(info)
-                        continue
+    for item in dependent_items:
+        if 'must_have' in item:
+            priorities_dict[item['must_have']] += 100
+        if 'only_if' in item:
+            action_id = item['only_if']
+            if action_id in priorities_dict
 
-                    if 'depends_on' in info:
-                        packages.update((dep for dep in info['depends_on']))
-                    if 'repository' in info:
-                        repos.add(info['repository'])
-                    packages.add(info['name'])
+    print(dependent_items)
 
-                package_manager.install_itself()
-                if repos:
-                    package_manager.add_repositories(repos)
-                package_manager.install(packages)
-            elif manager_name == 'custom':
-                for custom_install in packages_info:
-                    logger.info(custom_install["name"])
-                    for cmd in custom_install['commands']:
-                        execute_cmd(cmd, stderr=True)
-            else:
-                logger.error(f"Invalid package manager: '{manager_name}'")
 
-    if 'shell' in section:
-        for execution in section['shell']:
-            execute_cmd(
-                command=execution['command'],
-                stderr=execution['stderr']
-            )
-
-        logger.info('Finished executing scripts!', accented=True)
+# def execute_section(section: dict, system: SystemDependent):
+#     from utils import create_folders
+#
+#     logger.info(f"Running \'{section['name']}\'...", accented=True)
+#
+#     if 'create' in section:
+#         create_folders(section['create'])
+#         logger.info('Finished creating folders!', accented=True)
+#
+#     if 'link' in section:
+#         system.make_links(section['link'])
+#         logger.info('Finished creating symlinks!', accented=True)
+#
+#     if 'install' in section:
+#         for manager_name, packages_info in section['install'].items():
+#             if manager_name in system.package_managers:
+#                 package_manager = system.package_managers[manager_name]
+#                 packages: set[str] = set()
+#                 repos: set[str] = set()
+#
+#                 for info in packages_info:
+#                     if type(info) == str:
+#                         packages.add(info)
+#                         continue
+#
+#                     if 'depends_on' in info:
+#                         packages.update((dep for dep in info['depends_on']))
+#                     if 'repository' in info:
+#                         repos.add(info['repository'])
+#                     packages.add(info['name'])
+#
+#                 package_manager.install_itself()
+#                 if repos:
+#                     package_manager.add_repositories(repos)
+#                 package_manager.install(packages)
+#             elif manager_name == 'custom':
+#                 for custom_install in packages_info:
+#                     logger.info(custom_install["name"])
+#                     for cmd in custom_install['commands']:
+#                         execute_cmd(cmd, stderr=True)
+#             else:
+#                 logger.error(f"Invalid package manager: '{manager_name}'")
+#
+#     if 'shell' in section:
+#         for execution in section['shell']:
+#             execute_cmd(
+#                 command=execution['command'],
+#                 stderr=execution['stderr']
+#             )
+#
+#         logger.info('Finished executing scripts!', accented=True)
 
 
 class PackageManager:
