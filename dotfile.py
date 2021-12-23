@@ -7,6 +7,7 @@ import platform
 import re
 import subprocess as sb
 import sys
+from itertools import islice
 from pathlib import Path
 from typing import Callable, Iterable, Any
 
@@ -282,13 +283,13 @@ class Windows(WindowsDependent):
             logger.info('Done!')
 
 
-def execute_recipe(recipe: dict, system: SystemDependent):
+def execute_recipe(recipe: dict):
     logger.info(f"Changing working directory to the script's directory...")
-    execute_section(recipe, system)
+    execute_section(recipe)
 
     if 'sections' in recipe['settings']:
         for section_name in recipe['settings']['sections']:
-            execute_section(recipe[section_name], system)
+            execute_section(recipe[section_name])
 
 
 def create_file(path: str | Path):
@@ -328,12 +329,18 @@ def execute_shell(path: Path | None = None, command: str | None = None) -> Any:
     if not path and not command:
         return
 
-    return sb.check_output(
-        path or command,
+    import shlex
+
+    a = sb.check_output(args='dir', shell=True)
+
+    output = sb.check_output(
+        path or shlex.split(command),
         stderr=sb.PIPE,
         shell=True,
         cwd=script_dir
     )
+
+    return output
 
 
 def get_shell_function(script_path: str | Path) -> Callable[[None], None]:
@@ -467,7 +474,7 @@ def parse_actions(section: dict) -> dict[str, dict[str, Callable[[None], None] |
             id_dict[action_id] = action_dict
 
     if 'links' in section:
-        for action in section['link']:
+        for action in section['links']:
             action_id: str = gen_id()
             action_dict: dict = {}
 
@@ -480,13 +487,13 @@ def parse_actions(section: dict) -> dict[str, dict[str, Callable[[None], None] |
                 if 'target' in action and 'link' in action:
                     target = action['target']
                     link = action['link']
+                else:
+                    target, link = list(action.items())[0]
 
                 if 'must_have' in action:
                     action_dict['must_have'] = action['must_have']
                 if 'only_if' in action:
                     action_dict['only_if'] = action['only_if']
-            else:
-                target, link = list(action.items())[0]
 
             action_dict['function'] = get_link_function(target, link)
             id_dict[action_id] = action_dict
@@ -497,94 +504,120 @@ def parse_actions(section: dict) -> dict[str, dict[str, Callable[[None], None] |
     return id_dict
 
 
-def filter_dicts_with_keys(
-        collection: dict[str, dict[str, Callable[[None], None] | str]],
-        keys: set[str]) -> list[dict[str, Any]]:
-    filtered = []
+def visit_dependency(
+        installation_id: str,
+        installation_details: dict[str, dict | str],
+        actions: dict[str, dict],
+        priorities: dict[str, int],
+        dependency_path: list[str]):
+    if installation_id not in dependency_path:
+        dependency_path.append(installation_id)
+    original_id = next(islice(dependency_path, 1))
 
-    # if type(collection) == list:
-    #     for item in collection:
-    #         if type(item) == dict:
-    #             filtered.extend(filter_dicts_with_keys(item, keys))
-    #         else:
-    #             continue
-    # else:
-    #     if not keys.isdisjoint(set(collection)):
-    #         filtered.append(collection)
-    #
-    #     for k, v in collection.items():
-    #         if type(v) == dict or type(v) == list:
-    #             filtered.extend(filter_dicts_with_keys(v, keys))
+    if 'only_if' in installation_details:
+        opt_dep_id = installation_details['only_if']
+        if type(opt_dep_id) == str:
+            # only one
+            if opt_dep_id not in dependency_path:
+                dependency_path.append(opt_dep_id)
+            if opt_dep_id in actions:
+                priorities[original_id] -= 1
+                priorities[installation_id] -= 1
+                priorities[opt_dep_id] += 1
+                visit_dependency(
+                    opt_dep_id,
+                    actions[opt_dep_id],
+                    actions,
+                    priorities,
+                    dependency_path)
 
-    return filtered
+        elif type(opt_dep_id) == list:
+            # multiple dependencies
+            for dependency in opt_dep_id:
+                if dependency in actions:
+                    priorities[original_id] -= 1
+                    priorities[installation_id] -= 1
+                    priorities[dependency] += 1
+                    visit_dependency(
+                        dependency,
+                        actions[dependency],
+                        actions,
+                        priorities,
+                        dependency_path)
+                else:
+                    logger.info(
+                        "Installation of id '{install_id}' won't be executed, since one of its dependencies (id '{"
+                        "dependency_id}') is not present in the recipe...", install_id=installation_id,
+                        dependency_id=opt_dep_id)
+                    logger.debug("Optional dependency path: {}", ' -> '.join(dependency_path))
+                    priorities.pop(installation_id)
+                    break
+
+    if 'must_have' in installation_details:
+        opt_dep_id = installation_details['must_have']
+        if type(opt_dep_id) == str:
+            # only one
+            if opt_dep_id not in dependency_path:
+                dependency_path.append(opt_dep_id)
+            if opt_dep_id in actions:
+                priorities[original_id] -= 1
+                priorities[installation_id] -= 1
+                priorities[opt_dep_id] += 10
+                visit_dependency(
+                    opt_dep_id,
+                    actions[opt_dep_id],
+                    actions,
+                    priorities,
+                    dependency_path)
+
+        elif type(opt_dep_id) == list:
+            # multiple dependencies
+            for dependency in opt_dep_id:
+                if dependency in actions:
+                    priorities[original_id] -= 1
+                    priorities[installation_id] -= 1
+                    priorities[dependency] += 10
+                    visit_dependency(
+                        dependency,
+                        actions[dependency],
+                        actions,
+                        priorities,
+                        dependency_path)
+                else:
+                    logger.error("Installation of id '{install_id}' can't be executed, since one of its dependencies"
+                                 " (id '{dependency_id}') is not present in the recipe. Check the recipe for any"
+                                 " missing installs!",
+                                 install_id=installation_id,
+                                 dependency_id=opt_dep_id)
+                    logger.debug("Required dependency path: {}", ' -> '.join(dependency_path))
+                    priorities.pop(installation_id)
+
+    dependency_path.pop()
+
+
+def get_execution_order(
+        actions: dict[str, dict[str, Callable[[None], None] | str]]
+) -> list[str]:
+    priorities = {action_id: 0 for action_id in actions}
+
+    for action_id, action in actions.items():
+        visit_dependency(
+            action_id,
+            action,
+            actions,
+            priorities,
+            []
+        )
+
+    return [k for k, _ in sorted(priorities.items(), key=lambda item: item[1], reverse=True)]
 
 
 def execute_section(section: dict):
     actions = parse_actions(section)
-    priorities_dict = {action_id: 0 for action_id in actions}
-    dependent_items = filter_dicts_with_keys(section, {'only_if', 'must_have'})
+    ordered_actions = get_execution_order(actions)
 
-    for item in dependent_items:
-        if 'must_have' in item:
-            priorities_dict[item['must_have']] += 100
-        if 'only_if' in item:
-            action_id = item['only_if']
-            if action_id in priorities_dict
-
-    print(dependent_items)
-
-
-# def execute_section(section: dict, system: SystemDependent):
-#     from utils import create_folders
-#
-#     logger.info(f"Running \'{section['name']}\'...", accented=True)
-#
-#     if 'create' in section:
-#         create_folders(section['create'])
-#         logger.info('Finished creating folders!', accented=True)
-#
-#     if 'link' in section:
-#         system.make_links(section['link'])
-#         logger.info('Finished creating symlinks!', accented=True)
-#
-#     if 'install' in section:
-#         for manager_name, packages_info in section['install'].items():
-#             if manager_name in system.package_managers:
-#                 package_manager = system.package_managers[manager_name]
-#                 packages: set[str] = set()
-#                 repos: set[str] = set()
-#
-#                 for info in packages_info:
-#                     if type(info) == str:
-#                         packages.add(info)
-#                         continue
-#
-#                     if 'depends_on' in info:
-#                         packages.update((dep for dep in info['depends_on']))
-#                     if 'repository' in info:
-#                         repos.add(info['repository'])
-#                     packages.add(info['name'])
-#
-#                 package_manager.install_itself()
-#                 if repos:
-#                     package_manager.add_repositories(repos)
-#                 package_manager.install(packages)
-#             elif manager_name == 'custom':
-#                 for custom_install in packages_info:
-#                     logger.info(custom_install["name"])
-#                     for cmd in custom_install['commands']:
-#                         execute_cmd(cmd, stderr=True)
-#             else:
-#                 logger.error(f"Invalid package manager: '{manager_name}'")
-#
-#     if 'shell' in section:
-#         for execution in section['shell']:
-#             execute_cmd(
-#                 command=execution['command'],
-#                 stderr=execution['stderr']
-#             )
-#
-#         logger.info('Finished executing scripts!', accented=True)
+    for action_id in ordered_actions:
+        actions[action_id]['function']()
 
 
 class PackageManager:
@@ -634,7 +667,7 @@ class Scoop(PackageManager):
             self.load_buckets()
             self.load_installed()
         except Exception as exc:
-            logger.warn(exc)
+            logger.warning(exc)
 
     @classmethod
     def install_itself(cls):
@@ -832,17 +865,17 @@ if __name__ == '__main__':
 
     logger.configure(**config)
 
-    windows = Windows()
-    wsl = Wsl()
+    # windows = Windows()
+    # wsl = Wsl()
 
-    scoop = Scoop()
-    winget = Winget()
-    apt = Apt()
+    # scoop = Scoop()
+    # winget = Winget()
+    # apt = Apt()
 
-    systems: Iterable[SystemDependent] = [windows, wsl]
+    # systems: Iterable[SystemDependent] = [windows, wsl]
 
     recipe_file = read_yaml('./windows_recipe.yaml')
 
-    for host_system in systems:
-        if host_system.can_execute():
-            execute_recipe(recipe_file, host_system)
+    execute_recipe(recipe_file)
+    # for host_system in systems:
+    #     if host_system.can_execute():
