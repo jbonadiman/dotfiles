@@ -6,6 +6,11 @@ export NULLCMD=bat
 export GOROOT=/usr/local/go
 export GOPATH=~/.go
 
+export IRCNAME=*
+export IRCPORT=6667
+export IRCNICK=un_known
+export IRCUSER=un_known
+
 # change zsh options
 HISTFILE=~/.zsh_history
 HISTSIZE=10000

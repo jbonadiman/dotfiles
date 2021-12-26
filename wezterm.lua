@@ -20,8 +20,14 @@ local config = {
 	colors = {
 		visual_bell = "#202020",
 	},
-	font_size = 11.0,
-	font = wezterm.font("Cozette")
+	font_size = 9.0,
+	font = wezterm.font_with_fallback({
+    {
+      family="FiraCode NF",
+      harfbuzz_features={"calt=1", "clig=1", "liga=1"},
+    },
+    "Cozette",
+  })
 }
 
 local start_prog = {}
