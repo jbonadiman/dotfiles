@@ -21,9 +21,9 @@ return {
 	colors = {
 		visual_bell = "#202020",
 	},
-	font_size = 11.0,
+	font_size = 13.0,
 	font = wezterm.font({
-		"CozetteVector",
+		"Cozette",
 	}),
 
 	add_wsl_distributions_to_launch_menu = false,
