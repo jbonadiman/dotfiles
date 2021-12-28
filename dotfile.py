@@ -59,36 +59,41 @@ def get_create_function(path: str | Path) -> Callable[[None], None]:
     return lambda: create_folder(path)
 
 
-def execute_shell(path: Path | None = None, command: str | None = None) -> Any:
+def execute_shell(path: Path | None = None, command: str | None = None) -> str | None:
     if not path and not command:
-        return
+        return None
     import shlex
     from subprocess import SubprocessError
 
-    result = sb.run(
+    process = sb.Popen(
         args=str(path) if path else shlex.split(command),
         stdout=sb.PIPE,
         stderr=sb.PIPE,
-        shell=True,
-        cwd=script_dir)
+        text=True,
+        encoding='utf-8',
+        cwd=script_dir
+    )
+
+    stdout, stderr = process.communicate()
+    process.poll()
 
     logger.debug('Command result:'
                  "\ncode:\t'{code}'\nargs:\t'{args}'"
                  "\nstdout:\t'{out}'\nstderr:\t'{err}'",
-                 code=result.returncode,
-                 args=result.args,
-                 out=result.stdout.decode(),
-                 err=result.stderr.decode())
-    try:
-        result.check_returncode()
-        return result.stdout
-    except sb.CalledProcessError as exc:
-        if result.returncode == 13:
-            raise PermissionError(result.stderr, exc)
+                 code=process.returncode,
+                 args=process.args,
+                 out=stdout,
+                 err=stderr)
+
+    if process.returncode > 0:
+        if "permission" in stderr.lower():
+            raise PermissionError(stderr)
         raise SubprocessError(
-            f'Command \'{" ".join(result.args)}\' failed '
-            f'with return code \'{result.returncode}\' '
-            f'and stderr \'{result.stderr.decode()}\'')
+            f'Command \'{process.args}\' failed '
+            f'with return code \'{process.returncode}\' '
+            f'and stderr \'{stderr}\'')
+
+    return stdout
 
 
 def get_shell_function(script_path: str | Path) -> Callable[[None], None]:
@@ -99,7 +104,7 @@ def get_shell_function(script_path: str | Path) -> Callable[[None], None]:
             path=script_path
         )
 
-    return lambda: logger.info('[Script output] {}', execute_shell(script_path).decode())
+    return lambda: logger.info('[Script output] {}', execute_shell(script_path))
 
 
 def create_link(target: Path, link: Path, use_sudo: bool = False):
@@ -110,7 +115,7 @@ def create_link(target: Path, link: Path, use_sudo: bool = False):
     logger.info("Creating link '{link}' -> '{target}'", link=link, target=target)
     link.parent.mkdir(parents=True, exist_ok=True)
 
-    command = f"ln -sf {target} {link}"
+    command = f"ln --symbolic --force {target} {link}"
     if use_sudo:
         command = "sudo " + command
 
@@ -393,7 +398,13 @@ if __name__ == '__main__':
 
     config = {
         'handlers': [
-            {'sink': sys.stdout, 'colorize': True, 'format': '[{time}]: {message}'}
+            {
+                'sink': sys.stdout,
+                'colorize': True,
+                'format': '[{time}]: {message}',
+                'level': 'INFO',
+                'diagnose': True
+            }
         ]
     }
 
