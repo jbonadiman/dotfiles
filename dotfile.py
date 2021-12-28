@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import inspect
+import shlex
 import subprocess as sb
 import sys
 import os.path
@@ -62,16 +63,32 @@ def execute_shell(path: Path | None = None, command: str | None = None) -> Any:
     if not path and not command:
         return
     import shlex
+    from subprocess import SubprocessError
 
-    output = sb.check_output(
-        args=str(path) or shlex.split(command),
-        # stdout=sb.PIPE,
-        stderr=sb.STDOUT,
+    result = sb.run(
+        args=str(path) if path else shlex.split(command),
+        stdout=sb.PIPE,
+        stderr=sb.PIPE,
         shell=True,
-        cwd=script_dir
-    )
+        cwd=script_dir)
 
-    return output
+    logger.debug('Command result:'
+                 "\ncode:\t'{code}'\nargs:\t'{args}'"
+                 "\nstdout:\t'{out}'\nstderr:\t'{err}'",
+                 code=result.returncode,
+                 args=result.args,
+                 out=result.stdout.decode(),
+                 err=result.stderr.decode())
+    try:
+        result.check_returncode()
+        return result.stdout
+    except sb.CalledProcessError as exc:
+        if result.returncode == 13:
+            raise PermissionError(result.stderr, exc)
+        raise SubprocessError(
+            f'Command \'{" ".join(result.args)}\' failed '
+            f'with return code \'{result.returncode}\' '
+            f'and stderr \'{result.stderr.decode()}\'')
 
 
 def get_shell_function(script_path: str | Path) -> Callable[[None], None]:
@@ -82,7 +99,7 @@ def get_shell_function(script_path: str | Path) -> Callable[[None], None]:
             path=script_path
         )
 
-    return lambda: execute_shell(script_path)
+    return lambda: logger.info('[Script output] {}', execute_shell(script_path).decode())
 
 
 def create_link(target: Path, link: Path, use_sudo: bool = False):
@@ -137,15 +154,17 @@ def get_link_function(target: str | Path, link: str | Path) -> Callable[[None], 
 def get_install_functions(
         token_col: str | dict | list,
         current_id_dict: dict[str, dict[str, Callable[[None], None]] | str],
-        buffer: str = ''):
+        buffer: list[str]):
     for token in token_col:
         action_id: str = gen_id()
         action_dict: dict = {}
         if type(token_col) == dict:
+            buffer.append(token.strip())
             get_install_functions(
                 token_col[token],
                 current_id_dict,
-                f'{buffer.strip()} {token}')
+                buffer)
+            buffer.pop()
             continue
         elif type(token) == str:
             final_token = token
@@ -162,9 +181,13 @@ def get_install_functions(
             final_token = token['name']
         elif type(token_col) == str:  # for key: value cases
             final_token = token_col
+        else:
+            final_token = ''
 
-        action_dict['function'] = lambda: execute_shell(command=f'{buffer} {final_token}')
+        buffer.append(final_token)
+        action_dict['function'] = lambda: execute_shell(command=shlex.join(buffer))
         current_id_dict[action_id] = action_dict
+        buffer.pop()
 
 
 def parse_actions(section: dict) -> dict[str, dict[str, Callable[[None], None] | str]]:
@@ -239,7 +262,7 @@ def parse_actions(section: dict) -> dict[str, dict[str, Callable[[None], None] |
             id_dict[action_id] = action_dict
 
     if 'packages' in section:
-        get_install_functions(section['packages'], id_dict)
+        get_install_functions(section['packages'], id_dict, [])
 
     return id_dict
 
