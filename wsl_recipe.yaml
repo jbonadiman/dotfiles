@@ -1,0 +1,62 @@
+name: WSL Essential Setup
+
+create:
+  - ~/.local/bin
+
+links:
+  - target: zshrc
+    link: ~/.zshrc
+    only_if: zsh
+  - target: zshenv
+    link: ~/.zshenv
+    only_if: zsh
+  - docker_service.zsh: ~/.docker_service.zsh
+  - wsl.conf: /etc/wsl.conf
+  - $USERPROFILE/sources: ~/sources
+  - target: vimrc
+    link: ~/.config/nvim/init.vim
+    only_if: neovim
+  - target: /usr/bin/zsh
+    link: /usr/bin/sh
+    only_if: zsh
+
+packages:
+  sudo:
+    apt-get:
+      install:
+        -y:
+          - id: zsh
+            name: zsh
+          - name: zsh-syntax-highlighting
+            only_if: zsh
+          - name: zsh-autosuggestions
+            only_if: zsh
+          - id: pip
+            name: python-pip
+          - httpie
+          - clang
+          - exa
+          - make
+          - id: golang
+            name: golang
+    pip:
+      install:
+        - name: trash-cli
+          must_have: pip
+  go:
+    get:
+      - name: mvdan.cc/sh/v3/cmd/shfmt@latest
+        must_have: golang
+
+
+shell:
+  - scripts/set_login_shell.sh
+  - id: bat
+    script: scripts/install_bat.sh
+  - scripts/set_locales.sh
+  - script: scripts/install_bat-extras.sh
+    only_if: bat
+  - id: n
+    script: scripts/install_n.sh
+  - script: scripts/install_node.sh
+    only_if: n

@@ -2,13 +2,15 @@
 from __future__ import annotations
 
 import inspect
+import os.path
 import shlex
 import subprocess as sb
 import sys
-import os.path
+from concurrent.futures import ThreadPoolExecutor
 from itertools import islice
 from pathlib import Path
-from typing import Callable, Any
+from queue import Queue, Empty
+from typing import Callable
 
 from loguru import logger
 from nanoid import generate as gen_id
@@ -59,39 +61,83 @@ def get_create_function(path: str | Path) -> Callable[[None], None]:
     return lambda: create_folder(path)
 
 
+def enqueue_output(file, queue):
+    for line in iter(file.readline, ''):
+        queue.put(line)
+    file.close()
+
+
+def read_popen_pipes(p):
+    with ThreadPoolExecutor(2) as pool:
+        q_stdout, q_stderr = Queue(), Queue()
+        pool.submit(enqueue_output, p.stdout, q_stdout)
+        pool.submit(enqueue_output, p.stderr, q_stderr)
+
+        while True:
+            if p.poll() is not None and q_stdout.empty() and q_stderr.empty():
+                break
+
+            out_line = err_line = ''
+            try:
+                out_line = q_stdout.get_nowait()
+                err_line = q_stderr.get_nowait()
+            except Empty:
+                pass
+
+            yield out_line, err_line
+
+
 def execute_shell(path: Path | None = None, command: str | None = None) -> str | None:
+    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+    print("EXECUTANDO", path, 'OU', command)
     if not path and not command:
         return None
     import shlex
     from subprocess import SubprocessError
 
-    process = sb.Popen(
-        args=str(path) if path else shlex.split(command),
-        stdout=sb.PIPE,
-        stderr=sb.PIPE,
-        text=True,
-        encoding='utf-8',
-        cwd=script_dir
-    )
+    args = str(path) if path else shlex.split(command)
+    process_desc = ' '.join(args) if type(args) == list else args
 
-    stdout, stderr = process.communicate()
-    process.poll()
+    stdout_buffer = []
+    stderr_buffer = []
+    with sb.Popen(
+            args=args,
+            stdout=sb.PIPE,
+            stderr=sb.PIPE,
+            text=True,
+            encoding='utf-8',
+            cwd=script_dir
+    ) as process:
+        for out_line, err_line in read_popen_pipes(process):
+            if out_line:
+                if out_line.endswith('\n'):
+                    out_line = out_line.replace('\n', '', 1)
+                logger.info("[{} stdout] {}", process_desc, out_line)
+                stdout_buffer.append(out_line)
+            if err_line:
+                if err_line.endswith('\n'):
+                    err_line = err_line.replace('\n', '', 1)
+                logger.info("[{} stderr] {}", process_desc, err_line)
+                stderr_buffer.append(err_line)
 
-    logger.debug('Command result:'
-                 "\ncode:\t'{code}'\nargs:\t'{args}'"
-                 "\nstdout:\t'{out}'\nstderr:\t'{err}'",
-                 code=process.returncode,
-                 args=process.args,
-                 out=stdout,
-                 err=stderr)
+        stdout = '\n'.join(stdout_buffer)
+        stderr = '\n'.join(stderr_buffer)
 
-    if process.returncode > 0:
-        if "permission" in stderr.lower():
-            raise PermissionError(stderr)
-        raise SubprocessError(
-            f'Command \'{process.args}\' failed '
-            f'with return code \'{process.returncode}\' '
-            f'and stderr \'{stderr}\'')
+        logger.debug('Command result:'
+                     "\ncode:\t'{code}'\nargs:\t'{args}'"
+                     "\nstdout:\t'{out}'\nstderr:\t'{err}'",
+                     code=process.returncode,
+                     args=process.args,
+                     out=stdout,
+                     err=stderr)
+
+        if process.returncode > 0:
+            if stderr and "permission" in stderr.lower():
+                raise PermissionError(stderr)
+            raise SubprocessError(
+                f'Command \'{process.args}\' failed '
+                f'with return code \'{process.returncode}\' '
+                f'and stderr \'{stderr}\'')
 
     return stdout
 
@@ -99,12 +145,11 @@ def execute_shell(path: Path | None = None, command: str | None = None) -> str |
 def get_shell_function(script_path: str | Path) -> Callable[[None], None]:
     script_path: Path = Path(script_path).expanduser()
     if not script_path.exists():
-        return lambda: logger.error(
-            "Shell script '{path}' doesn't exist. Is this the right path?...",
+        return lambda: logger.exception(
+            "Shell script '{path}' doesn't exist. Is this the right path?",
             path=script_path
         )
-
-    return lambda: logger.info('[Script output] {}', execute_shell(script_path))
+    return lambda: execute_shell(script_path)
 
 
 def create_link(target: Path, link: Path, use_sudo: bool = False):
@@ -162,7 +207,8 @@ def get_install_functions(
         buffer: list[str]):
     for token in token_col:
         action_id: str = gen_id()
-        action_dict: dict = {}
+        only_if: str = ''
+        must_have: str = ''
         if type(token_col) == dict:
             buffer.append(token.strip())
             get_install_functions(
@@ -179,9 +225,9 @@ def get_install_functions(
                     continue
                 action_id = token['id']
             if 'must_have' in token:
-                action_dict['must_have'] = token['must_have']
+                must_have = token['must_have']
             if 'only_if' in token:
-                action_dict['only_if'] = token['only_if']
+                only_if = token['only_if']
 
             final_token = token['name']
         elif type(token_col) == str:  # for key: value cases
@@ -190,7 +236,17 @@ def get_install_functions(
             final_token = ''
 
         buffer.append(final_token)
-        action_dict['function'] = lambda: execute_shell(command=shlex.join(buffer))
+        cmd = shlex.join(buffer)
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        print(cmd)
+        action_dict: dict = {
+            'function': lambda: execute_shell(command=cmd)
+        }
+        if only_if:
+            action_dict['only_if'] = only_if
+        if must_have:
+            action_dict['must_have'] = must_have
+
         current_id_dict[action_id] = action_dict
         buffer.pop()
 
@@ -260,6 +316,7 @@ def parse_actions(section: dict) -> dict[str, dict[str, Callable[[None], None] |
 
                 if 'must_have' in action:
                     action_dict['must_have'] = action['must_have']
+
                 if 'only_if' in action:
                     action_dict['only_if'] = action['only_if']
 
@@ -385,6 +442,9 @@ def execute_section(section: dict):
     ordered_actions = get_execution_order(actions)
 
     for action_id in ordered_actions:
+        print('#################')
+        print(action_id)
+        print(actions[action_id]['function'].__dict__)
         actions[action_id]['function']()
 
 
@@ -402,7 +462,7 @@ if __name__ == '__main__':
                 'sink': sys.stdout,
                 'colorize': True,
                 'format': '[{time}]: {message}',
-                'level': 'INFO',
+                'level': 'DEBUG',
                 'diagnose': True
             }
         ]
@@ -410,6 +470,6 @@ if __name__ == '__main__':
 
     logger.configure(**config)
 
-    recipe_file = read_yaml('./linux_recipe.yaml')
+    recipe_file = read_yaml('./wsl_recipe.yaml')
 
     execute_recipe(recipe_file)

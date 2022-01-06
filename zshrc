@@ -26,6 +26,7 @@ alias cat='bat'
 alias python='python3'
 alias clip='/mnt/c/Windows/System32/clip.exe'
 alias rm='trash-put'
+alias vim='nvim'
 
 # customize prompt
 PROMPT='
@@ -46,8 +47,8 @@ typeset -U path
 
 path=(
   $path
-  "$HOME/.local/bin",
-  "$GOROOT/bin",
+  "$HOME/.local/bin"
+  "$GOROOT/bin"
   "$GOPATH/bin"
 )
 

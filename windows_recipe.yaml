@@ -66,15 +66,20 @@ links:
 
 packages:
   scoop:
+    add-repository:
+      - id: nerd-fonts
+        name: nerd-fonts
     install:
       - aria2
+      - git
       - 7zip
       - shellcheck
       - innounp
       - dark
       - wixtoolset
       - lessmsi
-      - git
+      - name: FiraCode-NF
+        only_if: nerd-fonts
       - firefox
       - advancedrenamer
       - bitwarden

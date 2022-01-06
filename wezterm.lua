@@ -2,7 +2,7 @@ local wezterm = require 'wezterm'
 local running_on_windows = wezterm.target_triple == "x86_64-pc-windows-msvc"
 
 local config = {
-  color_scheme = "OneHalfDark",
+  color_scheme = "Homebrew",
   audible_bell = "Disabled",
   default_cursor_style = "SteadyUnderline",
   default_cwd = "~",
@@ -30,7 +30,7 @@ local config = {
 }
 
 if running_on_windows then
-  local wsl_distro = "kali-linux"
+  local wsl_distro = "Ubuntu-20.04"
 
   config["default_prog"] = {
     "wsl.exe", "--distribution", wsl_distro, "--cd", "~"
@@ -52,12 +52,15 @@ end
 
 wezterm.on("update-right-status", function(window, pane)
   -- "Wed Mar 3 08:14"
-  local date = wezterm.strftime("%a %b %-d %H:%M ");
+  local date = wezterm.strftime("%a %b %-d %H:%M:%S ");
 
   local bat = ""
   for _, b in ipairs(wezterm.battery_info()) do
-    bat = "🔋 " .. string.format("%.0f%%", b.state_of_charge * 100)
-  end
+    if b.state == "Charging" then
+        bat = "🔌"
+    end
+    bat = bat .. "🔋" .. string.format("%.0f%%", b.state_of_charge * 100)
+   end
 
   window:set_right_status(wezterm.format({
     {Text=bat .. "   "..date},
