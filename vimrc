@@ -1,34 +1,21 @@
 set nocompatible
 filetype off
 
-set shellslash
+call plug#begin()
 
-let vundle_readme=expand('~/.vim/bundle/Vundle.vim/README.md')
-if !filereadable(vundle_readme)
-    echo "Installing Vundle.."
-    echo ""
-    silent !mkdir -p ~/.vim/bundle
-    silent !git clone https://github.com/VundleVim/Vundle.vim ~/.vim/bundle/Vundle.vim
-endif
+Plug 'edersonferreira/dalton-vim'
+Plug 'ervandew/supertab'
+Plug 'sheerun/vim-polyglot'
+Plug 'preservim/nerdtree'
+Plug 'vim-airline/vim-airline'
+Plug 'dense-analysis/ale'
+Plug 'gko/vim-coloresque'
+Plug 'ryanoasis/vim-devicons'
+Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
+Plug 'thaerkh/vim-indentguides'
+Plug 'cohama/lexima.vim'
 
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-
-" let Vundle manage Vundle, required
-Plugin 'VundleVim/Vundle.vim'
-Plugin 'edersonferreira/dalton-vim'
-Plugin 'ervandew/supertab'
-Plugin 'sheerun/vim-polyglot'
-Plugin 'preservim/nerdtree'
-Plugin 'vim-airline/vim-airline'
-Plugin 'dense-analysis/ale'
-Plugin 'gko/vim-coloresque'
-Plugin 'ryanoasis/vim-devicons'
-Plugin 'tiagofumo/vim-nerdtree-syntax-highlight'
-Plugin 'thaerkh/vim-indentguides'
-Plugin 'cohama/lexima.vim'
-
-call vundle#end()            " required
+call plug#end()
 
 " Remaps
 nnoremap <C-n> :NERDTreeToggle<CR>
@@ -57,13 +44,13 @@ filetype plugin indent on    " required
 "filetype plugin on
 "
 " Brief help
-" :PluginList       - lists configured plugins
-" :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
-" :PluginSearch foo - searches for foo; append `!` to refresh local cache
-" :PluginClean      - confirms removal of unused plugins; append `!` to auto-approve removal
+" :PlugList       - lists configured plugins
+" :PlugInstall    - installs plugins; append `!` to update or just :PluginUpdate
+" :PlugSearch foo - searches for foo; append `!` to refresh local cache
+" :PlugClean      - confirms removal of unused plugins; append `!` to auto-approve removal
 "
 " see :h vundle for more details or wiki for FAQ
-" Put your non-Plugin stuff after this line
+" Put your non-Plug stuff after this line
 syntax enable
 let g:rustfmt_autosave = 1
 

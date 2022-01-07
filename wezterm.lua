@@ -52,7 +52,7 @@ end
 
 wezterm.on("update-right-status", function(window, pane)
   -- "Wed Mar 3 08:14"
-  local date = wezterm.strftime("%a %b %-d %H:%M:%S ");
+  local date = wezterm.strftime("%A, %b %-d @ %H:%M:%S ");
 
   local bat = ""
   for _, b in ipairs(wezterm.battery_info()) do
