@@ -11,6 +11,11 @@ local config = {
   tab_bar_at_bottom = true,
   window_close_confirmation = "NeverPrompt",
   window_decorations = "RESIZE",
+  keys = {
+    -- This will create a new split and run your default program inside it
+    {key="t", mods="CTRL|SHIFT|ALT",
+      action=wezterm.action{SplitVertical={domain="CurrentPaneDomain"}}},
+  },
   visual_bell = {
     fade_in_duration_ms = 75,
     fade_out_duration_ms = 75,

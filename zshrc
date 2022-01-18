@@ -3,8 +3,6 @@
 # set variables
 
 export NULLCMD=bat
-export GOROOT=/usr/local/go
-export GOPATH=~/.go
 
 export IRCNAME=*
 export IRCPORT=6667
