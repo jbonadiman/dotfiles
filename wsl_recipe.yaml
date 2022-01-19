@@ -37,6 +37,8 @@ packages:
           - clang
           - exa
           - make
+          - xclip
+          - openssh
           - id: golang
             name: golang
     pip:

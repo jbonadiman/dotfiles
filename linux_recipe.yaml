@@ -36,6 +36,8 @@ packages:
         - clang
         - exa
         - make
+        - xclip
+        - openssh
         - id: golang
           name: go
         - id: bat

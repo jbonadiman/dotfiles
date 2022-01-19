@@ -13,8 +13,10 @@ local config = {
   window_decorations = "RESIZE",
   keys = {
     -- This will create a new split and run your default program inside it
-    {key="t", mods="CTRL|SHIFT|ALT",
+    {key="v", mods="CTRL|SHIFT|ALT",
       action=wezterm.action{SplitVertical={domain="CurrentPaneDomain"}}},
+    {key="h", mods="CTRL|SHIFT|ALT",
+      action=wezterm.action{SplitHorizontal={domain="CurrentPaneDomain"}}},
   },
   visual_bell = {
     fade_in_duration_ms = 75,
@@ -35,10 +37,8 @@ local config = {
 }
 
 if running_on_windows then
-  local wsl_distro = "Ubuntu-20.04"
-
   config["default_prog"] = {
-    "wsl.exe", "--distribution", wsl_distro, "--cd", "~"
+    "wsl.exe", "--cd", "~"
   }
   config["add_wsl_distributions_to_launch_menu"] = false
   config["launch_menu"] = {
