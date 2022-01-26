@@ -14,6 +14,7 @@ Plug 'ryanoasis/vim-devicons'
 Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 Plug 'thaerkh/vim-indentguides'
 Plug 'cohama/lexima.vim'
+Plug 'neovim/nvim-lspconfig'
 
 call plug#end()
 
