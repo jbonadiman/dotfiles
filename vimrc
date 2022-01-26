@@ -1,20 +1,27 @@
-set nocompatible
-filetype off
+set number
+
+set relativenumber
+set autoindent
+set tabstop=2
+set softtabstop=2
+set shiftwidth=2
+set smarttab
+set expandtab
+set mouse=a
 
 call plug#begin()
 
-Plug 'edersonferreira/dalton-vim'
-Plug 'ervandew/supertab'
-Plug 'sheerun/vim-polyglot'
-Plug 'preservim/nerdtree'
+Plug 'tpope/vim-surround' " Surround with ysw
 Plug 'vim-airline/vim-airline'
-Plug 'dense-analysis/ale'
-Plug 'gko/vim-coloresque'
+Plug 'ap/vim-css-color'
+Plug 'tpope/vim-commentary'
+Plug 'edersonferreira/dalton-vim'
+Plug 'preservim/nerdtree'
 Plug 'ryanoasis/vim-devicons'
 Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 Plug 'thaerkh/vim-indentguides'
-Plug 'cohama/lexima.vim'
-Plug 'neovim/nvim-lspconfig'
+Plug 'preservim/tagbar'
+Plug 'neoclide/coc.nvim'
 
 call plug#end()
 
@@ -22,6 +29,7 @@ call plug#end()
 nnoremap <C-n> :NERDTreeToggle<CR>
 nnoremap <F1> :bprevious<CR>
 nnoremap <F2> :bnext<CR>
+nnoremap <F8> :TagbarToggle<CR>
 " end remaps
 
 " lexima.vim settings
@@ -50,8 +58,6 @@ let g:python3_host_prog = '/usr/sbin/python3'
 filetype plugin indent on " required
 syntax enable
 
-set number
-set tabstop=2 shiftwidth=2 expandtab
 hi MatchParen ctermbg=200 ctermfg=255
 
 " shows carriage returns. To remove them, use: %s/Ctrl + VM/

@@ -1,4 +1,9 @@
 #!/usr/bin/env sh
 
-# curl -L https://git.io/n-install | bash
-echo "n is installed"
+echo "Downloading n sources..."
+git clone git@github.com:tj/n.git /tmp/n
+
+echo "Using admin privileges to install n..."
+sudo make --directory /tmp/n install
+
+echo "n was installed successfully!"
