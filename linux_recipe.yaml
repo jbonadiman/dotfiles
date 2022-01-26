@@ -26,12 +26,19 @@ packages:
       -Syu:
         - id: zsh
           name: zsh
+
         - name: zsh-syntax-highlighting
           only_if: zsh
+
         - name: zsh-autosuggestions
           only_if: zsh
+
         - id: pip
           name: python-pip
+
+        - id: neovim
+          name: neovim
+
         - httpie
         - clang
         - exa
@@ -40,13 +47,17 @@ packages:
         - openssh
         - id: golang
           name: go
+
         - id: bat
           name: bat
+
         - rustup
     pip:
       install:
         - name: trash-cli
           must_have: pip
+        - name: neovim
+          only_if: neovim
   go:
     get:
       - name: mvdan.cc/sh/v3/cmd/shfmt@latest

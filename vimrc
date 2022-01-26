@@ -18,46 +18,41 @@ Plug 'neovim/nvim-lspconfig'
 
 call plug#end()
 
-" Remaps
+" remaps
 nnoremap <C-n> :NERDTreeToggle<CR>
 nnoremap <F1> :bprevious<CR>
 nnoremap <F2> :bnext<CR>
-" Fim Remaps
+" end remaps
 
-" Configurações do lexima.vim
+" lexima.vim settings
 let g:indentguides_spacechar = '▏'
 let g:indentguides_tabchar = '▏'
-" Fim das configurações do lexima.vim'
+" end lexima.vim settings
 
-" Configurações do Vim IndentGuides
+" indentGuides settings
 let g:indentguides_spacechar = '▏'
 let g:indentguides_tabchar = '▏'
-" Fim das configurações do Vim IndentGuides
+" end indentGuides settings
 
+" airline settings
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#show_buffers = 1
 let g:airline#extensions#tabline#switch_buffers_and_tabs = 1
 let g:airline#extensions#tabline#tab_nr_type = 1
 let g:airline_theme='dalton'
+" end airline settings
 
-filetype plugin indent on    " required
-" To ignore plugin indent changes, instead use:
-"filetype plugin on
-"
-" Brief help
-" :PlugList       - lists configured plugins
-" :PlugInstall    - installs plugins; append `!` to update or just :PluginUpdate
-" :PlugSearch foo - searches for foo; append `!` to refresh local cache
-" :PlugClean      - confirms removal of unused plugins; append `!` to auto-approve removal
-"
-" see :h vundle for more details or wiki for FAQ
-" Put your non-Plug stuff after this line
-syntax enable
+" languages specifics
 let g:rustfmt_autosave = 1
+let g:python3_host_prog = '/usr/sbin/python3'
+" end languages specifics
+
+filetype plugin indent on " required
+syntax enable
 
 set number
 set tabstop=2 shiftwidth=2 expandtab
 hi MatchParen ctermbg=200 ctermfg=255
 
-" See carriage returns, to remove them, use: %s/Ctrl + VM/
+" shows carriage returns. To remove them, use: %s/Ctrl + VM/
 " e ++ff=unix
