@@ -78,16 +78,22 @@ packages:
       - dark
       - wixtoolset
       - lessmsi
+      - archwsl
+
       - name: FiraCode-NF
         only_if: nerd-fonts
+
       - firefox
+      - thunderbird
       - advancedrenamer
       - bitwarden
       - vlc
       - fontreg
       - sudo
+
       - id: powertoys
         name: powertoys
+
       - windowsdesktop-runtime
       - vcredist
 
@@ -98,18 +104,21 @@ personal:
       add-repository:
         - id: games-repo
           name: games
+        - id: np-repo
+          name: nonportable
       install:
-        - authy
         - treesize-free
-        - blender
-        - calibre
+
+        - name: calibre-np
+          only_if: np-repo
+
         - imagemagick
-        - ccleaner
         - gimp
         - inkscape
-        - qbittorrent
+
         - name: duckstation
           must_have: games-repo
+
         - name: pcsx2
           must_have: games-repo
 

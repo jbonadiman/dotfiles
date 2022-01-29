@@ -43,13 +43,13 @@ if running_on_windows then
   config["add_wsl_distributions_to_launch_menu"] = false
   config["launch_menu"] = {
     {
-      label = "Powershell",
-      args = {"powershell.exe"},
+      label = "PowerShell",
+      args = {"pwsh.exe"},
       cwd = "~",
     },
     {
       label = "zsh",
-      args = {"wsl.exe", "--distribution", wsl_distro},
+      args = {"wsl.exe", "genie -s"},
       cwd = "~",
     }
   }

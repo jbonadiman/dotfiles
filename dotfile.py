@@ -470,6 +470,6 @@ if __name__ == '__main__':
 
     logger.configure(**config)
 
-    recipe_file = read_yaml('./wsl_recipe.yaml')
+    recipe_file = read_yaml('./linux_recipe.yaml')
 
     execute_recipe(recipe_file)
