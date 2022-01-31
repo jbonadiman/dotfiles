@@ -1,5 +1,3 @@
-# keybinds
-
 # set variables
 
 export NULLCMD=bat
@@ -8,6 +6,8 @@ export IRCNAME=*
 export IRCPORT=6667
 export IRCNICK=un_known
 export IRCUSER=un_known
+
+export N_PREFIX="$HOME/n"; [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"  # Added by n-install (see http://git.io/n-install-repo).
 
 # change zsh options
 HISTFILE=~/.zsh_history
@@ -22,9 +22,15 @@ alias man='batman'
 alias trail='<<<${(F)path}'
 alias cat='bat'
 alias python='python3'
+
+# TODO: Add WSL check
 alias clip='/mnt/c/Windows/System32/clip.exe'
 alias rm='trash-put'
 alias vim='nvim'
+
+# TODO: Add WSL check
+alias pbcopy='clip.exe'
+alias pbpaste="pwsh.exe -command 'Get-Clipboard' | tr -d '\r' | head -n -1"
 
 # customize prompt
 PROMPT='
@@ -48,6 +54,7 @@ path=(
   "$HOME/.local/bin"
   "$GOROOT/bin"
   "$GOPATH/bin"
+  "$HOME/.poetry/bin"
 )
 
 # functions
@@ -58,14 +65,8 @@ function mkcd() {
 # zsh plugins
 
 # init procedures
-if exists docker && [[ -a ~/.docker_service.zsh ]]; then
-    source ~/.docker_service.zsh
-fi
-
-export N_PREFIX="$HOME/n"; [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"  # Added by n-install (see http://git.io/n-install-repo).
 
 # activate syntax highlighting
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
-export PATH="$HOME/.poetry/bin:$PATH"
