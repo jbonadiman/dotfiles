@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
 
-capitalize()
-{
+capitalize() {
   printf '%s' "$1" | head -c 1 | tr [:lower:] [:upper:]
   printf '%s' "$1" | tail -c '+2'
 }
@@ -9,6 +8,33 @@ capitalize()
 exists() {
   command -v $1 >/dev/null 2>&1
 }
+
+force_rootless=0
+# parse arguments
+while getopts f: flag; do
+  case "${flag}" in
+    f) force_rootless=1
+  esac
+done
+
+if [ force_rootless ]; then
+  shell_config=$(readlink -f "$HOME/.$(basename $SHELL)rc")
+
+  if [ ! grep "alias podman" $shell_config ]; then
+    sed -i "1i alias podman=sudo podman" $shell_config
+  else
+    echo "alias already added to $(basename $shell_config) file. Skipping..."
+  fi
+
+  sudoers_file="/etc/sudoers.d/01_podman"
+  echo "Requesting admin privileges to read '/etc/sudoers' file..."
+  if [ ! -f $sudoers_file ]; then
+    echo "Writing '$(whoami) ALL = NOPASSWD: $(which podman | head -n 1)' to $sudoers_file..."
+  else
+    echo "podman sudoers file already exists. Skipping..."
+  fi
+fi
+
 
 if exists podman; then
   echo "'podman' is already installed. If you are having any troubles, try performing a clean install!"
