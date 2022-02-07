@@ -37,6 +37,8 @@ alias gb='git checkout -b'
 alias ga='git add'
 alias gd='git diff'
 alias gs='git status'
+alias gl='git log'
+alias gam='git commit --amend'
 
 # customize prompt
 PROMPT='
