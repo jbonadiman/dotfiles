@@ -12,7 +12,7 @@ links:
     only_if: zsh
   # - docker_service.zsh: ~/.docker_service.zsh
   # - wsl.conf: /etc/wsl.conf
-  - /run/media/$USER/Dados/sources: ~/sources
+  # - /run/media/$USER/Dados/sources: ~/sources
   - target: vimrc
     link: ~/.config/nvim/init.vim
     only_if: neovim
@@ -26,12 +26,6 @@ packages:
       -Syu:
         - id: zsh
           name: zsh
-
-        - name: zsh-syntax-highlighting
-          only_if: zsh
-
-        - name: zsh-autosuggestions
-          only_if: zsh
 
         - id: pip
           name: python-pip
@@ -67,9 +61,15 @@ packages:
 shell:
   - scripts/set_login_shell.sh
   - scripts/set_locales.sh
-  - script: scripts/install_bat-extras.sh
+
+  - scripts/install-zsh-plugins.sh
+    only_if: zsh
+
+  - script: scripts/install-bat-extras.sh
     only_if: bat
+
   - id: n
-    script: scripts/install_n.sh
-  - script: scripts/install_node.sh
+    script: scripts/install-n.sh
+
+  - script: scripts/install-node.sh
     only_if: n
