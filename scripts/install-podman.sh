@@ -13,11 +13,11 @@ force_rootless=0
 # parse arguments
 while getopts f: flag; do
   case "${flag}" in
-    f) force_rootless=1
+    fix-rootless) fix_rootless=1
   esac
 done
 
-if [ force_rootless ]; then
+if [ fix_rootless ]; then
   shell_config=$(readlink -f "$HOME/.$(basename $SHELL)rc")
 
   if [ ! grep "alias podman" $shell_config ]; then
@@ -30,14 +30,16 @@ if [ force_rootless ]; then
   echo "Requesting admin privileges to read '/etc/sudoers' file..."
   if [ ! -f $sudoers_file ]; then
     echo "Writing '$(whoami) ALL = NOPASSWD: $(which podman | head -n 1)' to $sudoers_file..."
+    echo "Rootless fixed!"
   else
     echo "podman sudoers file already exists. Skipping..."
   fi
+  exit 0
 fi
 
 
 if exists podman; then
-  echo "'podman' is already installed. If you are having any troubles, try performing a clean install!"
+  echo "'podman' is already installed. If you are having any troubles, try performing a clean install or fix rootless!"
   exit 1
 fi
 
