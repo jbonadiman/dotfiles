@@ -80,7 +80,7 @@ sudo chgrp docker "$DOCKER_DIR" || ( error "ERROR: Failed to add folder to docke
 request_admin "create docker config file"
 echo "Creating docker config in $DOCKER_CFG..."
 sudo mkdir -p $DOCKER_CFG || ( error "ERROR: Failed to create directory for docker config." 1 )
-echo "{\n\t\"hosts\": [\"unix:///mnt/wsl/shared-docker/docker.sock\"]\n}" | sudo tee "$DOCKER_CFG/daemon.json"
+echo "{\n\t\"hosts\": [\"unix://$DOCKER_SOCK\"]\n}" | sudo tee "$DOCKER_CFG/daemon.json"
 
 request_admin "add docker to sudoers for passwordless invocation"
 echo "%docker ALL=(ALL)  NOPASSWD: /usr/bin/dockerd" | sudo tee /etc/sudoers.d/01_docker || ( error "ERROR: Failed to edit sudoers file." 1 )
@@ -98,7 +98,6 @@ fi" > docker_init.sh || ( error "ERROR: Failed to generate init script." 1 )
 if ! grep -q "DOCKER_HOST" "$shell_config"; then
   echo "Adding DOCKER_HOST variable to $shell_config..."
   echo "export DOCKER_HOST=\"unix://$DOCKER_SOCK\" # added by install-docker.sh script" >> $shell_config
-  source $shell_config
 fi
 
 echo "Docker was installed successfully and a start script was generated. You should invoke it everytime before using docker. You may also add the invocation to your shell rc file, so it gets executed automatically when you login."
