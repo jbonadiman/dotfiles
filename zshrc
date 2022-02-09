@@ -32,6 +32,12 @@ alias vim='nvim'
 alias pbcopy='clip.exe'
 alias pbpaste="pwsh.exe -command 'Get-Clipboard' | tr -d '\r' | head -n -1"
 
+alias gc='git commit -m'
+alias gb='git checkout -b'
+alias ga='git add'
+alias gd='git diff'
+alias gs='git status'
+
 # customize prompt
 PROMPT='
 %(?.%F{green}√.%F{red}?%?)%f %B%F{240}%1~%f%b %L %(!.#.>) '
