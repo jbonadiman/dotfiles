@@ -39,6 +39,7 @@ alias gd='git diff'
 alias gs='git status'
 alias gl='git log'
 alias gam='git commit --amend'
+alias gp='git push'
 
 # customize prompt
 PROMPT='
