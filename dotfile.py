@@ -15,18 +15,9 @@ from typing import Callable
 from loguru import logger
 from nanoid import generate as gen_id
 
-logger.disable('dotfile')
 script_dir = Path(inspect.getframeinfo(inspect.currentframe()).filename).parent
 
-
-def execute_recipe(recipe: dict):
-    logger.info(f"Changing working directory to the script's directory...")
-    execute_section(recipe)
-
-    if 'settings' in recipe and 'sections' in recipe['settings']:
-        for section_name in recipe['settings']['sections']:
-            execute_section(recipe[section_name])
-
+# TODO: only_if, must_have -> depends_on
 
 def create_file(path: str | Path):
     logger.info('Creating file {path}...', path=path)
@@ -437,24 +428,43 @@ def get_execution_order(
     return [k for k, _ in sorted(priorities.items(), key=lambda item: item[1], reverse=True)]
 
 
-def execute_section(section: dict):
-    actions = parse_actions(section)
+def execute_section(section: dict, section_name: str = None):
+    if section_name:
+        actions = parse_actions(section, section_name)
+    else:
+        actions = parse_actions(section)
+
     ordered_actions = get_execution_order(actions)
 
+    # calls each action in section
     for action_id in ordered_actions:
         print('#################')
         print(action_id)
         print(actions[action_id]['function'].__dict__)
         actions[action_id]['function']()
 
+    # finished section execution, going to the next one...
 
-# TODO: This should be improved
-tmpdir: str = ''
+    if not section_name and \
+            'settings' in section and \
+            'sections' in section['settings']:
 
-if __name__ == '__main__':
+        for name in sectino['settings']['sections']:
+            execute_section(section, name)
+
+def parse_arguments() -> dict:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('yaml_path')
+    return parser.parse_args()
+
+
+def main():
     from utils import read_yaml
+    import argparse
 
     logger.enable('dotfile')
+
+    tmpdir: str = ''
 
     config = {
         'handlers': [
@@ -467,9 +477,12 @@ if __name__ == '__main__':
             }
         ]
     }
-
     logger.configure(**config)
+    args = parse_arguments()
 
-    recipe_file = read_yaml('./linux_recipe.yaml')
+    recipe_yaml = read_yaml(args.yaml_path)
+    execute_section(recipe_yaml)
 
-    execute_recipe(recipe_file)
+if __name__ == '__main__':
+    main()
+
