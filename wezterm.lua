@@ -33,24 +33,21 @@ local config = {
       harfbuzz_features={"calt=1", "clig=1", "liga=1"},
     },
     "Cozette",
-  })
+  }),
+  default_cwd = "~"
 }
 
 if running_on_windows then
-  config["default_prog"] = {
-    "wsl.exe", "--cd", "~"
-  }
+  config["default_prog"] = { "wsl.exe", "--cd", "~", "genie", "-s" }
   config["add_wsl_distributions_to_launch_menu"] = false
   config["launch_menu"] = {
     {
       label = "PowerShell",
       args = {"pwsh.exe"},
-      cwd = "~",
     },
     {
       label = "zsh",
-      args = {"wsl.exe", "genie -s"},
-      cwd = "~",
+      args = { "wsl.exe", "--cd", "~", "genie", "-s" }
     }
   }
 end
