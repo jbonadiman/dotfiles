@@ -9,6 +9,9 @@ export IRCUSER=un_known
 
 export N_PREFIX="$HOME/n"; [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"  # Added by n-install (see http://git.io/n-install-repo).
 
+export PODMAN_SOCKET=/run/user/$(id | grep -Eo '^uid\=([0-9]+)' | grep -Eo '[0-9]+$')/podman/podman.sock
+export DOCKER_HOST=unix://$PODMAN_SOCKET
+
 # change zsh options
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
