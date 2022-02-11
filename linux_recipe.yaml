@@ -11,7 +11,7 @@ links:
     link: ~/.zshenv
     only_if: zsh
   # - docker_service.zsh: ~/.docker_service.zsh
-  # - wsl.conf: /etc/wsl.conf
+  # - wsl.conf: /etc/wsl.conf # WSL only
   # - /run/media/$USER/Dados/sources: ~/sources
   - target: vimrc
     link: ~/.config/nvim/init.vim
@@ -34,6 +34,7 @@ packages:
           name: neovim
 
         - httpie
+        - restic
         - clang
         - exa
         - make
