@@ -1,5 +1,9 @@
 # set variables
 
+if exists ~/.secrets; then
+  source ~/.secrets
+fi
+
 export NULLCMD=bat
 
 export IRCNAME=*
