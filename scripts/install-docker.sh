@@ -30,7 +30,6 @@ echo "# * Keep in mind that it was tested and adapted to be used in Ubuntu 20.04
 echo "# other distro, check additional informations here:"
 echo "# https://dev.to/bowmanjd/install-docker-on-windows-wsl-without-docker-desktop-34m9/"
 echo "# and get in touch so I can update this script."
-echo "# * It also assumes the current distro is the default"
 echo "##################################################################################################"
 
 read -r -p "Do you want to proceed with the installation? [Y/n] " response
