@@ -1,13 +1,13 @@
 #!/usr/bin/env sh
 
-capitalize() {
-  printf '%s' "$1" | head -c 1 | tr [:lower:] [:upper:]
-  printf '%s' "$1" | tail -c '+2'
-}
+scripts_path=$(realpath $(dirname $(readlink -f $0)))
 
-exists() {
-  command -v $1 >/dev/null 2>&1
-}
+source $scripts_path/zsh_functions
+
+if exists podman; then
+  echo "podman is already installed, skipping..."
+  exit 0
+fi
 
 force_rootless=0
 # parse arguments
@@ -35,12 +35,6 @@ if [ fix_rootless ]; then
     echo "podman sudoers file already exists. Skipping..."
   fi
   exit 0
-fi
-
-
-if exists podman; then
-  echo "'podman' is already installed. If you are having any troubles, try performing a clean install or fix rootless!"
-  exit 1
 fi
 
 echo "Sourcing OS information..."

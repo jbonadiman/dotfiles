@@ -1,4 +1,14 @@
 #!/usr/bin/env sh
+
+scripts_path=$(realpath $(dirname $(readlink -f $0)))
+
+source $scripts_path/zsh_functions
+
+if exists docker; then
+  echo "docker is already installed, skipping..."
+  exit 0
+fi
+
 . /etc/os-release
 
 trap '
