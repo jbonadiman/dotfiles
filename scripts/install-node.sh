@@ -2,17 +2,17 @@
 
 scripts_path=$(realpath $(dirname $(readlink -f $0)))
 
-source $scripts_path/zsh_functions
+. $scripts_path/zsh_functions
 
-if exists node; then
-  echo "node is already installed, skipping..."
+if exists node
+then
+  echo node is already installed, skipping...
 else
-  if ! exists n; then
+  if ! exists n
+  then
     "./install-n.sh"
   fi
 
-  echo "Installing node..."
+  echo installing node...
   n lts
 fi
-
-echo "Done!"

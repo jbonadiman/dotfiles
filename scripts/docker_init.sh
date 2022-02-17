@@ -6,8 +6,10 @@ source $scripts_path/zsh_functions
 
 init_path=$HOME/docker_init.sh
 
-if [ exists docker ]; then
-  if [ ! -f $init_path ]; then
+if exists docker
+then
+  if [ ! -f $init_path ]
+  then
     echo "
     #!/usr/bin/env sh
 

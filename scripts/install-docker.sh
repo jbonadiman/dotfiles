@@ -2,10 +2,11 @@
 
 scripts_path=$(realpath $(dirname $(readlink -f $0)))
 
-source $scripts_path/zsh_functions
+. $scripts_path/zsh_functions
 
-if exists docker; then
-  echo "docker is already installed, skipping..."
+if exists docker
+then
+  echo docker is already installed, skipping...
   exit 0
 fi
 
@@ -29,7 +30,7 @@ error() {
 }
 
 request_admin() {
-  echo "Requesting admin privileges to $1..."
+  echo requesting admin privileges to $1...
   sudo echo > /dev/null
 }
 

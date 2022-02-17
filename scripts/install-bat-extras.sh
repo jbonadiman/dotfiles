@@ -2,21 +2,24 @@
 
 scripts_path=$(realpath $(dirname $(readlink -f $0)))
 
-source $scripts_path/zsh_functions
+. $scripts_path/zsh_functions
 
-if exists batman; then
+if exists batman
+then
   echo bat-extras is already installed, skipping...
   exit 0
 fi
 
 echo this script installs shfmt to make sure bat-extras will be minified on installation
 
-if ! exists go; then
+if ! exists go
+then
   echo requiring admin privileges to install go...
-  sudo pacman -Syu go
+  sudo pacman -S go
 fi
 
-if ! exists shfmt; then
+if ! exists shfmt
+then
   go install mvdan.cc/sh/v3/cmd/shfmt@latest
 fi
 
