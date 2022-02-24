@@ -14,6 +14,7 @@ ln -sf $(realpath wezterm.lua) ~/.wezterm.lua
 echo "Requiring admin privilege to sync packages..."
 sudo pacman -S --needed --noconfirm \
   zsh \
+  yay \
   neovim \
   python-pip \
   httpie \
