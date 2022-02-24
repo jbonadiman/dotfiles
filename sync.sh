@@ -16,6 +16,7 @@ sudo pacman -S --needed --noconfirm \
   zsh \
   yay \
   neovim \
+  tree \
   python-pip \
   httpie \
   restic \
