@@ -28,11 +28,8 @@ local config = {
   },
   font_size = 9.0,
   font = wezterm.font_with_fallback({
-    {
-      family="FiraCode NF",
-      harfbuzz_features={"calt=1", "clig=1", "liga=1"},
-    },
-    "Cozette",
+    "Fira Code",
+    "Symbols Nerd Font",
   }),
   default_cwd = "~"
 }
