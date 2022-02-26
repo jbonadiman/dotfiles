@@ -10,12 +10,10 @@ else
   mkdir -p $plugins_folder
 fi
 
-plugins_list=(
-  "zsh-autosuggestions"
-  "zsh-syntax-highlighting"
-)
+plugins_list="zsh-autosuggestions"
+plugins_list="${plugins_list} zsh-syntax-highlighting"
 
-for plugin in ${plugins_list[@]}; do 
+for plugin in ${plugins_list}; do 
   if [ -d $plugins_folder/$plugin ]; then
     echo plugin $plugin already installed, skipping...
     continue
