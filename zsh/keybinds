@@ -1,4 +1,19 @@
 #!/usr/bin/env zsh
 
+# Home
 bindkey "\033[H" beginning-of-line
+
+# End
 bindkey "\033[F" end-of-line
+
+# Ctrl + Right
+bindkey "^[[1;5C" forward-word
+
+# Ctrl + Left
+bindkey "^[[1;5D" backward-word
+
+# Ctrl + Backspace
+bindkey "^W" backward-kill-word
+
+# Ctrl + Delete
+bindkey "^[[3;5~" kill-word
