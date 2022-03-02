@@ -69,6 +69,7 @@ if [ -z "$movie_selection" ]
 then
   IFS=$'@'
   movie_options=($(echo $response | jq -j '[.[] | "\(.title_long), rating: \(.rating)"] | join("@")'))
+
   if [ $#movie_options -gt 1 ]
   then
     echo "Found more than 1 movie option. Choose the right one below and execute the script again passing your option after the search query, example:\n$ yts_get.zsh <search query> 3\n"
@@ -76,16 +77,18 @@ then
     do
       echo "$i. $movie_options[$i]"
     done
+    exit 2
+  else
+    movie_selection=1
   fi
-else
-
-  # Get right movie
-  movie_info=$(echo $response | jq ".[$movie_selection - 1] | {\"title\":.title_long,\"torrent\":.torrents[] | select( .quality as \$q | [\"$quality\"] | index(\$q)) | {hash, type}}")
-
-  torrent_title="$(echo $movie_info | jq -j "\"\(.title)[\(.torrent.type)][$quality][YTS.MX]\"")"
-  torrent_hash="$(echo $movie_info | jq -j '.torrent.hash')"
-  echo $(get_magnet $torrent_title $torrent_hash)
 fi
+
+# Get right movie
+movie_info=$(echo $response | jq ".[$movie_selection - 1] | {\"title\":.title_long,\"torrent\":.torrents[] | select( .quality as \$q | [\"$quality\"] | index(\$q)) | {hash, type}}")
+
+torrent_title="$(echo $movie_info | jq -j "\"\(.title)[\(.torrent.type)][$quality][YTS.MX]\"")"
+torrent_hash="$(echo $movie_info | jq -j '.torrent.hash')"
+echo $(get_magnet $torrent_title $torrent_hash)
 
 exit 0
 
