@@ -1,0 +1,91 @@
+#!/usr/bin/env zsh
+
+function exists() {
+  command -v $1 > /dev/null 2>&1
+}
+
+dependencies=(
+  "jq"
+  "curl"
+  "sed"
+)
+
+for dep in $dependencies
+do
+  if ! exists $dep
+  then
+    echo "Please, ensure all dependencies of the script are installed:"
+    echo $dependencies
+    exit 1
+  fi
+done
+
+
+function url_encode() {
+  echo $1 | sed\
+    -e 's/ /%20/g'\
+    -e 's/:/%3A/g'\
+    -e 's/(/%28/g'\
+    -e 's/)/%29/g'\
+    -e 's/&/%26/g'
+}
+
+function get_magnet() {
+  local filename="$1"
+  local magnet_hash="$2"
+
+  local trackers=(
+    "udp://glotorrents.pw:6969/announce"
+    "udp://tracker.opentrackr.org:1337/announce"
+    "udp://torrent.gresille.org:80/announce"
+    "udp://tracker.openbittorrent.com:80"
+    "udp://tracker.coppersurfer.tk:6969"
+    "udp://tracker.leechers-paradise.org:6969"
+    "udp://p4p.arenabg.ch:1337"
+    "udp://tracker.internetwarriors.net:1337"
+  )
+
+  local base_uri="magnet:?xt=urn:btih:$magnet_hash&dn=$(url_encode $filename)"
+
+  for tr in $trackers
+  do
+    base_uri="$base_uri&tr=$tr"
+  done
+
+  echo $base_uri
+}
+
+search_query=$1
+movie_selection=$2
+quality="1080p" # TODO: quality should be a cmd arg
+
+yts_ip="104.31.16.9" # TODO should be a cmd arg
+hostname="yts.mx"
+search_endpoint="https://$hostname/api/v2/list_movies.json?query_term=$(url_encode $search_query)&sort_by=rating"
+
+response=$(curl --silent --resolve yts.mx:443:$yts_ip -X GET $search_endpoint | jq '[.data.movies[] | {id,title_long,url,imdb_code,rating,torrents: [.torrents[] | {hash,quality,type}]}]')
+
+if [ -z "$movie_selection" ]
+then
+  IFS=$'@'
+  movie_options=($(echo $response | jq -j '[.[] | "\(.title_long), rating: \(.rating)"] | join("@")'))
+  if [ $#movie_options -gt 1 ]
+  then
+    echo "Found more than 1 movie option. Choose the right one below and execute the script again passing your option after the search query, example:\n$ yts_get.zsh <search query> 3\n"
+    for ((i = 1; i <= $#movie_options; i++))
+    do
+      echo "$i. $movie_options[$i]"
+    done
+  fi
+else
+
+  # Get right movie
+  movie_info=$(echo $response | jq ".[$movie_selection - 1] | {\"title\":.title_long,\"torrent\":.torrents[] | select( .quality as \$q | [\"$quality\"] | index(\$q)) | {hash, type}}")
+
+  torrent_title="$(echo $movie_info | jq -j "\"\(.title)[\(.torrent.type)][$quality][YTS.MX]\"")"
+  torrent_hash="$(echo $movie_info | jq -j '.torrent.hash')"
+  echo $(get_magnet $torrent_title $torrent_hash)
+fi
+
+exit 0
+

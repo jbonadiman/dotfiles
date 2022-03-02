@@ -6,16 +6,21 @@ fi
 
 export NULLCMD=bat
 
+# irc variables
 export IRCNAME=*
 export IRCPORT=6667
 export IRCNICK=un_known
 export IRCUSER=un_known
 
+# go variables
+export GOPATH=$HOME/go
+export GOROOT=/usr/lib/go
+
 export N_PREFIX="$HOME/n"; [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"  # Added by n-install (see http://git.io/n-install-repo).
 
 export PODMAN_SOCKET=/run/user/$(id | grep -Eo '^uid\=([0-9]+)' | grep -Eo '[0-9]+$')/podman/podman.sock
 export DOCKER_HOST=unix://$PODMAN_SOCKET
-export NVIM_HOME="~/.config/nvim"
+export NVIM_HOME="$HOME/.config/nvim"
 
 # change zsh options
 HISTFILE=~/.zsh_history
