@@ -1,0 +1,31 @@
+#!/usr/bin/env zsh
+
+# create aliases
+alias ls='exa -laFh --icons'
+alias exa='exa -laFh --icons'
+alias man='batman'
+alias trail='<<<${(F)path}'
+alias cat='bat'
+alias python='python3'
+
+# TODO: Add WSL check
+alias clip='/mnt/c/Windows/System32/clip.exe'
+alias rm='trash-put'
+alias vim='nvim'
+
+# TODO: Add WSL check
+alias pbcopy='clip.exe'
+alias pbpaste="pwsh.exe -command 'Get-Clipboard' | tr -d '\r' | head -n -1"
+
+alias gc='git commit -m'
+alias gb='git checkout -b'
+alias ga='git add'
+alias gd='git diff'
+alias gs='git status'
+alias gl='git log'
+alias gam='git commit --amend'
+alias gp='git push'
+
+alias t1='tree -L 1'
+alias t2='tree -L 2'
+alias t3='tree -L 3'
