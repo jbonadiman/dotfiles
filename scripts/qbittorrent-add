@@ -1,0 +1,40 @@
+#!/usr/bin/env zsh
+
+addr="<localip>"
+username="admin"
+password="adminadmin"
+
+
+function exists() {
+  command -v $1 > /dev/null 2>&1
+}
+
+function login {
+  auth_cookie=$(curl --cookie-jar - --silent --header "Referer: http://$addr" --data "username=$username&password=$password" "http://$addr/api/v2/auth/login" | grep -Po "SID\s+\K.+")
+}
+
+function add_magnet() {
+  curl --silent --cookie "SID=\"$auth_cookie\"" "http://$addr/api/v2/torrents/add"\
+    --form "urls=$1"\
+    --form "category=Movies"\
+    --form "sequentialDownload=true"\
+    --form "ratioLimit=2.0"
+}
+
+if ! exists yts-get
+then
+  echo "Please, ensure the yts-get script is in the PATH"
+  exit 1
+fi
+
+arg_len=${#*[@]}
+if [ $arg_len -eq 2 ]
+then
+  magnet_link=$(yts-get $@)
+  login
+  echo $auth_cookie
+  add_magnet $magnet_link
+else
+  yts-get $1
+fi
+
