@@ -84,7 +84,7 @@ then
 fi
 
 # Get right movie
-movie_info=$(echo $response | jq ".[$movie_selection - 1] | {\"title\":.title_long,\"torrent\":.torrents[] | select( .quality as \$q | [\"$quality\"] | index(\$q)) | {hash, type}}")
+movie_info=$(echo $response | jq ".[$movie_selection - 1] | [{\"title\":.title_long,\"torrent\":.torrents[] | select( .quality as \$q | [\"$quality\"] | index(\$q)) | {hash, type}}] | .[0]")
 
 torrent_title="$(echo $movie_info | jq -j "\"\(.title)[\(.torrent.type)][$quality][YTS.MX]\"")"
 torrent_hash="$(echo $movie_info | jq -j '.torrent.hash')"
