@@ -1,12 +1,3 @@
-# set variables
-
-export DOTFILES="$HOME/dotfiles"
-
-if ! exists ~/.secrets
-then
-  touch ~/.secrets
-fi
-
 # change zsh options
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
@@ -27,11 +18,16 @@ zstyle ':vcs_info:*' enable git
 RPROMPT="$RPROMPT%F{248}%*%f"
 
 source ~/.secrets
-source $DOTFILES/zsh/vars
 source $DOTFILES/zsh/utils
 source $DOTFILES/zsh/aliases
+source $DOTFILES/zsh/keybinds
 
 # activate syntax highlighting
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+if ! exists ~/.secrets
+then
+  touch ~/.secrets
+fi
 

@@ -1,3 +1,6 @@
 #!/usr/bin/env zsh
 
-source $DOTFILES/zsh/utils
+export DOTFILES="$HOME/dotfiles"
+
+source "$DOTFILES/zsh/vars"
+source "$DOTFILES/zsh/utils"

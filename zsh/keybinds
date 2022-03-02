@@ -1,0 +1,4 @@
+#!/usr/bin/env zsh
+
+bindkey "\033[H" beginning-of-line
+bindkey "\033[F" end-of-line
