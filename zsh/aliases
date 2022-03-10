@@ -2,18 +2,16 @@
 
 # create aliases
 alias ls='exa -laFh --icons'
-alias exa='exa -laFh --icons'
 alias man='batman'
 alias trail='<<<${(F)path}'
 alias cat='bat'
 alias python='python3'
 
-# TODO: Add WSL check
-alias clip='/mnt/c/Windows/System32/clip.exe'
 alias rm='trash-put'
-alias vim='nvim'
+alias vim='lvim'
 
 # TODO: Add WSL check
+alias clip='/mnt/c/Windows/System32/clip.exe'
 alias pbcopy='clip.exe'
 alias pbpaste="pwsh.exe -command 'Get-Clipboard' | tr -d '\r' | head -n -1"
 

@@ -17,7 +17,6 @@ zstyle ':vcs_info:git:*' formats '%F{240}(%b) %f'
 zstyle ':vcs_info:*' enable git
 RPROMPT="$RPROMPT%F{248}%*%f"
 
-source ~/.secrets
 source $DOTFILES/zsh/utils
 source $DOTFILES/zsh/aliases
 source $DOTFILES/zsh/keybinds
@@ -31,3 +30,4 @@ then
   touch ~/.secrets
 fi
 
+source ~/.secrets

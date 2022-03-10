@@ -1,6 +1,6 @@
 -- general
 lvim.format_on_save = true
-lvim.colorscheme = "onedarker"
+lvim.colorscheme = "kanagawa"
 
 lvim.leader = "space"
 -- add your own keymapping
@@ -34,7 +34,7 @@ vim.list_extend(lvim.lsp.override, { "pyright" })
 -- set a formatter, this will override the language server formatting capabilities (if it exists)
 local formatters = require "lvim.lsp.null-ls.formatters"
 formatters.setup {
-  { command = "black" },
+  -- { command = "black" }, -- FIX this is somehow causing errors
   {
     command = "prettier",
     ---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
@@ -45,7 +45,7 @@ formatters.setup {
 -- set additional linters
 local linters = require "lvim.lsp.null-ls.linters"
 linters.setup {
-  { command = "black" },
+  -- { command = "black" }, -- FIX this is somehow causing errors
   {
     command = "eslint_d",
     ---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
@@ -57,6 +57,15 @@ linters.setup {
 -- Additional Plugins
 lvim.plugins = {
     {"lunarvim/colorschemes"},
+    {"rebelot/kanagawa.nvim"},
+    {
+      "folke/todo-comments.nvim",
+      config = function() require("todo-comments").setup {
+        -- your configuration comes here
+        -- or leave it empty to use the default settings
+        -- refer to the configuration section below
+      } end
+    },
     {
         "ray-x/lsp_signature.nvim",
         config = function() require"lsp_signature".on_attach() end,
