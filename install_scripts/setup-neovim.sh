@@ -4,6 +4,8 @@ scripts_path=$(realpath $(dirname $(readlink -f $0)))
 
 source $scripts_path/zsh_functions
 
+# TODO: install LunarVim
+
 vimrc_folder=$(realpath $(dirname $(readlink -f $0))/..)/vimrc
 nvim_folder=${NVIM_HOME:-$HOME/.config/nvim}
 
