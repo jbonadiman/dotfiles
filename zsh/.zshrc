@@ -1,3 +1,5 @@
+export DOTFILES=$HOME/dotfiles
+
 # change zsh options
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
