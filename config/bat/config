@@ -4,7 +4,7 @@
 
 # Specify desired highlighting theme (e.g. "TwoDark"). Run `bat --list-themes`
 # for a list of all available themes
-#--theme="TwoDark"
+--theme="ansi"
 
 # Enable this to use italic text on the terminal. This is not supported on all
 # terminal emulators (like tmux, by default):
@@ -21,8 +21,9 @@
 # Syntax mappings: map a certain filename pattern to a language.
 #   Example 1: use the C++ syntax for .ino files
 #   Example 2: Use ".gitignore"-style highlighting for ".ignore" files
-#--map-syntax "*.ino:C++"
-#--map-syntax ".ignore:Git Ignore"
+--map-syntax "*.ino:C++"
+--map-syntax ".ignore:Git Ignore"
 --map-syntax "zshrc:Bourne Again Shell (bash)"
 --map-syntax "zshenv:Bourne Again Shell (bash)"
 --map-syntax "vimrc:VimL"
+--map-syntax "*.nse:Lua"

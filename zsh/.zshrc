@@ -8,7 +8,7 @@ setopt INC_APPEND_HISTORY_TIME
 
 # customize prompt
 PROMPT='
-%(?.%F{green}√.%F{red}?%?)%f %B%F{240}%1~%f%b %L %(!.#.>) '
+%(?.%F{green}√.%F{red}?%?)%f %B%F{240}%1~%f%b %L $'\n'%(!.#.λ) '
 
 autoload -Uz vcs_info
 precmd_vcs_info() { vcs_info }
@@ -27,7 +27,7 @@ source $DOTFILES/zsh/keybinds
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
-if ! exists ~/.secrets
+if [[ ! -f ~/.secrets ]]
 then
   touch ~/.secrets
 fi

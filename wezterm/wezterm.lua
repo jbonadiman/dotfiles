@@ -35,7 +35,7 @@ local config = {
 }
 
 if running_on_windows then
-  config["default_prog"] = { "wsl.exe", "--cd", "~", "genie", "-s" }
+  config["default_prog"] = { "wsl.exe", "--cd", "~" }
   config["add_wsl_distributions_to_launch_menu"] = false
   config["launch_menu"] = {
     {
@@ -44,7 +44,7 @@ if running_on_windows then
     },
     {
       label = "zsh",
-      args = { "wsl.exe", "--cd", "~", "genie", "-s" }
+      args = { "wsl.exe", "--cd", "~" }
     }
   }
 end
