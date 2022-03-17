@@ -1,13 +1,12 @@
 #!/usr/bin/env sh
 
-
-source ./scripts/zsh_functions
+. ./zsh/utils
 
 # links
 
-ln -sf $(realpath zshrc) ~/.zshrc
-ln -sf $(realpath zshenv) ~/.zshenv
-ln -sf $(realpath wezterm.lua) ~/.wezterm.lua
+ln -sf $(realpath ./zsh/.zshrc) ~/.zshrc
+ln -sf $(realpath ./zsh/.zshenv) ~/.zshenv
+ln -sf $(realpath ./wezterm/wezterm.lua) ~/.wezterm.lua
 
 # simple installations
 
@@ -25,6 +24,9 @@ sudo pacman -S --needed --noconfirm \
   make \
   openssh \
   go \
+  tldr \
+  spotify \
+  discord \
   bat
 
 if exists pip; then
@@ -35,8 +37,8 @@ fi
 
 # scripts
 
-chmod +x ./scripts/*
-for script in ./scripts/*.*sh; do
+chmod +x ./install_scripts/*
+for script in ./install_scripts/*.*sh; do
   $script
   exit_code=$?
   if [ $exit_code -ne 0 ]; then

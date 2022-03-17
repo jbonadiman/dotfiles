@@ -1,8 +1,7 @@
 #!/usr/bin/env sh
 
 scripts_path=$(realpath $(dirname $(readlink -f $0)))
-
-source $scripts_path/zsh_functions
+. $scripts_path/../zsh/utils
 
 if exists n; then
   echo n is already installed, skipping...

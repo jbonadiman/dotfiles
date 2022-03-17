@@ -1,8 +1,7 @@
 #!/usr/bin/env sh
 
 scripts_path=$(realpath $(dirname $(readlink -f $0)))
-
-. $scripts_path/zsh_functions
+. $scripts_path/../zsh/utils
 
 if exists node
 then
@@ -10,7 +9,7 @@ then
 else
   if ! exists n
   then
-    "./install-n.sh"
+    "$scripts_path/install-n.sh"
   fi
 
   echo installing node...
