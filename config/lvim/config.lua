@@ -1,6 +1,6 @@
 -- general
-lvim.format_on_save = true
-lvim.colorscheme = "kanagawa"
+lvim.format_on_save = false
+lvim.colorscheme = "gruvbox-material"
 
 lvim.leader = "space"
 -- add your own keymapping
@@ -58,6 +58,11 @@ linters.setup {
 lvim.plugins = {
     {"lunarvim/colorschemes"},
     {"rebelot/kanagawa.nvim"},
+    {
+      "sainnhe/gruvbox-material",
+      config = function() require("gruvbox-material").setup {
+      } end
+    },
     {
       "folke/todo-comments.nvim",
       config = function() require("todo-comments").setup {

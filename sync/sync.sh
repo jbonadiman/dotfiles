@@ -7,6 +7,7 @@
 ln -sf $(realpath ./zsh/.zshrc) ~/.zshrc
 ln -sf $(realpath ./zsh/.zshenv) ~/.zshenv
 ln -sf $(realpath ./wezterm/wezterm.lua) ~/.wezterm.lua
+ln -sf $(realpath ./ssh/config) ~/.ssh/config
 
 # simple installations
 
@@ -25,8 +26,15 @@ sudo pacman -S --needed --noconfirm \
   openssh \
   go \
   tldr \
-  spotify \
+  telegram-desktop \
   discord \
+  alacritty \
+  virt-manager \
+  calibre \
+  rustup \
+  yarn \
+  xclip \
+  bitwarden \
   bat
 
 if exists pip; then

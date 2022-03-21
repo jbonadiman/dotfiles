@@ -1,0 +1,6 @@
+Host copastur
+  Hostname vs-ssh.visualstudio.com
+  User copastur-dev
+  PubkeyAcceptedAlgorithms +ssh-rsa
+  HostkeyAlgorithms +ssh-rsa
+  IdentityFile /home/joao/.ssh/copastur/id_rsa
