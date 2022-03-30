@@ -8,7 +8,7 @@ alias cat='bat'
 alias python='python3'
 
 alias rm='trash-put'
-alias vim='lvim'
+alias vim='nvim'
 
 # TODO: Add WSL check
 alias clip='/mnt/c/Windows/System32/clip.exe'

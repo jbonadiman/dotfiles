@@ -7,9 +7,6 @@
 ln -sf $(realpath ./zsh/.zshrc) ~/.zshrc
 ln -sf $(realpath ./zsh/.zshenv) ~/.zshenv
 
-mkdir -p "$APPDATA/alacritty/alacritty.yml"
-ln -sf $(realpath ./alacritty/.alacritty.yml) "$APPDATA/alacritty/alacritty.yml"
-
 # simple installations
 
 echo "Requiring admin privilege to sync packages..."
