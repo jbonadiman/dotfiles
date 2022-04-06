@@ -1,0 +1,47 @@
+---
+- hosts: localhost
+  become: true
+  tasks:
+    - name: "create symbolic links"
+      file:
+        src: "{{ playbook_dir }}/../{{ item.src }}"
+        dest: "{{ item.dest }}"
+        force: yes
+        state: link
+      loop:
+        - { src: "zsh/.zshrc", dest: "/home/joao/.zshrc" }
+        - { src: "zsh/.zshenv", dest: "/home/joao/.zshenv" }
+        - { src: "alacritty/.alacritty.yml", dest: "/home/joao/.alacritty.yml" }
+        - { src: "ssh/config", dest: "/home/joao/.ssh/config" }
+    - name: "install packages"
+      community.general.pacman:
+        name:
+          - zsh
+          - yay
+          - neovim
+          - tree
+          - python-pip
+          - httpie
+          - clang
+          - make
+          - openssh
+          - exa
+          - go
+          - tldr
+          - telegram-desktop
+          - discord
+          - alacritty
+          - virt-manager
+          - calibre
+          - rustup
+          - yarn
+          - xclip
+          - bitwarden
+          - bat
+        state: latest
+    - name: "install pip packages"
+      pip:
+        extra_args: --compile
+        name:
+          - trash-cli
+          - neovim
