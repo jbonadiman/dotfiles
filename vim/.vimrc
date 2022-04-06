@@ -2,25 +2,32 @@ set number
 
 set relativenumber
 set autoindent
-set tabstop=2
-set softtabstop=2
-set shiftwidth=2
-set smarttab
-set expandtab
+set tabstop=2 softtabstop=2 shiftwidth=2 smarttab expandtab
 
 call plug#begin()
+Plug 'gruvbox-community/gruvbox'
 
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+Plug 'beeender/Comrade'
 Plug 'tpope/vim-surround' " Surround with ysw
-Plug 'vim-airline/vim-airline'
-Plug 'ap/vim-css-color'
 Plug 'tpope/vim-commentary'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+Plug 'wincent/ferret'
+Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+Plug 'editorconfig/editorconfig-vim'
+Plug 'mattn/emmet-vim'
+Plug 'pechorin/any-jump.vim'
+Plug 'sheerun/vim-polyglot'
+
+Plug 'ap/vim-css-color'
+Plug 'vim-airline/vim-airline'
 Plug 'edersonferreira/dalton-vim'
 Plug 'preservim/nerdtree'
 Plug 'ryanoasis/vim-devicons'
 Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 Plug 'thaerkh/vim-indentguides'
 Plug 'preservim/tagbar'
-Plug 'neoclide/coc.nvim'
 
 call plug#end()
 
