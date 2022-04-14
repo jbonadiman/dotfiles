@@ -3,6 +3,7 @@ export DOTFILES=$HOME/dotfiles
 # change zsh options
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
+HISTCONTROL=ignoreboth
 SAVEHIST=10000
 setopt INC_APPEND_HISTORY_TIME
 
@@ -26,6 +27,8 @@ source $DOTFILES/zsh/keybinds
 # activate syntax highlighting
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+. /opt/asdf-vm/asdf.sh
 
 if [[ ! -f ~/.secrets ]]
 then
