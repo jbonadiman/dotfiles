@@ -20,7 +20,7 @@ trap '
 
 shell_config=$(readlink -f "$HOME/.$(basename $SHELL)rc")
 DOCKER_CFG="/etc/docker"
-DOCKER_DISTRO=$(wsl.exe -l -q | tr -d '\0' | tr '\r\n' ' ' | grep -io $ID)
+DOCKER_DISTRO=$(wsl.exe -l -q | tr -d '\0' | tr '\r\n' ' ')
 DOCKER_DIR="/mnt/wsl/shared-docker"
 DOCKER_SOCK="$DOCKER_DIR/docker.sock"
 
@@ -30,18 +30,20 @@ error() {
 }
 
 request_admin() {
-  echo requesting admin privileges to $1...
+  echo "Requesting admin privileges to $1..."
   sudo echo > /dev/null
 }
 
-echo "###################################################################################################"
-echo "# * This script must be installed in WSL version 2. To make sure you're running the right version,"
-echo "# on Windows run the following command: 'wsl --set-default-version 2'."
-echo "# * Keep in mind that it was tested and adapted to be used in Ubuntu 20.04. If you're using any"
-echo "# other distro, check additional informations here:"
-echo "# https://dev.to/bowmanjd/install-docker-on-windows-wsl-without-docker-desktop-34m9/"
-echo "# and get in touch so I can update this script."
-echo "##################################################################################################"
+echo "####################################################################################################"
+echo "# * This script must be installed in WSL version 2. To make sure you're running the right version, #"
+echo "# on Windows run the following command: 'wsl --set-default-version 2'.                             #"
+echo "# * Keep in mind that it was tested and adapted to be used in Ubuntu 20.04. If you're using any    #"
+echo "# other distro, check additional informations here:                                                #"
+echo "# https://dev.to/bowmanjd/install-docker-on-windows-wsl-without-docker-desktop-34m9/               #"
+echo "# and get in touch so I can update this script.                                                    #"
+echo "# * It also assumes the current distro is the default.                                             #"
+echo "# * Also, it should not be ran as sudo!                                                            #"
+echo "####################################################################################################"
 
 read -r -p "Do you want to proceed with the installation? [Y/n] " response
 echo
