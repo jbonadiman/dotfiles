@@ -1,0 +1,61 @@
+---
+- hosts: localhost
+  vars:
+    home: "{{ lookup('env','USERPROFILE') }}"
+    appdata: "{{ lookup('env','APPDATA') }}"
+  tasks:
+    - name: "create symbolic links"
+      file:
+        src: "{{ playbook_dir }}/../{{ item.src }}"
+        dest: "{{ item.dest }}"
+        force: yes
+        state: link
+      loop:
+        - { src: "zsh/.zshrc",               dest: "{{ home }}/.zshrc" }
+        - { src: "zsh/.zshenv",              dest: "{{ home }}/.zshenv" }
+        - { src: "alacritty/.alacritty.yml", dest: "{{ appdata }}/alacritty/alacritty.yml" }
+        - { src: "ssh/config",               dest: "{{ home }}/.ssh/config" }
+    - name: "add scoop buckets"
+      become: true
+      community.windows.win_scoop_bucket:
+        name:
+          - extras
+          - nerd-fonts
+          - java
+    - name: "install packages"
+      become: true
+      community.windows.win_scoop:
+        name:
+          - 7zip
+          - advancedrenamer
+          - alacritty
+          - archwsl
+          - aria2
+          - bitwarden
+          - calibre
+          - dark
+          - discord
+          - firefox
+          - FiraCode
+          - freedownloadmanager
+          - git
+          - go
+          - innounp
+          - insomnia
+          - jq
+          - okular
+          - openjdk11
+          - poetry
+          - python
+          - qbittorrent
+          - standardnotes
+          - sudo
+          - treesize-free
+          - vlc
+          - yarn
+        state: latest
+    - name: "install pip packages"
+      pip:
+        extra_args: --compile
+        name:
+          - trash-cli

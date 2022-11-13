@@ -1,8 +1,6 @@
 #!/usr/bin/env sh
 
-scripts_path=$(realpath $(dirname $(readlink -f $0)))
-
-source $scripts_path/zsh_functions
+source $HOME/.zshenv
 
 init_path=$HOME/docker_init.sh
 

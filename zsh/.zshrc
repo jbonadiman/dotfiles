@@ -28,7 +28,7 @@ source $DOTFILES/zsh/keybinds
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
-. /opt/asdf-vm/asdf.sh
+# . /opt/asdf-vm/asdf.sh
 
 if [[ ! -f ~/.secrets ]]
 then
@@ -38,3 +38,6 @@ fi
 source ~/.secrets
 
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+export DOCKER_HOST="unix:///mnt/wsl/shared-docker/docker.sock" # added by install-docker.sh script
+
+docker_init.sh
