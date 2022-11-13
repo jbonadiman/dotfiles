@@ -18,7 +18,7 @@ setopt prompt_subst
 RPROMPT=\$vcs_info_msg_0_
 zstyle ':vcs_info:git:*' formats '%F{240}(%b) %f'
 zstyle ':vcs_info:*' enable git
-RPROMPT="$RPROMPT%F{248}%*%f"
+RPROMPT="$RPROMPT%F{248}%D{%H:%M:%S}%f"
 
 source $DOTFILES/zsh/utils
 source $DOTFILES/zsh/aliases
