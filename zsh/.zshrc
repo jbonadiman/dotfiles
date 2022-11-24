@@ -38,6 +38,3 @@ fi
 source ~/.secrets
 
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
-export DOCKER_HOST="unix:///mnt/wsl/shared-docker/docker.sock" # added by install-docker.sh script
-
-docker_init.sh
