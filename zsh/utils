@@ -1,5 +1,14 @@
 #!/usr/bin/env zsh
 
+epoch() {
+  if [ ${#1} -lt 13 ]; then
+    token="$1"
+  else
+    token="${1::-3}"
+  fi
+  python3 -c "import time; print('%s' % time.strftime('%c',time.localtime($token)))"
+}
+
 exists() {
   command -v $1 >/dev/null 2>&1
 }
