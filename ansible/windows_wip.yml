@@ -11,9 +11,7 @@
         force: yes
         state: link
       loop:
-        - { src: "zsh/.zshrc",               dest: "{{ home }}/.zshrc" }
-        - { src: "zsh/.zshenv",              dest: "{{ home }}/.zshenv" }
-        - { src: "alacritty/.alacritty.yml", dest: "{{ appdata }}/alacritty/alacritty.yml" }
+        - { src: "alacritty/alacritty.yml", dest: "{{ appdata }}/alacritty/alacritty.yml" }
         - { src: "ssh/config",               dest: "{{ home }}/.ssh/config" }
     - name: "add scoop buckets"
       become: true
@@ -24,12 +22,12 @@
           - java
     - name: "install packages"
       become: true
-      community.windows.win_scoop:
+      community.windows.win_scoop: # TODO: needs to set dependence on the bucket task
         name:
           - 7zip
           - advancedrenamer
           - alacritty
-          - archwsl
+          - archwsl # TODO: depends on the installation of wsl from microsoft store
           - aria2
           - bitwarden
           - calibre

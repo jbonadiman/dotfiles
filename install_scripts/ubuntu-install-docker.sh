@@ -16,9 +16,6 @@ trap '
 
 shell_config=$(readlink -f "$HOME/.$(basename $SHELL)rc")
 DOCKER_CFG="/etc/docker"
-# DOCKER_DISTRO=$(wsl.exe -l -q | tr -d '\0' | tr '\r\n' ' ' | grep -io $ID)
-# DOCKER_DIR="/mnt/wsl/shared-docker"
-# DOCKER_SOCK="$DOCKER_DIR/docker.sock"
 
 error() {
   printf "%s\n" "$1" >&2;
@@ -31,8 +28,8 @@ request_admin() {
 }
 
 echo "###################################################################################################"
-echo "# * This script must be installed on Ubuntu distros. It wasn't tested throughly on many versions,"
-echo "# but it's expected to run on 20.04 and 22.04."
+echo "# * This script must be installed on Ubuntu distros with systemd. It wasn't tested throughly on ma-"
+echo "# ny versions, but it's expected to run on 20.04 and 22.04."
 echo "##################################################################################################"
 
 read -r -p "Do you want to proceed with the installation? [Y/n] " response
