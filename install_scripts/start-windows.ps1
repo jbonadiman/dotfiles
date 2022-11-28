@@ -1,28 +1,26 @@
-function InstallScoop() {
-	Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-	irm get.scoop.sh | iex
-}
+$user="joao"
 
-function InstallWsl() {
-	dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
-	dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+# Setup PowerShell permissions
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-	$wslUpdateFile = "C:/Temp/wsl_update_x64.msi"
-	Invoke-WebRequest -Uri https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -OutFile $wslUpdateFile
+# Install scoop
+irm get.scoop.sh | iex
 
-	msiexec /i $wslUpdateFile /qr
-	wsl --set-default-version 2
+# Install winget
+scoop install winget
 
-	scoop bucket add extras
-	scoop install archwsl
-}
+# Install WSL from the Windows Store
+winget install wsl
 
-function SetUpWsl() {
+# Install ArchWSL distro
+scoop bucket add extras
+scoop install archwsl
+
+# Setups ArchWSL distro
+arch run "sh ./initial-setup-archwsl.sh $user"
+arch config --default-user $user
+
+# Setups WinRM for Ansible communication
+irm "https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1" | iex
 
 
-}
-
-
-
-InstallScoop()
-InstallWsl()
