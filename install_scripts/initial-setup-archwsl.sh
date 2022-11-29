@@ -11,7 +11,7 @@ best_mirror=$(curl -s "$mirrorlist_arch/json/" | jq -r '.urls | map(select(.acti
 
 printf "creating mirrorlist backup..."
 sudo cp "$mirrorlist" "$mirrorlist.bak"
-new_mirrorlist_content=$(printf '# Best mirror\n%s$repo/os/$arch\n\n' "$best_mirror"; cat "$mirrorlist")
+new_mirrorlist_content=$(printf '# Best mirror\nServer = %s$repo/os/$arch\n\n' "$best_mirror"; cat "$mirrorlist")
 
 printf "writing result to %s...\n" "$mirrorlist"
 printf "%s" "$new_mirrorlist_content" | sudo tee $mirrorlist 1>/dev/null
