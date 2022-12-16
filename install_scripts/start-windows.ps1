@@ -1,26 +1,38 @@
-$user="joao"
-
-# Setup PowerShell permissions
+Write-Output "setting up powershell permissions..."
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-# Install scoop
-irm get.scoop.sh | iex
+Write-Output "installing scoop..."
+iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
 
-# Install winget
+Write-Output "installing 'git' using scoop..."
+scoop install git
+
+Write-Output "installing 'sudo' using scoop..."
+scoop install sudo
+
+Write-Output "adding 'extras' bucket to scoop..."
+scoop bucket add extras
+
+Write-Output "installing 'vcredist' using scoop..."
+scoop install vcredist-aio
+
+Write-Output "installing 'winget' using scoop..."
 scoop install winget
 
-# Install WSL from the Windows Store
-winget install wsl
+Write-Output "installing 'wsl' using winget..."
+sudo winget install --accept-source-agreements --accept-package-agreements --id 9P9TQF7MRM4R
 
-# Install ArchWSL distro
-scoop bucket add extras
+# TODO: WSL not enabled
+Write-Output "installing 'archwsl' using scoop..."
 scoop install archwsl
 
-# Setups ArchWSL distro
-arch run "sh ./initial-setup-archwsl.sh $user"
-arch config --default-user $user
+Write-Output "setting up archwsl..."
+arch run "sh ./initial-setup-archwsl.sh $Args"
 
-# Setups WinRM for Ansible communication
+Write-Output "defining archwsl default user to $Args"
+arch config --default-user $Args
+
+Write-Output "setting up winrm for ansible communication..."
 irm "https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1" | iex
 
 

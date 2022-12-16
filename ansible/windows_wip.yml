@@ -1,3 +1,4 @@
+# TODO: Add "C: /mnt/c drvfs rw,noatime,uid=1000,gid=1000,case=off,umask=0027,fmask=0137, 0 0" to /etc/fstab
 ---
 - hosts: localhost
   vars:
