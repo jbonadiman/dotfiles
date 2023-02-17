@@ -4,6 +4,8 @@ export SDL_GAMECONTROLLERCONFIG="030000004c050000cc09000000016800,*,a:b0,b:b1,ba
 
 export NULLCMD=bat
 
+export SMTP_HOST="smtp-mail.outlook.com"
+
 # irc variables
 export IRCNAME=*
 export IRCPORT=6667
@@ -15,8 +17,6 @@ export GOPATH=$HOME/go
 export GOROOT=/usr/lib/go
 
 export N_PREFIX="$HOME/n"; [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"  # Added by n-install (see http://git.io/n-install-repo).
-
-export NVIM_HOME="$HOME/.config/nvim"
 
 typeset -U path
 
