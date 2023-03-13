@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+
+from telethon import TelegramClient
+import os
+import sys
+
+api_id = os.environ['TELEGRAM_API_ID']
+api_hash = os.environ['TELEGRAM_API_HASH']
+
+group_id = int(sys.argv[1])
+files = sys.argv[2:]
+
+client = TelegramClient('/home/joao/.local/share/telegram-app/jbonadiman.session', api_id, api_hash)
+
+async def main():
+    for file in files:
+        await client.send_file(group_id, file)
+
+with client:
+    client.loop.run_until_complete(main())
