@@ -2,9 +2,7 @@
 
 # create aliases
 alias ls='exa -laFh --icons'
-alias man='batman'
 alias trail='<<<${(F)path}'
-alias cat='bat'
 alias python='python3'
 
 alias rm='trash-put'
