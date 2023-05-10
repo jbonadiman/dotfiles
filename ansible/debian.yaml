@@ -7,8 +7,8 @@
     - name: Install packages
       apt:
         name:
-	  - exa
-	  - bat
+          - exa
+          - bat
           - zsh
           - git
           - emacs
