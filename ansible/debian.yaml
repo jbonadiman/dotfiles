@@ -1,11 +1,19 @@
-- hosts: babylon
+- hosts: localhost
+  gather_facts: yes
   become: yes
+  become_user: "{{ lookup('env', 'USER') }}"
   tasks:
-    - name: Update apt cache
+    - name: check if cargo is installed
+      shell: command -v cargo
+      register: cargo_exists
+      ignore_errors: yes
+    - name: check if docker is installed
+      shell: command -v docker
+      register: docker_exists
+      ignore_errors: yes
+    - name: install packages
       apt:
         update_cache: yes
-    - name: Install packages
-      apt:
         name:
           - exa
           - bat
@@ -14,59 +22,57 @@
           - emacs
           - golang-go
         state: present
-    - name: Set zsh as default shell for user
+    - name: set zsh as default shell for user
       user:
         name: "{{ ansible_user }}"
         shell: /bin/zsh
-    - name: Install zsh-syntax-highlighting
-      git:
-        repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
-        dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
-    - name: Install zsh-autosuggestions
-      git:
-        repo: https://github.com/zsh-users/zsh-autosuggestions.git
-        dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
-    - name: Add plugins to .zshrc
-      lineinfile:
-        path: "{{ ansible_env.HOME }}/.zshrc"
-        regexp: '^plugins='
-        line: 'plugins=(git zsh-syntax-highlighting zsh-autosuggestions)'
-    - name: Install docker
+    - name: install zsh plugins
+      block:
+        - name: Install zsh-syntax-highlighting
+          git:
+            repo:  https://github.com/zsh-users/zsh-syntax-highlighting.git
+            dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+        - name: Install zsh-autosuggestions
+          git:
+            repo: https://github.com/zsh-users/zsh-autosuggestions.git
+            dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+        - name: Add plugins to .zshrc
+          lineinfile:
+            path: "{{ ansible_env.HOME }}/.zshrc"
+            regexp: '^plugins='
+            line: 'plugins=(git zsh-syntax-highlighting zsh-autosuggestions)'
+    - name: install docker
+      when: docker_exists is failed
       ansible.builtin.shell: cd ~ && curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
-    - name: Run Docker Compose command
-      docker_compose:
-        project_src: /path/to/docker-compose/directory/
-    - name: Update Python to latest version
+    - name: update python to latest version
       apt:
         name: python3
         state: latest
-    - name: Install Alacritty dependencies
-      apt:
-        name:
-          - cmake
-          - pkg-config
-          - libfreetype6-dev
-          - libfontconfig1-dev
-          - libxcb-xfixes0-dev
-          - libxkbcommon-dev
-          - python3
-    - name: Clone Alacritty repository
-      git:
-        repo: https://github.com/alacritty/alacritty.git
-        dest: /tmp/alacritty
-    - name: Build and install Alacritty from source code
-      command:
-        cmd: cargo build --release && cargo install --path .
-        chdir: /tmp/alacritty/
-    - name: Import Microsoft GPG key and add repository for Visual Studio Code Server 
+    - name: install rust
+      when: cargo_exists is failed
       block:
-       - apt_key:
-           url: https://packages.microsoft.com/keys/microsoft.asc
-       - apt_repository:
-           repo: deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main
-    - name: Install Visual Studio Code Server 
-      apt:
-         update_cache: yes 
-         name:
-           - code-server 
-         state: present 
+      - name: download rust installer
+        get_url:
+          url: https://sh.rustup.rs
+          dest: /tmp/sh.rustup.rs
+          mode: '0755'
+          force: 'yes'
+        tags:
+          - rust
+      - name: install rust/cargo
+        shell: /tmp/sh.rustup.rs -y
+        tags:
+          - rust
+      - name: add cargo to path
+        lineinfile:
+          path: "{{ ansible_env.HOME }}/.zshrc"
+          regexp: '^export PATH=.*'
+          line: 'export PATH="$HOME/.cargo/bin:$PATH"'
+          state: present
+          create: yes
+          insertafter: EOF
+          backup: yes
+    - name: install alacritty
+      community.general.cargo:
+        name: alacritty
+        state: present
