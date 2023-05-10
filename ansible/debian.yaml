@@ -1,0 +1,72 @@
+- hosts: babylon
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+    - name: Install packages
+      apt:
+        name:
+	  - exa
+	  - bat
+          - zsh
+          - git
+          - emacs
+          - golang-go
+        state: present
+    - name: Set zsh as default shell for user
+      user:
+        name: "{{ ansible_user }}"
+        shell: /bin/zsh
+    - name: Install zsh-syntax-highlighting
+      git:
+        repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
+        dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+    - name: Install zsh-autosuggestions
+      git:
+        repo: https://github.com/zsh-users/zsh-autosuggestions.git
+        dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+    - name: Add plugins to .zshrc
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.zshrc"
+        regexp: '^plugins='
+        line: 'plugins=(git zsh-syntax-highlighting zsh-autosuggestions)'
+    - name: Install docker
+      ansible.builtin.shell: cd ~ && curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+    - name: Run Docker Compose command
+      docker_compose:
+        project_src: /path/to/docker-compose/directory/
+    - name: Update Python to latest version
+      apt:
+        name: python3
+        state: latest
+    - name: Install Alacritty dependencies
+      apt:
+        name:
+          - cmake
+          - pkg-config
+          - libfreetype6-dev
+          - libfontconfig1-dev
+          - libxcb-xfixes0-dev
+          - libxkbcommon-dev
+          - python3
+    - name: Clone Alacritty repository
+      git:
+        repo: https://github.com/alacritty/alacritty.git
+        dest: /tmp/alacritty
+    - name: Build and install Alacritty from source code
+      command:
+        cmd: cargo build --release && cargo install --path .
+        chdir: /tmp/alacritty/
+    - name: Import Microsoft GPG key and add repository for Visual Studio Code Server 
+      block:
+       - apt_key:
+           url: https://packages.microsoft.com/keys/microsoft.asc
+       - apt_repository:
+           repo: deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main
+    - name: Install Visual Studio Code Server 
+      apt:
+         update_cache: yes 
+         name:
+           - code-server 
+         state: present 
