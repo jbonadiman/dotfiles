@@ -1,53 +1,88 @@
 - hosts: localhost
-  gather_facts: yes
-  become: yes
-  become_user: "{{ lookup('env', 'USER') }}"
+  connection: local
+  gather_facts: no
+  become: yes # todo: every created file is owned by root
   tasks:
-    - name: check if cargo is installed
-      shell: command -v cargo
-      register: cargo_exists
-      ignore_errors: yes
-    - name: check if docker is installed
-      shell: command -v docker
-      register: docker_exists
-      ignore_errors: yes
+    - name: create user
+      user:
+        name: joao # todo: add to docker group
+        shell: /bin/zsh # todo: check if it's really working
+        state: present
+      register: user
+    - name: "create symbolic links"
+      file:
+        src: "{{ playbook_dir }}/../{{ item.src }}" # todo: get absolute path
+        dest: "{{ item.dest }}"
+        force: yes
+        state: link
+      loop:
+        - { src: "zsh/.zshrc",               dest: "{{ user.home }}/.zshrc" }
+        - { src: "zsh/.zshenv",              dest: "{{ user.home }}/.zshenv" }
+        - { src: "alacritty/alacritty.yml", dest: "{{ user.home }}/.alacritty.yml" }
+        - { src: "ssh/config",               dest: "{{ user.home }}/.ssh/config" }
+    - name: check already installed packages
+      block:
+        - name: check if cargo is installed # todo: causes error on console
+          shell: command -v cargo
+          register: cargo_exists
+          ignore_errors: yes
+        - name: check if docker is installed # todo: causes error on console, show as changed
+          shell: command -v docker
+          register: docker_exists
+          ignore_errors: yes
+        - name: check if zsh-syntax-highlighting is installed
+          stat:
+            path: "{{ user.home }}/.zsh/zsh-syntax-highlighting"
+          register: zsh_syntax_highlighting
+        - name: check if zsh-autosuggestions is installed
+          stat:
+            path: "{{ user.home }}/.zsh/zsh-autosuggestions"
+          register: zsh_autosuggestions
     - name: install packages
       apt:
         update_cache: yes
         name:
+          - gcc
+          - python3-dev
           - exa
           - bat
           - zsh
           - git
           - emacs
+          - tree
           - golang-go
         state: present
-    - name: set zsh as default shell for user
-      user:
-        name: "{{ ansible_user }}"
-        shell: /bin/zsh
-    - name: install zsh plugins
+    - name: setup zsh
       block:
-        - name: Install zsh-syntax-highlighting
-          git:
-            repo:  https://github.com/zsh-users/zsh-syntax-highlighting.git
-            dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
-        - name: Install zsh-autosuggestions
-          git:
-            repo: https://github.com/zsh-users/zsh-autosuggestions.git
-            dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
-        - name: Add plugins to .zshrc
-          lineinfile:
-            path: "{{ ansible_env.HOME }}/.zshrc"
-            regexp: '^plugins='
-            line: 'plugins=(git zsh-syntax-highlighting zsh-autosuggestions)'
+        - name: create .zsh directory
+          file:
+            path: "{{ user.home }}/.zsh"
+            state: directory
+            mode: '0755'
+        - name: install zsh plugins
+          block:
+            - name: install zsh-syntax-highlighting
+              when: not zsh_syntax_highlighting.stat.exists # todo: show as changed
+              git:
+                repo:  https://github.com/zsh-users/zsh-syntax-highlighting.git
+                dest: "{{ user.home }}/.zsh/zsh-syntax-highlighting"
+            - name: install zsh-autosuggestions
+              when: not zsh_autosuggestions.stat.exists # todo: show as changed
+              git:
+                repo: https://github.com/zsh-users/zsh-autosuggestions.git
+                dest: "{{ user.home }}/.zsh/zsh-autosuggestions"
     - name: install docker
       when: docker_exists is failed
-      ansible.builtin.shell: cd ~ && curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+      shell: cd ~ && curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
     - name: update python to latest version
       apt:
         name: python3
         state: latest
+    - name: "install pip packages" # todo: needs dependencies to compile
+      pip:
+        extra_args: --compile
+        name:
+          - trash-cli
     - name: install rust
       when: cargo_exists is failed
       block:
@@ -59,20 +94,12 @@
           force: 'yes'
         tags:
           - rust
-      - name: install rust/cargo
+      - name: install rust/cargo # todo: show as changed
         shell: /tmp/sh.rustup.rs -y
         tags:
           - rust
-      - name: add cargo to path
-        lineinfile:
-          path: "{{ ansible_env.HOME }}/.zshrc"
-          regexp: '^export PATH=.*'
-          line: 'export PATH="$HOME/.cargo/bin:$PATH"'
-          state: present
-          create: yes
-          insertafter: EOF
-          backup: yes
     - name: install alacritty
+      when: cargo_exists is success
       community.general.cargo:
         name: alacritty
         state: present

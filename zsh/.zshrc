@@ -24,10 +24,6 @@ source $DOTFILES/zsh/utils
 source $DOTFILES/zsh/aliases
 source $DOTFILES/zsh/keybinds
 
-# activate syntax highlighting
-source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
-
 # . /opt/asdf-vm/asdf.sh
 
 if [[ ! -f ~/.secrets ]]
@@ -36,3 +32,7 @@ then
 fi
 
 source ~/.secrets
+
+# activate syntax highlighting
+source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
