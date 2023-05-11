@@ -49,6 +49,7 @@
           - zsh
           - git
           - emacs
+          - sqlite3
           - tree
           - golang-go
         state: present
