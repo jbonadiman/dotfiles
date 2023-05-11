@@ -57,7 +57,7 @@ services:
       - ND_LASTFM_SECRET=${LASTFM_SECRET}
     volumes:
       - "$DATA_FOLDER/navidrome/config:/data"
-      - "/mnt/HC_Volume_28291768/media/music:/music:ro"
+      - "/mnt/HC_Volume_31766019/media/music:/music:ro"
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
     restart: unless-stopped
