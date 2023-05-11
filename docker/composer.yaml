@@ -5,8 +5,8 @@ services:
     restart: unless-stopped
     container_name: nginx
     volumes:
-      - $DATA_FOLDER/nginx/conf:/etc/nginx/conf.d
-      - $DATA_FOLDER/nginx/certs:/etc/nginx/certs
+      - /home/joao/data/nginx/conf:/etc/nginx/conf.d
+      - /home/joao/data/nginx/certs:/etc/nginx/certs
     ports:
       - "443:443"
   opengist:
@@ -15,14 +15,13 @@ services:
     restart: unless-stopped
     ports:
       - "6157:6157" # HTTP
-      - "2222:2222" # SSH
+      - "2222:2222" # SS
     volumes:
-      - "$DATA_FOLDER/opengist:/root/.opengist"
+      - "/home/joao/data/opengist:/root/.opengist"
     environment:
       CONFIG: |
         log-level: info
         http.git-enabled: false
-        external-url: gists
         github.client-key: ${GIST_GITHUB_CLIENT}
         github.secret: ${GIST_GITHUB_SECRET}
   syncthing:
@@ -34,8 +33,8 @@ services:
       - PGID=1000
       - TZ=Etc/UTC
     volumes:
-      - $DATA_FOLDER/syncthing/config:/config
-      - $DATA_FOLDER/syncthing/phone-backup:/config/phone-backup
+      - /home/joao/data/syncthing/config:/config
+      - /home/joao/data/syncthing/phone-backup:/config/phone-backup
     ports:
       - 8384:8384
       - 22000:22000/tcp
@@ -56,7 +55,7 @@ services:
       - ND_LASTFM_APIKEY=${LASTFM_API_KEY}
       - ND_LASTFM_SECRET=${LASTFM_SECRET}
     volumes:
-      - "$DATA_FOLDER/navidrome/config:/data"
+      - "/home/joao/data/navidrome/config:/data"
       - "/mnt/HC_Volume_31766019/media/music:/music:ro"
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
@@ -65,7 +64,7 @@ services:
     ports:
       - "5678:5678"
     volumes:
-      - $DATA_FOLDER/n8n:/home/node/.n8n
+      - /home/joao/data/n8n:/home/node/.n8n
     env_file:
       - .env
       - n8n.env
@@ -80,4 +79,4 @@ services:
       - .env
       - shiori.env
     volumes:
-      - $DATA_FOLDER/shiori:/shiori
+      - /home/joao/data/shiori:/shiori
