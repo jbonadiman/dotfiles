@@ -80,4 +80,4 @@ services:
       - .env
       - shiori.env
     volumes:
-      - $DATA_FOLDER/shiori:/srv/shiori
+      - $DATA_FOLDER/shiori:/shiori
