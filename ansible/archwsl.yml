@@ -1,9 +1,12 @@
 # TODO: 
 # - dependency of setuptools for some installations
 # - make this playbook not repeat things in other playbooks
+# - make user part of the docker group
+# - make dockerd service enabled and started
 
 ---
 - hosts: localhost
+  connection: local
   vars:
     home: "{{ lookup('env','HOME') }}"
   tasks:
@@ -20,6 +23,10 @@
         - { src: "ssh/config",               dest: "{{ home }}/.ssh/config" }
     - name: "check already installed packages"
       block:
+        - name: "check if docker is installed"
+          shell: "command -v docker"
+          register: docker_exists
+          ignore_errors: yes
         - name: "check if zsh-syntax-highlighting is installed"
           stat:
             path: "{{ home }}/.zsh/zsh-syntax-highlighting"
@@ -50,6 +57,7 @@
           - yarn
           - xclip
           - bat
+          - docker
         state: latest
     - name: "setup zsh"
       block:
