@@ -1,0 +1,46 @@
+---
+- hosts: localhost
+  vars:
+    home: "{{ lookup('env','HOME') }}"
+  tasks:
+    - name: "create symbolic links"
+      file:
+        src: "{{ playbook_dir }}/../{{ item.src }}"
+        dest: "{{ item.dest }}"
+        force: yes
+        state: link
+      loop:
+        - { src: "zsh/.zshrc",               dest: "{{ home }}/.zshrc" }
+        - { src: "zsh/.zshenv",              dest: "{{ home }}/.zshenv" }
+        - { src: "alacritty/alacritty.yml", dest: "{{ home }}/.alacritty.yml" }
+        - { src: "ssh/config",               dest: "{{ home }}/.ssh/config" }
+    - name: "install packages"
+      become: true
+      community.general.pacman:
+        name:
+          - base-devel
+          - git
+          - zsh
+          - tree
+          - python-pip
+          - httpie
+          - clang
+          - make
+          - openssh
+          - exa
+          - go
+          - tldr
+          - alacritty
+          - virt-manager
+          - rustup
+          - yarn
+          - xclip
+          - bat
+        state: latest
+    - name: "install pip packages"
+      pip:
+        extra_args: --compile
+        name:
+          - setuptools
+          - trash-cli
+# TODO: create yay installations
