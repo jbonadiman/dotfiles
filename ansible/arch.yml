@@ -1,50 +1,88 @@
----
 - hosts: localhost
-  vars:
-    home: "{{ lookup('env','HOME') }}"
+  connection: local
+  gather_facts: no
+  become: yes
   tasks:
-    - name: "create symbolic links"
+    - name: create user
+      user:
+        name: joao
+        shell: /bin/zsh
+        state: present
+      register: user
+    - name: create symbolic links
       file:
         src: "{{ playbook_dir }}/../{{ item.src }}"
         dest: "{{ item.dest }}"
         force: yes
         state: link
       loop:
-        - { src: "zsh/.zshrc",               dest: "{{ home }}/.zshrc" }
-        - { src: "zsh/.zshenv",              dest: "{{ home }}/.zshenv" }
-        - { src: "alacritty/alacritty.yml", dest: "{{ home }}/.alacritty.yml" }
-        - { src: "ssh/config",               dest: "{{ home }}/.ssh/config" }
-    - name: "install packages"
+        - { src: "zsh/.zshrc",               dest: "{{ user.home }}/.zshrc" }
+        - { src: "zsh/.zshenv",              dest: "{{ user.home }}/.zshenv" }
+        - { src: "alacritty/alacritty.yml", dest: "{{ user.home }}/.alacritty.yml" }
+        - { src: "ssh/config",               dest: "{{ user.home }}/.ssh/config" }
+    - name: check already installed packages
+      block:
+        - name: check if cargo is installed
+          shell: command -v cargo
+          register: cargo_exists
+          ignore_errors: yes
+        - name: check if zsh-syntax-highlighting is installed
+          stat:
+            path: "{{ user.home }}/.zsh/zsh-syntax-highlighting"
+          register: zsh_syntax_highlighting
+        - name: check if zsh-autosuggestions is installed
+          stat:
+            path: "{{ user.home }}/.zsh/zsh-autosuggestions"
+          register: zsh_autosuggestions
+    - name: install packages
       become: true
       community.general.pacman:
         name:
-          - zsh
+          - git
+          - emacs
           - yay
-          - neovim
+          - make
+          - gcc
+          - openssh
+          - zsh
           - tree
           - python-pip
-          - httpie
-          - clang
-          - make
-          - openssh
           - exa
           - go
           - tldr
           - telegram-desktop
           - discord
           - alacritty
-          - virt-manager
-          - calibre
           - rustup
           - yarn
-          - xclip
-          - bitwarden
           - bat
+          - sqlite3
+          - docker
         state: latest
-    - name: "install pip packages"
-      pip:
-        extra_args: --compile
-        name:
-          - trash-cli
-          - neovim
-# TODO: create yay installations
+    - name: setup zsh
+      block:
+        - name: create .zsh directory
+          file:
+            path: "{{ user.home }}/.zsh"
+            state: directory
+            mode: '0755'
+        - name: install zsh plugins
+          block:
+            - name: install zsh-syntax-highlighting
+              when: not zsh_syntax_highlighting.stat.exists # todo: show as changed
+              git:
+                repo:  https://github.com/zsh-users/zsh-syntax-highlighting.git
+                dest: "{{ user.home }}/.zsh/zsh-syntax-highlighting"
+            - name: install zsh-autosuggestions
+              when: not zsh_autosuggestions.stat.exists # todo: show as changed
+              git:
+                repo: https://github.com/zsh-users/zsh-autosuggestions.git
+                dest: "{{ user.home }}/.zsh/zsh-autosuggestions"
+    - name: Set Default Cargo Version
+      shell: rustup default stable
+    - name: install alacritty
+      when: cargo_exists is success
+      community.general.cargo:
+        name: alacritty
+        state: present
+

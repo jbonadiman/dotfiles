@@ -412,8 +412,8 @@ cursor:
 #   - (macOS) /bin/bash --login
 #   - (Linux/BSD) user login shell
 #   - (Windows) powershell
-shell:
-  program: pwsh.exe
+# shell:
+#   program: pwsh.exe
 #  args:
 #    - --login
 # Startup directory
