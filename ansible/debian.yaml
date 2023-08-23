@@ -9,6 +9,10 @@
         shell: /bin/zsh # todo: check if it's really working
         state: present
       register: user
+    - name: "create ssh dir"
+      file:
+        dest: "{{ user.home }}/.ssh"
+        state: directory
     - name: "create symbolic links"
       file:
         src: "{{ playbook_dir }}/../{{ item.src }}" # todo: get absolute path
@@ -22,10 +26,6 @@
         - { src: "ssh/config",               dest: "{{ user.home }}/.ssh/config" }
     - name: check already installed packages
       block:
-        - name: check if cargo is installed # todo: causes error on console
-          shell: command -v cargo
-          register: cargo_exists
-          ignore_errors: yes
         - name: check if docker is installed # todo: causes error on console, show as changed
           shell: command -v docker
           register: docker_exists
@@ -52,6 +52,8 @@
           - sqlite3
           - tree
           - golang-go
+          - curl
+          - cargo
         state: present
     - name: setup zsh
       block:
@@ -79,28 +81,7 @@
       apt:
         name: python3
         state: latest
-    - name: "install pip packages" # todo: needs dependencies to compile
-      pip:
-        extra_args: --compile
-        name:
-          - trash-cli
-    - name: install rust
-      when: cargo_exists is failed
-      block:
-      - name: download rust installer
-        get_url:
-          url: https://sh.rustup.rs
-          dest: /tmp/sh.rustup.rs
-          mode: '0755'
-          force: 'yes'
-        tags:
-          - rust
-      - name: install rust/cargo # todo: show as changed
-        shell: /tmp/sh.rustup.rs -y
-        tags:
-          - rust
     - name: install alacritty
-      when: cargo_exists is success
       community.general.cargo:
         name: alacritty
         state: present

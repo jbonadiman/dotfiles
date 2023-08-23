@@ -5,7 +5,6 @@ alias ls='exa -laFh --icons'
 alias trail='<<<${(F)path}'
 alias python='python3'
 
-alias rm='trash-put'
 alias emacs='emacs --no-window-system'
 
 # TODO: Add WSL check
