@@ -1,16 +1,11 @@
 #!/usr/bin/env zsh
 
 # create aliases
-alias ls='exa -laFh --icons'
+alias ls='exa --long --all --classify=always --header --icons'
 alias trail='<<<${(F)path}'
 alias python='python3'
 
 alias emacs='emacs --no-window-system'
-
-# TODO: Add WSL check
-alias clip='/mnt/c/Windows/System32/clip.exe'
-alias pbcopy='clip.exe'
-alias pbpaste="pwsh.exe -command 'Get-Clipboard' | tr -d '\r' | head -n -1"
 
 alias gc='git commit -m'
 alias gb='git checkout -b'
