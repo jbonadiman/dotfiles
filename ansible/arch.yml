@@ -1,6 +1,8 @@
 - hosts: localhost
   connection: local
   gather_facts: no
+  vars:
+    dotfiles_dir: "{{ (playbook_dir, '..') | path_join | normpath }}"
   tasks:
     - name: create user
       become: true
@@ -12,7 +14,7 @@
 
     - name: create symbolic links
       file:
-        src: "{{ playbook_dir }}/../{{ item.src }}"
+        src: "{{ (dotfiles_dir, item.src) | path_join }}"
         dest: "{{ item.dest }}"
         force: yes
         state: link
@@ -69,6 +71,7 @@
           - bat
           - sqlite3
           - docker
+          - code
         state: latest
 
     - name: setup zsh
