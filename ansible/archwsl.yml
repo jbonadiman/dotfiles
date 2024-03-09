@@ -1,0 +1,87 @@
+# TODO: 
+# - dependency of setuptools for some installations
+# - make this playbook not repeat things in other playbooks
+# - make user part of the docker group
+# - make dockerd service enabled and started
+
+---
+- hosts: localhost
+  connection: local
+  vars:
+    home: "{{ lookup('env','HOME') }}"
+  tasks:
+    - name: "create symbolic links"
+      file:
+        src: "{{ playbook_dir }}/../{{ item.src }}"
+        dest: "{{ item.dest }}"
+        force: yes
+        state: link
+      loop:
+        - { src: "zsh/.zshrc",               dest: "{{ home }}/.zshrc" }
+        - { src: "zsh/.zshenv",              dest: "{{ home }}/.zshenv" }
+        - { src: "alacritty/alacritty.yml", dest: "{{ home }}/.alacritty.yml" }
+        - { src: "ssh/config",               dest: "{{ home }}/.ssh/config" }
+    - name: "check already installed packages"
+      block:
+        - name: "check if docker is installed"
+          shell: "command -v docker"
+          register: docker_exists
+          ignore_errors: yes
+        - name: "check if zsh-syntax-highlighting is installed"
+          stat:
+            path: "{{ home }}/.zsh/zsh-syntax-highlighting"
+          register: zsh_syntax_highlighting
+        - name: "check if zsh-autosuggestions is installed"
+          stat:
+            path: "{{ home }}/.zsh/zsh-autosuggestions"
+          register: zsh_autosuggestions
+    - name: "install packages"
+      become: true
+      community.general.pacman:
+        name:
+          - base-devel
+          - git
+          - zsh
+          - tree
+          - python-pip
+          - httpie
+          - clang
+          - make
+          - openssh
+          - exa
+          - go
+          - tldr
+          - alacritty
+          - virt-manager
+          - rustup
+          - yarn
+          - xclip
+          - bat
+          - docker
+        state: latest
+    - name: "setup zsh"
+      block:
+        - name: "create .zsh directory"
+          file:
+            path: "{{ home }}/.zsh"
+            state: directory
+            mode: '0755'
+        - name: "install zsh plugins"
+          block:
+            - name: "install zsh-syntax-highlighting"
+              when: not zsh_syntax_highlighting.stat.exists
+              git:
+                repo: "https://github.com/zsh-users/zsh-syntax-highlighting.git"
+                dest: "{{ home }}/.zsh/zsh-syntax-highlighting"
+            - name: "install zsh-autosuggestions"
+              when: not zsh_autosuggestions.stat.exists
+              git:
+                repo: "https://github.com/zsh-users/zsh-autosuggestions.git"
+                dest: "{{ home }}/.zsh/zsh-autosuggestions"
+    - name: "install pip packages"
+      pip:
+        extra_args: --compile
+        name:
+          - setuptools
+          - trash-cli
+# TODO: create yay installations

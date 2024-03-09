@@ -1,0 +1,82 @@
+version: '3.9'
+services:
+  web:
+    image: nginx:alpine
+    restart: unless-stopped
+    container_name: nginx
+    volumes:
+      - /home/joao/data/nginx/conf:/etc/nginx/conf.d
+      - /home/joao/data/nginx/certs:/etc/nginx/certs
+    ports:
+      - "443:443"
+  opengist:
+    image: ghcr.io/thomiceli/opengist:latest
+    container_name: opengist
+    restart: unless-stopped
+    ports:
+      - "6157:6157" # HTTP
+      - "2222:2222" # SS
+    volumes:
+      - "/home/joao/data/opengist:/root/.opengist"
+    environment:
+      CONFIG: |
+        log-level: info
+        http.git-enabled: false
+        github.client-key: ${GIST_GITHUB_CLIENT}
+        github.secret: ${GIST_GITHUB_SECRET}
+  syncthing:
+    image: lscr.io/linuxserver/syncthing:latest
+    restart: unless-stopped
+    container_name: syncthing
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /home/joao/data/syncthing/config:/config
+      - /home/joao/data/syncthing/phone-backup:/config/phone-backup
+    ports:
+      - 8384:8384
+      - 22000:22000/tcp
+      - 22000:22000/udp
+      - 21027:21027/udp
+  navidrome:
+    image: deluan/navidrome:latest
+    restart: unless-stopped
+    container_name: navidrome
+    user: 1000:1000 # should be owner of volumes
+    ports:
+      - "4533:4533"
+    environment:
+      - ND_SCANSCHEDULE=1h
+      - ND_LOGLEVEL=info
+      - ND_SESSIONTIMEOUT=24h
+      - ND_BASEURL=/navidrome
+      - ND_LASTFM_APIKEY=${LASTFM_API_KEY}
+      - ND_LASTFM_SECRET=${LASTFM_SECRET}
+    volumes:
+      - "/home/joao/data/navidrome/config:/data"
+      - "/mnt/HC_Volume_31766019/media/music:/music:ro"
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    restart: unless-stopped
+    container_name: n8n
+    ports:
+      - "5678:5678"
+    volumes:
+      - /home/joao/data/n8n:/home/node/.n8n
+    env_file:
+      - .env
+      - n8n.env
+  shiori:
+    image: ghcr.io/go-shiori/shiori
+    restart: unless-stopped
+    container_name: shiori
+    command: "serve --webroot /shiori/"
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+      - shiori.env
+    volumes:
+      - /home/joao/data/shiori:/shiori

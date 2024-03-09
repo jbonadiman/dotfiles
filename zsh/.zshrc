@@ -3,6 +3,7 @@ export DOTFILES=$HOME/dotfiles
 # change zsh options
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
+HISTCONTROL=ignoreboth
 SAVEHIST=10000
 setopt INC_APPEND_HISTORY_TIME
 
@@ -17,15 +18,13 @@ setopt prompt_subst
 RPROMPT=\$vcs_info_msg_0_
 zstyle ':vcs_info:git:*' formats '%F{240}(%b) %f'
 zstyle ':vcs_info:*' enable git
-RPROMPT="$RPROMPT%F{248}%*%f"
+RPROMPT="$RPROMPT%F{248}%D{%H:%M:%S}%f"
 
 source $DOTFILES/zsh/utils
 source $DOTFILES/zsh/aliases
 source $DOTFILES/zsh/keybinds
 
-# activate syntax highlighting
-source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+# . /opt/asdf-vm/asdf.sh
 
 if [[ ! -f ~/.secrets ]]
 then
@@ -34,4 +33,6 @@ fi
 
 source ~/.secrets
 
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+# activate syntax highlighting
+source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh

@@ -1,0 +1,105 @@
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: create user
+      become: true
+      user:
+        name: joao
+        shell: /bin/zsh
+        state: present
+      register: user
+
+    - name: create symbolic links
+      file:
+        src: "{{ playbook_dir }}/../{{ item.src }}"
+        dest: "{{ item.dest }}"
+        force: yes
+        state: link
+      loop:
+        - { src: "zsh/.zshrc",               dest: "{{ user.home }}/.zshrc" }
+        - { src: "zsh/.zshenv",              dest: "{{ user.home }}/.zshenv" }
+        - { src: "alacritty/alacritty.yml", dest: "{{ user.home }}/.alacritty.yml" }
+        - { src: "ssh/config",               dest: "{{ user.home }}/.ssh/config" }
+
+    - name: tasks checks
+      block:
+        - name: check if cargo is installed
+          shell: command -v cargo
+          register: cargo_exists
+          changed_when: false
+          ignore_errors: yes
+
+        - name: query rustup toolchain
+          shell: rustup default
+          register: current_rustup_toolchain
+          when: cargo_exists
+          changed_when: false
+            
+        - name: check if zsh-syntax-highlighting is installed
+          stat:
+            path: "{{ user.home }}/.zsh/zsh-syntax-highlighting"
+          register: zsh_syntax_highlighting
+
+        - name: check if zsh-autosuggestions is installed
+          stat:
+            path: "{{ user.home }}/.zsh/zsh-autosuggestions"
+          register: zsh_autosuggestions
+
+    - name: install packages
+      become: true
+      community.general.pacman:
+        name:
+          - git
+          - emacs
+          - yay
+          - make
+          - gcc
+          - openssh
+          - zsh
+          - tree
+          - python-pip
+          - exa
+          - go
+          - tldr
+          - telegram-desktop
+          - discord
+          - rustup
+          - yarn
+          - bat
+          - sqlite3
+          - docker
+        state: latest
+
+    - name: setup zsh
+      block:
+        - name: create .zsh directory
+          file:
+            path: "{{ user.home }}/.zsh"
+            state: directory
+            mode: '0755'
+        - name: install zsh plugins
+          block:
+            - name: install zsh-syntax-highlighting
+              when: not zsh_syntax_highlighting.stat.exists # todo: show as changed
+              git:
+                repo:  https://github.com/zsh-users/zsh-syntax-highlighting.git
+                dest: "{{ user.home }}/.zsh/zsh-syntax-highlighting"
+            - name: install zsh-autosuggestions
+              when: not zsh_autosuggestions.stat.exists # todo: show as changed
+              git:
+                repo: https://github.com/zsh-users/zsh-autosuggestions.git
+                dest: "{{ user.home }}/.zsh/zsh-autosuggestions"
+
+    - name: set default cargo version
+      register: set_cargo_version
+      shell: rustup default stable
+      when: "cargo_exists and 'stable' not in current_rustup_toolchain.stdout"
+      changed_when: "'default toolchain set to' in set_cargo_version.stdout"
+
+    - name: install alacritty
+      when: cargo_exists is success
+      community.general.cargo:
+        name: alacritty
+        state: present
+
