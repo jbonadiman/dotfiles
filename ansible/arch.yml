@@ -21,7 +21,7 @@
       loop:
         - { src: "zsh/.zshrc",               dest: "{{ user.home }}/.zshrc" }
         - { src: "zsh/.zshenv",              dest: "{{ user.home }}/.zshenv" }
-        - { src: "alacritty/alacritty.yml", dest: "{{ user.home }}/.alacritty.yml" }
+        - { src: "alacritty/alacritty.toml", dest: "{{ user.home }}/.alacritty.toml" }
         - { src: "ssh/config",               dest: "{{ user.home }}/.ssh/config" }
 
     - name: tasks checks
