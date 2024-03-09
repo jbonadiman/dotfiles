@@ -51,6 +51,7 @@
     - name: install packages
       become: true
       community.general.pacman:
+        state: latest
         name:
           - git
           - emacs
@@ -71,8 +72,14 @@
           - bat
           - sqlite3
           - docker
-          - code
-        state: latest
+          - base-devel
+
+    - name: install aur packages
+      shell: /usr/bin/yay --noconfirm --noprogressbar --needed --sync {{ item }}
+      register: install_aur_packages
+      changed_when: "'skipping' not in install_aur_packages.stdout"
+      loop:
+        - visual-studio-code-bin
 
     - name: setup zsh
       block:
