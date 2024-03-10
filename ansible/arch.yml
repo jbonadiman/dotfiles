@@ -15,6 +15,36 @@
         state: present
       register: user
 
+    - name: install fonts
+      block:
+        - name: ensure font directory exists
+          file:
+            path: "{{ user.home }}/.fonts"
+            state: directory
+
+        - name: monaspace exists
+          shell: "ls {{ user.home }}/.fonts/**/Monaspace*"
+          register: monaspace_exists
+          ignore_errors: yes
+          changed_when: false
+
+        - name: download monaspace
+          when: monaspace_exists is failed
+          unarchive:
+            src: "https://github.com/githubnext/monaspace/releases/download/v1.000/monaspace-v1.000.zip"
+            dest: "{{ user.home }}/.fonts"
+            remote_src: yes
+            include:
+              - "monaspace-v1.000/fonts/otf/*"
+              - "monaspace-v1.000/fonts/variable/*"
+               
+                # - name: copy all font files
+                #   no_log: true
+                #   copy:
+                #     src: "{{ item .path }}"
+                #     dest: "{{ user.home }}/.fonts/"
+                #   loop: "{{ font_files.files }}"
+        
     - name: create symbolic links
       file:
         src: "{{ (dotfiles_dir, item.src) | path_join }}"
@@ -56,6 +86,8 @@
       community.general.pacman:
         state: latest
         name:
+          - okular
+          - filezilla
           - git
           - emacs
           - yay
@@ -83,6 +115,7 @@
       changed_when: "'skipping' not in install_aur_packages.stdout"
       loop:
         - visual-studio-code-bin
+        - anytype-electron-bin
 
     - name: sets up docker daemon 
       block:
