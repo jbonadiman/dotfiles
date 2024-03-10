@@ -9,6 +9,9 @@
       user:
         name: joao
         shell: /bin/zsh
+        append: true
+        groups:
+          - docker
         state: present
       register: user
 
@@ -80,6 +83,22 @@
       changed_when: "'skipping' not in install_aur_packages.stdout"
       loop:
         - visual-studio-code-bin
+
+    - name: sets up docker daemon 
+      block:
+        - name: check if docker is installed
+          shell: command -v docker
+          register: docker_exists
+          changed_when: false
+          ignore_errors: yes
+
+        - name: enables and starts docker daemon
+          become: true
+          when: docker_exists
+          systemd_service:
+            enabled: true
+            name: docker
+            state: started
 
     - name: setup zsh
       block:
