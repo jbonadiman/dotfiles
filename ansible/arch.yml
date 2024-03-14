@@ -86,6 +86,7 @@
       community.general.pacman:
         state: latest
         name:
+          - lutris
           - okular
           - filezilla
           - git
@@ -101,7 +102,6 @@
           - go
           - tldr
           - telegram-desktop
-          - discord
           - rustup
           - yarn
           - bat
@@ -116,6 +116,7 @@
       loop:
         - visual-studio-code-bin
         - anytype-electron-bin
+        - discord_arch_electron
 
     - name: sets up docker daemon 
       block:
