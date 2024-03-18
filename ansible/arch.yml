@@ -44,7 +44,12 @@
                 #     src: "{{ item .path }}"
                 #     dest: "{{ user.home }}/.fonts/"
                 #   loop: "{{ font_files.files }}"
-        
+
+    - name: ensure .config folder exists
+      file:
+        path: "{{ user.home }}/.config"
+        state: directory
+
     - name: create symbolic links
       file:
         src: "{{ (dotfiles_dir, item.src) | path_join }}"
@@ -117,6 +122,25 @@
         - visual-studio-code-bin
         - anytype-electron-bin
         - discord_arch_electron
+
+    - name: setup emacs
+      block:
+        - name: link emacs config
+          file:
+            src: "{{ (dotfiles_dir, 'config', 'emacs') | path_join }}"
+            dest: "{{ (user.home, '.config', 'emacs') | path_join }}"
+            force: yes
+            state: link
+
+        - name: ensure ~/.emacs.d doesn't exist
+          file:
+            path: "{{ (user.home, '.emacs.d') | path_join }}"
+            state: absent
+
+        - name: ensure ~/.emacs doesn't exist
+          file:
+            path: "{{ (user.home, '.emacs') | path_join }}"
+            state: absent
 
     - name: sets up docker daemon 
       block:
