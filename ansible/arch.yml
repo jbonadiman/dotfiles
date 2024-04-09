@@ -91,6 +91,7 @@
       community.general.pacman:
         state: latest
         name:
+          - godot
           - lutris
           - okular
           - filezilla
@@ -119,9 +120,11 @@
       register: install_aur_packages
       changed_when: "'skipping' not in install_aur_packages.stdout"
       loop:
+        - httpie-desktop-bin
         - visual-studio-code-bin
         - anytype-electron-bin
         - discord_arch_electron
+        - slack-desktop
 
     - name: setup emacs
       block:
