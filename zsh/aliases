@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
 # create aliases
-alias ls='exa --long --all --classify=always --header --icons'
+alias ls='exa --long --all --classify --header --icons'
 alias trail='<<<${(F)path}'
 alias python='python3'
 
