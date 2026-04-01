@@ -6,7 +6,7 @@
   "mcp": {
     "lightpanda": {
       "type": "local",
-      "command": ["lightpanda", "mcp"],
+      "command": ["/home/joao/.local/bin/lightpanda", "mcp"],
       "enabled": true
     },
   }
