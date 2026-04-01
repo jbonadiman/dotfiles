@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "server": {
+    "port": 4096,
+  },
+  "mcp": {
+    "lightpanda": {
+      "type": "local",
+      "command": ["lightpanda", "mcp"],
+      "enabled": true
+    },
+  }
+}
