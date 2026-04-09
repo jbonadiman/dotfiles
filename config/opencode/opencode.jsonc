@@ -1,13 +1,24 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "server": {
-    "port": 4096,
+    "port": 4096
   },
   "mcp": {
     "lightpanda": {
       "type": "local",
-      "command": ["/home/joao/.local/bin/lightpanda", "mcp"],
+      "command": [
+        "/home/joao/.local/bin/lightpanda",
+        "mcp"
+      ],
       "enabled": true
+    }
+  },
+  "permission": {
+    "read": {
+      "~/.config/opencode/get-shit-done/*": "allow"
     },
+    "external_directory": {
+      "~/.config/opencode/get-shit-done/*": "allow"
+    }
   }
 }
